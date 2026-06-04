@@ -7,3 +7,16 @@ build/
 *.log
 Thumbs.db
 Desktop.ini
+
+# monorepo / framework build artifacts
+.next/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+.DS_Store
+
+# BMAD per-tool skill mirrors — regenerate via the BMAD installer; _bmad/ is the canonical source
+.agents/
+.claude/
+.codex/

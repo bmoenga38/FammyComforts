@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Native/postinstall build scripts intentionally not run (approve later if needed).
+ignoredBuiltDependencies:
+  - "@nestjs/core"
+  - sharp
+  - unrs-resolver

@@ -1,0 +1,156 @@
+# generated: 2026-06-04
+# last_updated: 2026-06-04
+# project: SommyComfort
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog -> in-progress: Automatically when first story is created (via create-story)
+#   - in-progress -> done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# RELEASE PLAN (from epics.md):
+# ============================
+#   R1 (MVP) = Epics 1-6  |  R2 = Epics 7-8  |  R3 = Epics 9-10
+#   Build order is the natural epic order 1 -> 2 -> 3 -> 4 -> 5 -> 6.
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-06-04
+last_updated: 2026-06-05
+project: SommyComfort
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ===== Epic 1: Platform Foundation & Design System (R1) =====
+  epic-1: in-progress
+  1-1-initialize-the-monorepo-from-the-turborepo-starter: done
+  1-2-establish-design-tokens-typography-and-theming: backlog
+  1-3-build-the-core-ui-primitives: backlog
+  1-4-build-the-composite-domain-components: backlog
+  1-5-installable-pwa-app-shell: backlog
+  1-6-offline-data-background-sync-and-lighthouse-target: backlog
+  1-7-role-workspace-navigation-shell: backlog
+  1-8-shared-contracts-realtime-and-data-plumbing: backlog
+  1-9-ci-cd-pipeline-and-containerized-deploy: backlog
+  1-10-daily-backup-and-disaster-recovery-baseline: backlog
+  epic-1-retrospective: optional
+
+  # ===== Epic 2: Identity, Access & Staff Management (R1) =====
+  epic-2: backlog
+  2-1-staff-authentication-with-jwt: backlog
+  2-2-password-reset: backlog
+  2-3-roles-and-granular-permissions-rbac: backlog
+  2-4-staff-management: backlog
+  2-5-audit-log-of-sensitive-actions: backlog
+  epic-2-retrospective: optional
+
+  # ===== Epic 3: Property, Rooms, Rates & Amenities Setup (R1) =====
+  epic-3: backlog
+  3-1-property-and-branch-settings: backlog
+  3-2-room-types-and-amenities: backlog
+  3-3-rooms-management: backlog
+  3-4-rate-plans-and-tax: backlog
+  3-5-notification-settings: backlog
+  epic-3-retrospective: optional
+
+  # ===== Epic 4: Guest Booking Experience (R1) =====
+  epic-4: backlog
+  4-1-public-room-catalog: backlog
+  4-2-room-detail-view: backlog
+  4-3-date-availability-search: backlog
+  4-4-no-account-booking-with-guest-details: backlog
+  4-5-optional-id-document-upload: backlog
+  4-6-payment-method-selection-and-split-capture-intent: backlog
+  4-7-booking-confirmation-with-reference: backlog
+  4-8-guest-booking-lookup: backlog
+  epic-4-retrospective: optional
+
+  # ===== Epic 5: Payments, Invoicing & Reconciliation (R1) =====
+  epic-5: backlog
+  5-1-payment-method-configuration: backlog
+  5-2-exact-money-engine-and-ledger: backlog
+  5-3-m-pesa-stk-push-initiation: backlog
+  5-4-m-pesa-callback-processing-and-confirmation: backlog
+  5-5-manual-m-pesa-cash-and-card-recording: backlog
+  5-6-invoices-and-receipts-pdf: backlog
+  5-7-guest-portal-for-bookings-invoices-and-requests: backlog
+  5-8-reconciliation-view: backlog
+  epic-5-retrospective: optional
+
+  # ===== Epic 6: Front Desk Operations (R1) =====
+  epic-6: backlog
+  6-1-reception-booking-creation-and-editing: backlog
+  6-2-guest-profile-management: backlog
+  6-3-availability-calendar: backlog
+  6-4-check-in-with-id-verification: backlog
+  6-5-check-out-with-balance-and-receipt: backlog
+  6-6-check-out-asset-verification-and-housekeeping-trigger: backlog
+  6-7-booking-modifications-extend-change-room-cancel-no-show-refund: backlog
+  6-8-partial-and-split-payment-recording: backlog
+  epic-6-retrospective: optional
+
+  # ===== Epic 7: Operations & Housekeeping (R2) =====
+  epic-7: backlog
+  7-1-mobile-daily-operations-dashboard: backlog
+  7-2-room-readiness-board: backlog
+  7-3-housekeeping-task-queue-and-assignment: backlog
+  7-4-housekeeping-task-execution-with-checklists: backlog
+  7-5-photo-proof-and-offline-task-updates: backlog
+  7-6-maintenance-and-damage-reporting: backlog
+  7-7-per-room-asset-checklist-and-checkout-verification: backlog
+  7-8-operational-escalations: backlog
+  epic-7-retrospective: optional
+
+  # ===== Epic 8: Inventory & Procurement (R2) =====
+  epic-8: backlog
+  8-1-product-catalog: backlog
+  8-2-suppliers-and-purchase-orders: backlog
+  8-3-stock-movements-audit-trail: backlog
+  8-4-stocktake: backlog
+  8-5-low-stock-alerts-and-usage-tracking: backlog
+  epic-8-retrospective: optional
+
+  # ===== Epic 9: Restaurant & Kitchen (R3) =====
+  epic-9: backlog
+  9-1-inventory-linked-menu: backlog
+  9-2-order-creation-across-channels: backlog
+  9-3-kitchen-display-with-status-lanes: backlog
+  9-4-charge-to-room-or-pay-separately: backlog
+  9-5-restaurant-revenue-and-top-sellers: backlog
+  epic-9-retrospective: optional
+
+  # ===== Epic 10: Reporting, Exports & Notifications (R3) =====
+  epic-10: backlog
+  10-1-admin-kpi-dashboard-and-action-queue: backlog
+  10-2-revenue-occupancy-and-balances-reports: backlog
+  10-3-profit-loss-and-inventory-reports: backlog
+  10-4-guest-analytics-tax-vat-and-asset-reports: backlog
+  10-5-pdf-and-csv-excel-export: backlog
+  10-6-multi-channel-notifications: backlog
+  epic-10-retrospective: optional
