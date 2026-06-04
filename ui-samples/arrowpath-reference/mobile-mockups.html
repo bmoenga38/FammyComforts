@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArrowFleet — Mobile Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== Reset ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green: #50fa7b;
+            --green-dim: rgba(80, 250, 123, 0.08);
+            --green-glow: rgba(80, 250, 123, 0.25);
+            --purple: #bd93f9;
+            --purple-dim: rgba(189, 147, 249, 0.08);
+            --cyan: #8be9fd;
+            --orange: #ffb86c;
+            --red: #ff5555;
+            --pink: #ff79c6;
+            --yellow: #f1fa8c;
+            --bg-deep: #0c0d14;
+            --bg: #282a36;
+            --bg-alt: #21222c;
+            --bg-card: #2d2f3d;
+            --border: #44475a;
+            --text: #f8f8f2;
+            --text-muted: #9ca3af;
+            --text-dim: #6b7280;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Showcase Hero ===== */
+        .showcase-hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .showcase-hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(80, 250, 123, 0.07) 0%, transparent 70%);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .showcase-hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(189, 147, 249, 0.05) 0%, transparent 70%);
+            bottom: -50px;
+            right: -50px;
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(80, 250, 123, 0.06);
+            border: 1px solid rgba(80, 250, 123, 0.15);
+            border-radius: 100px;
+            padding: .4rem 1.2rem;
+            font-size: .8rem;
+            font-weight: 500;
+            color: var(--green);
+            letter-spacing: .03em;
+            margin-bottom: 2rem;
+            animation: fadeInDown .8s ease;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.3); }
+        }
+
+        .hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp .8s ease .1s both;
+        }
+
+        .hero-title .accent { color: var(--green); }
+        .hero-title .accent-purple { color: var(--purple); }
+
+        .hero-sub {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            font-weight: 300;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            animation: fadeInUp .8s ease .2s both;
+        }
+
+        .scroll-hint {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .5rem;
+            color: var(--text-dim);
+            font-size: .75rem;
+            font-weight: 500;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            animation: fadeInUp .8s ease .4s both;
+        }
+
+        .scroll-arrow {
+            width: 24px;
+            height: 24px;
+            border-right: 2px solid var(--green);
+            border-bottom: 2px solid var(--green);
+            transform: rotate(45deg);
+            animation: bounce-arrow 2s infinite;
+        }
+
+        @keyframes bounce-arrow {
+            0%, 20%, 50%, 80%, 100% { transform: rotate(45deg) translateY(0); }
+            40% { transform: rotate(45deg) translateY(8px); }
+            60% { transform: rotate(45deg) translateY(4px); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== Section Layout ===== */
+        .screen-section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .screen-section:nth-child(even) {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .section-inner.reverse { direction: rtl; }
+        .section-inner.reverse > * { direction: ltr; }
+
+        .section-text {
+            padding: 1rem 0;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--green);
+            margin-bottom: 1rem;
+        }
+
+        .section-label.purple { color: var(--purple); }
+        .section-label.cyan { color: var(--cyan); }
+        .section-label.orange { color: var(--orange); }
+        .section-label.pink { color: var(--pink); }
+        .section-label.yellow { color: var(--yellow); }
+
+        .section-heading {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-desc {
+            font-size: 1rem;
+            font-weight: 300;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 440px;
+        }
+
+        .feature-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin-top: 1.5rem;
+        }
+
+        .chip {
+            background: var(--green-dim);
+            border: 1px solid rgba(80, 250, 123, 0.12);
+            color: var(--green);
+            font-size: .75rem;
+            font-weight: 500;
+            padding: .35rem .85rem;
+            border-radius: 100px;
+        }
+
+        .chip.purple { background: var(--purple-dim); border-color: rgba(189,147,249,.12); color: var(--purple); }
+        .chip.cyan { background: rgba(139,233,253,.08); border-color: rgba(139,233,253,.12); color: var(--cyan); }
+        .chip.orange { background: rgba(255,184,108,.08); border-color: rgba(255,184,108,.12); color: var(--orange); }
+
+        /* ===== Phone Frame ===== */
+        .phone-stage {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .phone-frame {
+            width: 300px;
+            height: 620px;
+            background: #1a1b26;
+            border-radius: 40px;
+            border: 3px solid #3a3b4a;
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.03),
+                0 25px 60px rgba(0,0,0,0.5),
+                0 0 80px rgba(80, 250, 123, 0.04);
+            overflow: hidden;
+            position: relative;
+            transition: transform .4s cubic-bezier(.2,.8,.3,1), box-shadow .4s ease;
+        }
+
+        .phone-frame:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.05),
+                0 35px 80px rgba(0,0,0,0.6),
+                0 0 120px rgba(80, 250, 123, 0.08);
+        }
+
+        /* Notch */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 28px;
+            background: #1a1b26;
+            border-radius: 0 0 18px 18px;
+            z-index: 10;
+        }
+
+        /* Home indicator */
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            z-index: 10;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            position: relative;
+        }
+
+        /* ===== Status Bar (inside phone) ===== */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+            position: relative;
+            z-index: 5;
+        }
+
+        .status-bar .time { font-family: 'Space Grotesk', sans-serif; }
+        .status-icons { display: flex; gap: 4px; align-items: center; }
+        .status-icons svg { width: 14px; height: 14px; }
+
+        /* ===== Bottom Tab Bar ===== */
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 27, 38, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(68, 71, 90, 0.5);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 22px;
+            z-index: 10;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        .tab-item.active { color: var(--green); }
+        .tab-item svg { width: 20px; height: 20px; }
+
+        /* ===== SCREEN 1: LOGIN ===== */
+        .screen-login {
+            background: linear-gradient(170deg, #1a1b26 0%, #282a36 40%, #2d3045 100%);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .screen-login::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(80, 250, 123, 0.06) 0%, transparent 70%);
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--green-dim);
+            border: 2px solid rgba(80, 250, 123, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-logo svg { width: 28px; height: 28px; color: var(--green); }
+
+        .login-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: .25rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-tagline {
+            font-size: .78rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-input {
+            width: 100%;
+            background: rgba(53, 56, 73, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .85rem 1rem .85rem 2.5rem;
+            color: var(--text);
+            font-size: .85rem;
+            font-family: inherit;
+            margin-bottom: .75rem;
+            outline: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-input-wrap {
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-input-wrap svg {
+            position: absolute;
+            left: .85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-dim);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--green);
+            color: #1a1b26;
+            border: none;
+            border-radius: 12px;
+            padding: .85rem;
+            font-size: .9rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            cursor: pointer;
+            margin-top: .5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin: 1.25rem 0;
+            width: 100%;
+            color: var(--text-dim);
+            font-size: .72rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .login-otp-hint {
+            font-size: .72rem;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-otp-hint span { color: var(--green); font-weight: 600; }
+
+        /* ===== SCREEN 2: DRIVER DASHBOARD ===== */
+        .screen-dashboard {
+            background: var(--bg);
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 70px;
+        }
+
+        .dash-welcome {
+            background: linear-gradient(135deg, rgba(80,250,123,.06), rgba(189,147,249,.04));
+            border-bottom: 1px solid rgba(80,250,123,.1);
+            padding: .85rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+
+        .dash-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--green-dim), var(--purple-dim));
+            border: 2px solid rgba(80,250,123,.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--green);
+            flex-shrink: 0;
+        }
+
+        .dash-greeting {
+            flex: 1;
+        }
+
+        .dash-greeting h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+        }
+
+        .dash-greeting p {
+            font-size: .7rem;
+            color: var(--text-muted);
+        }
+
+        .dash-streak {
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+            background: rgba(255,184,108,.1);
+            border: 1px solid rgba(255,184,108,.2);
+            color: var(--orange);
+            font-size: .65rem;
+            font-weight: 600;
+            padding: .2rem .55rem;
+            border-radius: 100px;
+        }
+
+        /* Earnings Hero */
+        .earnings-hero {
+            text-align: center;
+            padding: 1.25rem 1rem .75rem;
+        }
+
+        .earnings-label {
+            font-size: .68rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: .35rem;
+        }
+
+        .earnings-amount {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--green);
+            line-height: 1;
+        }
+
+        .earnings-change {
+            display: inline-flex;
+            align-items: center;
+            gap: .2rem;
+            font-size: .68rem;
+            font-weight: 600;
+            color: var(--green);
+            background: rgba(80,250,123,.08);
+            padding: .15rem .5rem;
+            border-radius: 20px;
+            margin-top: .4rem;
+        }
+
+        /* KPI Row */
+        .dash-kpi-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .5rem;
+            padding: 0 .75rem;
+            margin-bottom: .75rem;
+        }
+
+        .dash-kpi {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .6rem .5rem;
+            text-align: center;
+        }
+
+        .dash-kpi-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .dash-kpi-label {
+            font-size: .6rem;
+            color: var(--text-muted);
+            margin-top: .15rem;
+        }
+
+        /* Challenge Card */
+        .dash-challenge {
+            margin: 0 .75rem .75rem;
+            background: linear-gradient(135deg, var(--bg-card), rgba(189,147,249,.04));
+            border: 1px solid rgba(189,147,249,.15);
+            border-radius: 12px;
+            padding: .75rem;
+        }
+
+        .dash-challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .5rem;
+        }
+
+        .dash-challenge-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+
+        .dash-challenge-reward {
+            font-size: .65rem;
+            font-weight: 600;
+            color: var(--purple);
+            background: var(--purple-dim);
+            padding: .15rem .45rem;
+            border-radius: 20px;
+        }
+
+        .dash-progress-bar {
+            height: 6px;
+            background: rgba(68,71,90,.5);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: .35rem;
+        }
+
+        .dash-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--purple));
+            border-radius: 3px;
+        }
+
+        .dash-progress-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: .62rem;
+            color: var(--text-muted);
+        }
+
+        /* Next Trip */
+        .dash-trip {
+            margin: 0 .75rem .75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .75rem;
+        }
+
+        .dash-trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .5rem;
+        }
+
+        .dash-trip-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+
+        .dash-trip-status {
+            font-size: .6rem;
+            font-weight: 600;
+            color: #1a1b26;
+            background: var(--green);
+            padding: .15rem .45rem;
+            border-radius: 20px;
+        }
+
+        .dash-route {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .72rem;
+        }
+
+        .dash-route-dots {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .route-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid var(--green);
+        }
+
+        .route-line {
+            width: 2px;
+            height: 16px;
+            background: var(--border);
+        }
+
+        .route-dot.end {
+            border-color: var(--purple);
+            background: var(--purple);
+        }
+
+        .dash-route-info {
+            flex: 1;
+        }
+
+        .route-from, .route-to {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .route-place { font-weight: 500; }
+        .route-time { font-size: .62rem; color: var(--text-muted); }
+
+        /* Fuel Savings */
+        .dash-fuel {
+            margin: 0 .75rem .75rem;
+            background: linear-gradient(135deg, var(--bg-card), rgba(80,250,123,.03));
+            border: 1px solid rgba(80,250,123,.12);
+            border-radius: 12px;
+            padding: .7rem .75rem;
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+
+        .fuel-gauge-mini {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: conic-gradient(var(--green) 0deg, var(--green) 252deg, rgba(68,71,90,.3) 252deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .fuel-gauge-inner {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .6rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .fuel-info h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+
+        .fuel-info p {
+            font-size: .65rem;
+            color: var(--text-muted);
+            margin-top: .1rem;
+        }
+
+        .fuel-bonus {
+            margin-left: auto;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        /* ===== SCREEN 3: TRIPS ===== */
+        .screen-trips {
+            background: var(--bg);
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 70px;
+        }
+
+        .trips-header {
+            padding: .75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .trips-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .trips-filter {
+            display: flex;
+            gap: .35rem;
+        }
+
+        .trips-filter-btn {
+            font-size: .65rem;
+            font-weight: 600;
+            padding: .25rem .6rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .trips-filter-btn.active {
+            background: var(--green);
+            color: #1a1b26;
+            border-color: var(--green);
+        }
+
+        /* Earnings summary bar */
+        .trips-earnings-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: .65rem 1rem;
+            background: var(--bg-alt);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .trips-earning-item {
+            text-align: center;
+        }
+
+        .trips-earning-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .95rem;
+            font-weight: 700;
+        }
+
+        .trips-earning-val.green { color: var(--green); }
+        .trips-earning-val.purple { color: var(--purple); }
+        .trips-earning-val.cyan { color: var(--cyan); }
+
+        .trips-earning-label {
+            font-size: .58rem;
+            color: var(--text-muted);
+            margin-top: .1rem;
+        }
+
+        /* Trip Cards */
+        .trip-card {
+            margin: .5rem .75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .7rem;
+        }
+
+        .trip-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .4rem;
+        }
+
+        .trip-type {
+            font-size: .6rem;
+            font-weight: 600;
+            padding: .15rem .4rem;
+            border-radius: 6px;
+        }
+
+        .trip-type.airport { background: rgba(139,233,253,.1); color: var(--cyan); }
+        .trip-type.cargo { background: rgba(255,184,108,.1); color: var(--orange); }
+        .trip-type.project { background: rgba(189,147,249,.1); color: var(--purple); }
+
+        .trip-amount {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .9rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .trip-route-simple {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .72rem;
+            margin-bottom: .35rem;
+        }
+
+        .trip-route-arrow { color: var(--text-dim); font-size: .6rem; }
+
+        .trip-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: .6rem;
+            color: var(--text-muted);
+        }
+
+        .trip-rating {
+            display: flex;
+            align-items: center;
+            gap: .15rem;
+            color: var(--yellow);
+        }
+
+        .trip-status-badge {
+            font-size: .58rem;
+            font-weight: 600;
+            padding: .12rem .4rem;
+            border-radius: 20px;
+        }
+
+        .trip-status-badge.completed { background: rgba(80,250,123,.1); color: var(--green); }
+        .trip-status-badge.in-progress { background: rgba(139,233,253,.1); color: var(--cyan); }
+
+        /* ===== SCREEN 4: SPIN WHEEL ===== */
+        .screen-spin {
+            background: linear-gradient(170deg, #1a1b26 0%, #282a36 60%, #2d3045 100%);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen-spin::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(80,250,123,.06) 0%, transparent 70%);
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .spin-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: .75rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .spin-subtitle {
+            font-size: .72rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin-bottom: 1.25rem;
+            z-index: 1;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--green) 0deg 60deg,
+                var(--purple) 60deg 120deg,
+                var(--orange) 120deg 180deg,
+                var(--cyan) 180deg 240deg,
+                var(--pink) 240deg 300deg,
+                var(--yellow) 300deg 360deg
+            );
+            border: 3px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(80,250,123,.1), inset 0 0 30px rgba(0,0,0,.3);
+            position: relative;
+            animation: wheel-spin 8s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+        }
+
+        @keyframes wheel-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(1440deg); }
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 3px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,.4);
+            z-index: 2;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 18px solid var(--text);
+            z-index: 3;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+        }
+
+        /* Wheel segment labels */
+        .wheel-labels {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .wheel-label {
+            position: absolute;
+            font-size: .5rem;
+            font-weight: 700;
+            color: rgba(0,0,0,.7);
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            width: 60px;
+            text-align: center;
+        }
+
+        .wheel-label:nth-child(1) { top: 25%; right: 8%; transform: rotate(30deg); }
+        .wheel-label:nth-child(2) { top: 10%; left: 25%; transform: rotate(-30deg); }
+        .wheel-label:nth-child(3) { top: 40%; left: -2%; transform: rotate(-85deg); }
+        .wheel-label:nth-child(4) { bottom: 18%; left: 8%; transform: rotate(30deg); }
+        .wheel-label:nth-child(5) { bottom: 8%; right: 15%; transform: rotate(-30deg); }
+        .wheel-label:nth-child(6) { top: 38%; right: -5%; transform: rotate(85deg); }
+
+        .spin-btn {
+            background: var(--green);
+            color: #1a1b26;
+            border: none;
+            border-radius: 14px;
+            padding: .75rem 2.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .95rem;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(80,250,123,.25);
+        }
+
+        .spin-prizes {
+            margin-top: 1rem;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .spin-prize-item {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .4rem .6rem;
+            font-size: .68rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(68,71,90,.3);
+        }
+
+        .spin-prize-item:last-child { border: none; }
+        .spin-prize-icon { font-size: .85rem; }
+        .spin-prize-name { flex: 1; }
+        .spin-prize-chance { font-weight: 600; font-size: .6rem; }
+
+        /* ===== SCREEN 5: REWARDS ===== */
+        .screen-rewards {
+            background: var(--bg);
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 70px;
+        }
+
+        .rewards-header {
+            text-align: center;
+            padding: .85rem 1rem .5rem;
+        }
+
+        .rewards-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .rewards-points-card {
+            margin: .5rem .75rem;
+            background: linear-gradient(135deg, rgba(80,250,123,.05), rgba(189,147,249,.05));
+            border: 1px solid rgba(80,250,123,.12);
+            border-radius: 14px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .points-total {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .points-label {
+            font-size: .7rem;
+            color: var(--text-muted);
+            margin-bottom: .65rem;
+        }
+
+        /* Tier Progress */
+        .tier-progress-wrap {
+            margin: 0 .75rem .5rem;
+        }
+
+        .tier-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: .62rem;
+            font-weight: 600;
+            margin-bottom: .3rem;
+        }
+
+        .tier-current { color: #c0c0c0; }
+        .tier-next { color: #ffd700; }
+
+        .tier-bar {
+            height: 8px;
+            background: rgba(68,71,90,.5);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .tier-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c0c0c0, #ffd700);
+            border-radius: 4px;
+            width: 68%;
+        }
+
+        .tier-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: .58rem;
+            color: var(--text-muted);
+            margin-top: .2rem;
+        }
+
+        /* Badges */
+        .badges-section {
+            padding: .5rem .75rem;
+        }
+
+        .badges-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .82rem;
+            font-weight: 600;
+            margin-bottom: .5rem;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: .4rem;
+        }
+
+        .badge-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .45rem .25rem;
+            text-align: center;
+        }
+
+        .badge-icon {
+            font-size: 1.3rem;
+            margin-bottom: .15rem;
+        }
+
+        .badge-name {
+            font-size: .52rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .badge-item.earned { border-color: rgba(80,250,123,.2); }
+        .badge-item.earned .badge-name { color: var(--green); }
+
+        .badge-item.locked { opacity: .4; }
+
+        /* Redeem section */
+        .redeem-section {
+            padding: .5rem .75rem;
+        }
+
+        .redeem-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .82rem;
+            font-weight: 600;
+            margin-bottom: .5rem;
+        }
+
+        .redeem-item {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .55rem .65rem;
+            margin-bottom: .4rem;
+        }
+
+        .redeem-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0;
+        }
+
+        .redeem-icon.green { background: var(--green-dim); }
+        .redeem-icon.purple { background: var(--purple-dim); }
+        .redeem-icon.orange { background: rgba(255,184,108,.08); }
+
+        .redeem-info { flex: 1; }
+        .redeem-name { font-size: .72rem; font-weight: 600; }
+        .redeem-cost { font-size: .6rem; color: var(--text-muted); }
+
+        .redeem-btn {
+            font-size: .6rem;
+            font-weight: 600;
+            color: #1a1b26;
+            background: var(--green);
+            border: none;
+            padding: .25rem .55rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* ===== SCREEN 6: MESSAGES ===== */
+        .screen-messages {
+            background: var(--bg);
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 70px;
+        }
+
+        .msg-header {
+            padding: .75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .msg-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .msg-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .msg-tab {
+            flex: 1;
+            text-align: center;
+            padding: .5rem;
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .msg-tab.active {
+            color: var(--green);
+            border-bottom-color: var(--green);
+        }
+
+        /* Activity Feed */
+        .feed-item {
+            display: flex;
+            gap: .55rem;
+            padding: .65rem .75rem;
+            border-bottom: 1px solid rgba(68,71,90,.3);
+        }
+
+        .feed-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+
+        .feed-avatar.green-bg { background: var(--green-dim); border: 1px solid rgba(80,250,123,.15); }
+        .feed-avatar.purple-bg { background: var(--purple-dim); border: 1px solid rgba(189,147,249,.15); }
+        .feed-avatar.orange-bg { background: rgba(255,184,108,.08); border: 1px solid rgba(255,184,108,.15); }
+        .feed-avatar.pink-bg { background: rgba(255,121,198,.08); border: 1px solid rgba(255,121,198,.15); }
+
+        .feed-content { flex: 1; }
+
+        .feed-text {
+            font-size: .72rem;
+            line-height: 1.4;
+        }
+
+        .feed-text strong { font-weight: 600; }
+        .feed-text .highlight { color: var(--green); font-weight: 600; }
+        .feed-text .highlight-purple { color: var(--purple); font-weight: 600; }
+
+        .feed-time {
+            font-size: .58rem;
+            color: var(--text-dim);
+            margin-top: .15rem;
+        }
+
+        .feed-reactions {
+            display: flex;
+            gap: .3rem;
+            margin-top: .3rem;
+        }
+
+        .feed-reaction {
+            font-size: .6rem;
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 20px;
+            padding: .1rem .35rem;
+            cursor: pointer;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 900px) {
+            .section-inner {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+            .section-inner.reverse { direction: ltr; }
+            .section-desc { max-width: 100%; margin: 0 auto; }
+            .feature-chips { justify-content: center; }
+            .phone-frame { width: 280px; height: 580px; }
+        }
+
+        @media (max-width: 500px) {
+            .screen-section { padding: 3rem 1rem; }
+            .phone-frame { width: 260px; height: 540px; }
+        }
+
+        /* ===== Footer ===== */
+        .showcase-footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-top: 1px solid rgba(68,71,90,.3);
+        }
+
+        .footer-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: .5rem;
+        }
+
+        .footer-tagline {
+            font-size: .85rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* ===== Grid overview (all phones) ===== */
+        .all-phones-section {
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+
+        .all-phones-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: .75rem;
+        }
+
+        .all-phones-sub {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 3rem;
+        }
+
+        .phones-grid {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .phones-grid .phone-frame {
+            width: 200px;
+            height: 420px;
+            border-radius: 28px;
+        }
+
+        .phones-grid .phone-frame::before {
+            width: 80px;
+            height: 22px;
+            border-radius: 0 0 14px 14px;
+        }
+
+        .phones-grid .phone-frame::after {
+            width: 68px;
+            bottom: 6px;
+        }
+
+        .phones-grid .phone-screen { font-size: 9px; }
+        .phones-grid .status-bar { padding: 8px 14px 3px; font-size: 8px; }
+        .phones-grid .status-icons svg { width: 10px; height: 10px; }
+        .phones-grid .tab-bar { padding: 5px 0 16px; }
+        .phones-grid .tab-item { font-size: 6px; }
+        .phones-grid .tab-item svg { width: 14px; height: 14px; }
+
+        .phone-screen-label {
+            font-family: 'Outfit', sans-serif;
+            font-size: .85rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="showcase-hero">
+    <div class="hero-badge">Mobile PWA Experience</div>
+    <h1 class="hero-title">
+        Fleet management<br>
+        in <span class="accent">your pocket</span>
+    </h1>
+    <p class="hero-sub">
+        ArrowFleet's driver-first mobile experience — earnings up front, rewards that motivate, zero WhatsApp dependency. Built as an installable PWA for Kenya's roads.
+    </p>
+    <div class="scroll-hint">
+        <span>Explore screens</span>
+        <div class="scroll-arrow"></div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 1: LOGIN ===== -->
+<section class="screen-section">
+    <div class="section-inner">
+        <div class="section-text">
+            <div class="section-label">01 — Onboarding</div>
+            <h2 class="section-heading">Sign in with<br>your phone</h2>
+            <p class="section-desc">
+                One-tap OTP login via M-Pesa-registered phone number. No passwords to remember. Installs as a PWA right from the login screen — feels native, works offline.
+            </p>
+            <div class="feature-chips">
+                <span class="chip">Phone + OTP</span>
+                <span class="chip purple">PWA Install</span>
+                <span class="chip cyan">Offline Ready</span>
+            </div>
+        </div>
+        <div class="phone-stage">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span class="time">9:41</span>
+                        <div class="status-icons">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg>
+                        </div>
+                    </div>
+                    <div class="screen-login">
+                        <div class="login-logo">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                        </div>
+                        <div class="login-brand">ArrowFleet</div>
+                        <div class="login-tagline">Fleet management that rewards you</div>
+
+                        <div class="login-input-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                            <input class="login-input" type="text" value="+254 712 345 678" readonly>
+                        </div>
+
+                        <button class="login-btn">Send OTP</button>
+
+                        <div class="login-divider">or</div>
+
+                        <div class="login-otp-hint">
+                            Already have an account? <span>Sign in</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 2: DRIVER DASHBOARD ===== -->
+<section class="screen-section">
+    <div class="section-inner reverse">
+        <div class="section-text">
+            <div class="section-label" style="color: var(--green)">02 — Earnings First</div>
+            <h2 class="section-heading">Money is the<br>first thing you see</h2>
+            <p class="section-desc">
+                Today's earnings front and center — big, bold, unmissable. Active challenges, fuel savings bonuses, and your next trip below. This isn't a tracking app — it's your earnings dashboard.
+            </p>
+            <div class="feature-chips">
+                <span class="chip">Today's Earnings</span>
+                <span class="chip purple">Daily Challenges</span>
+                <span class="chip orange">Fuel Savings</span>
+                <span class="chip">Next Trip</span>
+            </div>
+        </div>
+        <div class="phone-stage">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span class="time">9:41</span>
+                        <div class="status-icons">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg>
+                        </div>
+                    </div>
+                    <div class="screen-dashboard">
+                        <div class="dash-welcome">
+                            <div class="dash-avatar">JK</div>
+                            <div class="dash-greeting">
+                                <h3>Good morning, James!</h3>
+                                <p>Silver Tier Driver</p>
+                            </div>
+                            <div class="dash-streak">🔥 12</div>
+                        </div>
+
+                        <div class="earnings-hero">
+                            <div class="earnings-label">Today's Earnings</div>
+                            <div class="earnings-amount">Ksh 4,520</div>
+                            <div class="earnings-change">↑ 18% vs yesterday</div>
+                        </div>
+
+                        <div class="dash-kpi-row">
+                            <div class="dash-kpi">
+                                <div class="dash-kpi-val" style="color: var(--cyan)">4</div>
+                                <div class="dash-kpi-label">Trips Done</div>
+                            </div>
+                            <div class="dash-kpi">
+                                <div class="dash-kpi-val" style="color: var(--purple)">1,240</div>
+                                <div class="dash-kpi-label">Points</div>
+                            </div>
+                            <div class="dash-kpi">
+                                <div class="dash-kpi-val" style="color: var(--orange)">4.9</div>
+                                <div class="dash-kpi-label">Client Love</div>
+                            </div>
+                        </div>
+
+                        <div class="dash-challenge">
+                            <div class="dash-challenge-header">
+                                <div class="dash-challenge-title">⚡ Daily Challenge</div>
+                                <div class="dash-challenge-reward">+50 pts</div>
+                            </div>
+                            <div style="font-size: .7rem; color: var(--text-muted); margin-bottom: .4rem;">Complete 3 trips before 2pm</div>
+                            <div class="dash-progress-bar">
+                                <div class="dash-progress-fill" style="width: 66%"></div>
+                            </div>
+                            <div class="dash-progress-meta">
+                                <span>2 of 3 trips</span>
+                                <span>2h 19m left</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-trip">
+                            <div class="dash-trip-header">
+                                <div class="dash-trip-label">📍 Next Trip</div>
+                                <div class="dash-trip-status">Dispatched</div>
+                            </div>
+                            <div class="dash-route">
+                                <div class="dash-route-dots">
+                                    <div class="route-dot"></div>
+                                    <div class="route-line"></div>
+                                    <div class="route-dot end"></div>
+                                </div>
+                                <div class="dash-route-info">
+                                    <div class="route-from">
+                                        <span class="route-place">JKIA Terminal 1</span>
+                                        <span class="route-time">12:30 PM</span>
+                                    </div>
+                                    <div style="height: 8px"></div>
+                                    <div class="route-to">
+                                        <span class="route-place">Westlands, Nairobi</span>
+                                        <span class="route-time">~1h 15m</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dash-fuel">
+                            <div class="fuel-gauge-mini">
+                                <div class="fuel-gauge-inner">70%</div>
+                            </div>
+                            <div class="fuel-info">
+                                <h4>Fuel Savings This Week</h4>
+                                <p>You saved 8L vs fleet avg</p>
+                            </div>
+                            <div class="fuel-bonus">+Ksh 1,600</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-bar">
+                        <div class="tab-item active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Home
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Trips
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            Chat
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                            Rewards
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Profile
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 3: TRIPS ===== -->
+<section class="screen-section">
+    <div class="section-inner">
+        <div class="section-text">
+            <div class="section-label cyan">03 — Trip Navigator</div>
+            <h2 class="section-heading">Every trip is<br>money earned</h2>
+            <p class="section-desc">
+                Trips sorted by earnings, not just status. Airport transfers, cargo runs, EPC dispatches — each one shows what you made, your rating, and bonus points earned. Filter by type or date range.
+            </p>
+            <div class="feature-chips">
+                <span class="chip cyan">Earnings per Trip</span>
+                <span class="chip">Route History</span>
+                <span class="chip purple">Client Ratings</span>
+                <span class="chip orange">Trip Types</span>
+            </div>
+        </div>
+        <div class="phone-stage">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span class="time">9:41</span>
+                        <div class="status-icons">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg>
+                        </div>
+                    </div>
+                    <div class="screen-trips">
+                        <div class="trips-header">
+                            <h2>My Trips</h2>
+                            <div class="trips-filter">
+                                <button class="trips-filter-btn active">All</button>
+                                <button class="trips-filter-btn">Today</button>
+                                <button class="trips-filter-btn">Week</button>
+                            </div>
+                        </div>
+
+                        <div class="trips-earnings-bar">
+                            <div class="trips-earning-item">
+                                <div class="trips-earning-val green">Ksh 28.4K</div>
+                                <div class="trips-earning-label">This Week</div>
+                            </div>
+                            <div class="trips-earning-item">
+                                <div class="trips-earning-val purple">18</div>
+                                <div class="trips-earning-label">Trips</div>
+                            </div>
+                            <div class="trips-earning-item">
+                                <div class="trips-earning-val cyan">4.8 ★</div>
+                                <div class="trips-earning-label">Avg Rating</div>
+                            </div>
+                        </div>
+
+                        <div class="trip-card">
+                            <div class="trip-card-top">
+                                <span class="trip-type airport">✈ Airport</span>
+                                <span class="trip-amount">Ksh 3,200</span>
+                            </div>
+                            <div class="trip-route-simple">
+                                <span>JKIA Terminal 2</span>
+                                <span class="trip-route-arrow">→</span>
+                                <span>Karen, Nairobi</span>
+                            </div>
+                            <div class="trip-meta">
+                                <span>Today, 8:15 AM</span>
+                                <span class="trip-rating">★ 5.0</span>
+                                <span class="trip-status-badge completed">Completed</span>
+                            </div>
+                        </div>
+
+                        <div class="trip-card">
+                            <div class="trip-card-top">
+                                <span class="trip-type cargo">📦 Cargo</span>
+                                <span class="trip-amount">Ksh 5,800</span>
+                            </div>
+                            <div class="trip-route-simple">
+                                <span>Kitengela Depot</span>
+                                <span class="trip-route-arrow">→</span>
+                                <span>Thika Industrial</span>
+                            </div>
+                            <div class="trip-meta">
+                                <span>Today, 6:00 AM</span>
+                                <span class="trip-rating">★ 4.8</span>
+                                <span class="trip-status-badge completed">Completed</span>
+                            </div>
+                        </div>
+
+                        <div class="trip-card">
+                            <div class="trip-card-top">
+                                <span class="trip-type project">🏗 EPC Site</span>
+                                <span class="trip-amount">Ksh 4,500</span>
+                            </div>
+                            <div class="trip-route-simple">
+                                <span>Limuru Office</span>
+                                <span class="trip-route-arrow">→</span>
+                                <span>Konza Techno City</span>
+                            </div>
+                            <div class="trip-meta">
+                                <span>Yesterday, 2:30 PM</span>
+                                <span class="trip-rating">★ 5.0</span>
+                                <span class="trip-status-badge completed">Completed</span>
+                            </div>
+                        </div>
+
+                        <div class="trip-card">
+                            <div class="trip-card-top">
+                                <span class="trip-type airport">✈ Airport</span>
+                                <span class="trip-amount">Ksh 2,800</span>
+                            </div>
+                            <div class="trip-route-simple">
+                                <span>Wilson Airport</span>
+                                <span class="trip-route-arrow">→</span>
+                                <span>CBD, Nairobi</span>
+                            </div>
+                            <div class="trip-meta">
+                                <span>Yesterday, 10:00 AM</span>
+                                <span class="trip-rating">★ 4.9</span>
+                                <span class="trip-status-badge completed">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-bar">
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Home
+                        </div>
+                        <div class="tab-item active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Trips
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            Chat
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                            Rewards
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Profile
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 4: SPIN WHEEL ===== -->
+<section class="screen-section">
+    <div class="section-inner reverse">
+        <div class="section-text">
+            <div class="section-label orange">04 — Daily Spin</div>
+            <h2 class="section-heading">Open the app,<br>win a prize</h2>
+            <p class="section-desc">
+                Every login earns a free spin. Cash bonuses, fuel vouchers, streak shields, double-points — it takes 3 seconds and makes opening ArrowFleet feel like unwrapping a gift. 35% chance of bonus points, 15% chance of real cash.
+            </p>
+            <div class="feature-chips">
+                <span class="chip orange">Daily Spin</span>
+                <span class="chip">Cash Prizes</span>
+                <span class="chip purple">Fuel Vouchers</span>
+                <span class="chip cyan">Streak Shields</span>
+            </div>
+        </div>
+        <div class="phone-stage">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span class="time">9:41</span>
+                        <div class="status-icons">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg>
+                        </div>
+                    </div>
+                    <div class="screen-spin">
+                        <div class="spin-title">🎡 Daily Spin Wheel</div>
+                        <div class="spin-subtitle">1 free spin every day!</div>
+
+                        <div class="wheel-container">
+                            <div class="wheel-pointer"></div>
+                            <div class="wheel">
+                                <div class="wheel-labels">
+                                    <span class="wheel-label">+50 pts</span>
+                                    <span class="wheel-label">Ksh 200</span>
+                                    <span class="wheel-label">Fuel Ksh 500</span>
+                                    <span class="wheel-label">2x Points</span>
+                                    <span class="wheel-label">Shield</span>
+                                    <span class="wheel-label">+10 pts</span>
+                                </div>
+                            </div>
+                            <div class="wheel-center">🎯</div>
+                        </div>
+
+                        <button class="spin-btn">SPIN NOW</button>
+
+                        <div class="spin-prizes">
+                            <div class="spin-prize-item">
+                                <span class="spin-prize-icon">🎯</span>
+                                <span class="spin-prize-name">Bonus Points</span>
+                                <span class="spin-prize-chance" style="color: var(--green)">35%</span>
+                            </div>
+                            <div class="spin-prize-item">
+                                <span class="spin-prize-icon">💰</span>
+                                <span class="spin-prize-name">Cash Bonus</span>
+                                <span class="spin-prize-chance" style="color: var(--orange)">15%</span>
+                            </div>
+                            <div class="spin-prize-item">
+                                <span class="spin-prize-icon">⛽</span>
+                                <span class="spin-prize-name">Fuel Voucher</span>
+                                <span class="spin-prize-chance" style="color: var(--cyan)">10%</span>
+                            </div>
+                            <div class="spin-prize-item">
+                                <span class="spin-prize-icon">⚡</span>
+                                <span class="spin-prize-name">Double Points</span>
+                                <span class="spin-prize-chance" style="color: var(--purple)">15%</span>
+                            </div>
+                            <div class="spin-prize-item">
+                                <span class="spin-prize-icon">🛡️</span>
+                                <span class="spin-prize-name">Streak Shield</span>
+                                <span class="spin-prize-chance" style="color: var(--pink)">5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 5: REWARDS ===== -->
+<section class="screen-section">
+    <div class="section-inner">
+        <div class="section-text">
+            <div class="section-label pink">05 — Rewards Hub</div>
+            <h2 class="section-heading">Points become<br>real money</h2>
+            <p class="section-desc">
+                Silver to Gold, 1 point = Ksh 1. Earned badges, tier progress bars, and a redemption catalog — cash out via M-Pesa in under 30 seconds. Every trip, every inspection, every fuel-efficient drive brings you closer.
+            </p>
+            <div class="feature-chips">
+                <span class="chip">Tier Progress</span>
+                <span class="chip purple">Badges</span>
+                <span class="chip orange">M-Pesa Cashout</span>
+                <span class="chip cyan">Fuel Credits</span>
+            </div>
+        </div>
+        <div class="phone-stage">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span class="time">9:41</span>
+                        <div class="status-icons">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg>
+                        </div>
+                    </div>
+                    <div class="screen-rewards">
+                        <div class="rewards-header">
+                            <h2>My Rewards</h2>
+                        </div>
+
+                        <div class="rewards-points-card">
+                            <div class="points-total">1,240</div>
+                            <div class="points-label">Total Points — worth Ksh 1,240</div>
+                        </div>
+
+                        <div class="tier-progress-wrap">
+                            <div class="tier-labels">
+                                <span class="tier-current">🥈 Silver</span>
+                                <span class="tier-next">🥇 Gold</span>
+                            </div>
+                            <div class="tier-bar">
+                                <div class="tier-fill"></div>
+                            </div>
+                            <div class="tier-meta">
+                                <span>340 / 500 trips</span>
+                                <span>160 trips to Gold</span>
+                            </div>
+                        </div>
+
+                        <div class="badges-section">
+                            <div class="badges-title">My Badges</div>
+                            <div class="badges-grid">
+                                <div class="badge-item earned">
+                                    <div class="badge-icon">⭐</div>
+                                    <div class="badge-name">Safety Star</div>
+                                </div>
+                                <div class="badge-item earned">
+                                    <div class="badge-icon">⛽</div>
+                                    <div class="badge-name">Fuel Saver</div>
+                                </div>
+                                <div class="badge-item earned">
+                                    <div class="badge-icon">🔥</div>
+                                    <div class="badge-name">Streak 30</div>
+                                </div>
+                                <div class="badge-item locked">
+                                    <div class="badge-icon">🏆</div>
+                                    <div class="badge-name">1K Trips</div>
+                                </div>
+                                <div class="badge-item earned">
+                                    <div class="badge-icon">❤️</div>
+                                    <div class="badge-name">Client Fav</div>
+                                </div>
+                                <div class="badge-item earned">
+                                    <div class="badge-icon">🔧</div>
+                                    <div class="badge-name">Care Champ</div>
+                                </div>
+                                <div class="badge-item locked">
+                                    <div class="badge-icon">💎</div>
+                                    <div class="badge-name">Platinum</div>
+                                </div>
+                                <div class="badge-item locked">
+                                    <div class="badge-icon">🎖️</div>
+                                    <div class="badge-name">Veteran</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="redeem-section">
+                            <div class="redeem-title">Redeem Points</div>
+                            <div class="redeem-item">
+                                <div class="redeem-icon green">💰</div>
+                                <div class="redeem-info">
+                                    <div class="redeem-name">M-Pesa Cashout</div>
+                                    <div class="redeem-cost">Min 200 pts — instant</div>
+                                </div>
+                                <button class="redeem-btn">Redeem</button>
+                            </div>
+                            <div class="redeem-item">
+                                <div class="redeem-icon purple">⛽</div>
+                                <div class="redeem-info">
+                                    <div class="redeem-name">Fuel Voucher Ksh 500</div>
+                                    <div class="redeem-cost">500 pts</div>
+                                </div>
+                                <button class="redeem-btn">Redeem</button>
+                            </div>
+                            <div class="redeem-item">
+                                <div class="redeem-icon orange">📱</div>
+                                <div class="redeem-info">
+                                    <div class="redeem-name">Airtime Top-up</div>
+                                    <div class="redeem-cost">100 pts — Ksh 100</div>
+                                </div>
+                                <button class="redeem-btn">Redeem</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-bar">
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Home
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Trips
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            Chat
+                        </div>
+                        <div class="tab-item active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                            Rewards
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Profile
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 6: MESSAGES ===== -->
+<section class="screen-section">
+    <div class="section-inner reverse">
+        <div class="section-text">
+            <div class="section-label yellow">06 — Activity Feed</div>
+            <h2 class="section-heading">A community,<br>not just a tool</h2>
+            <p class="section-desc">
+                Zero WhatsApp dependency. The activity feed shows milestones, kudos, team wins, and new driver welcomes — making ArrowFleet feel alive and social. Direct messaging, broadcast announcements, and trip-linked conversations all in one place.
+            </p>
+            <div class="feature-chips">
+                <span class="chip">Activity Feed</span>
+                <span class="chip purple">Direct Messages</span>
+                <span class="chip orange">Broadcasts</span>
+                <span class="chip cyan">Kudos System</span>
+            </div>
+        </div>
+        <div class="phone-stage">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span class="time">9:41</span>
+                        <div class="status-icons">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg>
+                        </div>
+                    </div>
+                    <div class="screen-messages">
+                        <div class="msg-header">
+                            <h2>Messages</h2>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; color: var(--text-muted)"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </div>
+
+                        <div class="msg-tabs">
+                            <div class="msg-tab active">Feed</div>
+                            <div class="msg-tab">DMs</div>
+                            <div class="msg-tab">Broadcasts</div>
+                        </div>
+
+                        <div class="feed-item">
+                            <div class="feed-avatar green-bg">🏆</div>
+                            <div class="feed-content">
+                                <div class="feed-text">
+                                    <strong>James Kamau</strong> just hit <span class="highlight">500 trips!</span> Milestone bonus: Ksh 5,000 incoming 🎉
+                                </div>
+                                <div class="feed-time">10 minutes ago</div>
+                                <div class="feed-reactions">
+                                    <span class="feed-reaction">🎉 12</span>
+                                    <span class="feed-reaction">👏 8</span>
+                                    <span class="feed-reaction">❤️ 5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feed-item">
+                            <div class="feed-avatar purple-bg">👏</div>
+                            <div class="feed-content">
+                                <div class="feed-text">
+                                    <strong>Sarah Wanjiku</strong> sent kudos to <strong>David Ochieng</strong>: <span class="highlight-purple">"Great teamwork on the Mombasa convoy!"</span>
+                                </div>
+                                <div class="feed-time">32 minutes ago</div>
+                                <div class="feed-reactions">
+                                    <span class="feed-reaction">❤️ 6</span>
+                                    <span class="feed-reaction">👍 3</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feed-item">
+                            <div class="feed-avatar orange-bg">⛽</div>
+                            <div class="feed-content">
+                                <div class="feed-text">
+                                    <strong>Team Alpha</strong> is this month's <span class="highlight">Fuel Champions!</span> Best team average: 8.2 km/L 🏅
+                                </div>
+                                <div class="feed-time">1 hour ago</div>
+                                <div class="feed-reactions">
+                                    <span class="feed-reaction">🔥 15</span>
+                                    <span class="feed-reaction">💪 9</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feed-item">
+                            <div class="feed-avatar pink-bg">🎡</div>
+                            <div class="feed-content">
+                                <div class="feed-text">
+                                    <strong>Peter Maina</strong> won <span class="highlight">Ksh 200</span> on the spin wheel today! 🎯
+                                </div>
+                                <div class="feed-time">2 hours ago</div>
+                                <div class="feed-reactions">
+                                    <span class="feed-reaction">🎉 4</span>
+                                    <span class="feed-reaction">😍 2</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feed-item">
+                            <div class="feed-avatar green-bg">👋</div>
+                            <div class="feed-content">
+                                <div class="feed-text">
+                                    Welcome <strong>Grace Akinyi</strong> to the ArrowFleet family! 🎊 First trip assigned — let's go!
+                                </div>
+                                <div class="feed-time">3 hours ago</div>
+                                <div class="feed-reactions">
+                                    <span class="feed-reaction">👋 18</span>
+                                    <span class="feed-reaction">❤️ 11</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feed-item">
+                            <div class="feed-avatar purple-bg">🔥</div>
+                            <div class="feed-content">
+                                <div class="feed-text">
+                                    <strong>Mary Njeri</strong> just hit a <span class="highlight-purple">30-day login streak!</span> "Committed" badge unlocked 🛡️
+                                </div>
+                                <div class="feed-time">4 hours ago</div>
+                                <div class="feed-reactions">
+                                    <span class="feed-reaction">🔥 7</span>
+                                    <span class="feed-reaction">💪 4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-bar">
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Home
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Trips
+                        </div>
+                        <div class="tab-item active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            Chat
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                            Rewards
+                        </div>
+                        <div class="tab-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Profile
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== ALL PHONES GRID ===== -->
+<section class="all-phones-section">
+    <h2 class="all-phones-title">All six screens, <span style="color: var(--green)">one app</span></h2>
+    <p class="all-phones-sub">The complete driver-first mobile experience for ArrowFleet</p>
+
+    <div class="phones-grid">
+        <div>
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar"><span class="time">9:41</span><div class="status-icons"></div></div>
+                    <div class="screen-login">
+                        <div class="login-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--green)"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></div>
+                        <div class="login-brand" style="font-size:1.1rem">ArrowFleet</div>
+                        <div class="login-tagline" style="font-size:.6rem">Fleet management that rewards you</div>
+                        <div style="width:100%;height:28px;background:rgba(53,56,73,.6);border:1px solid var(--border);border-radius:8px;margin:.4rem 0;position:relative;z-index:1"></div>
+                        <div style="width:100%;height:32px;background:var(--green);border-radius:8px;position:relative;z-index:1"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="phone-screen-label">Login</div>
+        </div>
+
+        <div>
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar"><span class="time">9:41</span><div class="status-icons"></div></div>
+                    <div style="background:var(--bg);height:100%;padding-bottom:40px">
+                        <div style="background:linear-gradient(135deg,rgba(80,250,123,.06),rgba(189,147,249,.04));padding:.5rem .6rem;display:flex;align-items:center;gap:.4rem">
+                            <div style="width:26px;height:26px;border-radius:50%;background:var(--green-dim);border:1.5px solid rgba(80,250,123,.2);display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;color:var(--green)">JK</div>
+                            <div style="flex:1"><div style="font-family:'Space Grotesk',sans-serif;font-size:.6rem;font-weight:600">Good morning!</div></div>
+                            <div style="font-size:.45rem;background:rgba(255,184,108,.1);color:var(--orange);padding:.1rem .3rem;border-radius:20px;font-weight:600">🔥 12</div>
+                        </div>
+                        <div style="text-align:center;padding:.6rem .5rem .3rem">
+                            <div style="font-size:.45rem;color:var(--text-muted);text-transform:uppercase">Today's Earnings</div>
+                            <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--green)">Ksh 4,520</div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.25rem;padding:0 .4rem;margin-bottom:.4rem">
+                            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:.3rem;text-align:center"><div style="font-family:'Space Grotesk',sans-serif;font-size:.7rem;font-weight:700;color:var(--cyan)">4</div><div style="font-size:.38rem;color:var(--text-muted)">Trips</div></div>
+                            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:.3rem;text-align:center"><div style="font-family:'Space Grotesk',sans-serif;font-size:.7rem;font-weight:700;color:var(--purple)">1,240</div><div style="font-size:.38rem;color:var(--text-muted)">Points</div></div>
+                            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:.3rem;text-align:center"><div style="font-family:'Space Grotesk',sans-serif;font-size:.7rem;font-weight:700;color:var(--orange)">4.9</div><div style="font-size:.38rem;color:var(--text-muted)">Rating</div></div>
+                        </div>
+                        <div style="margin:0 .4rem .3rem;background:linear-gradient(135deg,var(--bg-card),rgba(189,147,249,.04));border:1px solid rgba(189,147,249,.15);border-radius:8px;padding:.4rem">
+                            <div style="font-size:.5rem;font-weight:600">⚡ Complete 3 trips before 2pm</div>
+                            <div style="height:4px;background:rgba(68,71,90,.5);border-radius:2px;margin-top:.25rem;overflow:hidden"><div style="height:100%;width:66%;background:linear-gradient(90deg,var(--green),var(--purple));border-radius:2px"></div></div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Trips</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/></svg>Rewards</div>
+                    </div>
+                </div>
+            </div>
+            <div class="phone-screen-label">Dashboard</div>
+        </div>
+
+        <div>
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar"><span class="time">9:41</span><div class="status-icons"></div></div>
+                    <div style="background:var(--bg);height:100%;padding-bottom:40px">
+                        <div style="padding:.45rem .6rem;border-bottom:1px solid var(--border);font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:700">My Trips</div>
+                        <div style="display:flex;justify-content:space-around;padding:.35rem .5rem;background:var(--bg-alt);border-bottom:1px solid var(--border)">
+                            <div style="text-align:center"><div style="font-family:'Space Grotesk',sans-serif;font-size:.6rem;font-weight:700;color:var(--green)">Ksh 28.4K</div><div style="font-size:.35rem;color:var(--text-muted)">This Week</div></div>
+                            <div style="text-align:center"><div style="font-family:'Space Grotesk',sans-serif;font-size:.6rem;font-weight:700;color:var(--purple)">18</div><div style="font-size:.35rem;color:var(--text-muted)">Trips</div></div>
+                            <div style="text-align:center"><div style="font-family:'Space Grotesk',sans-serif;font-size:.6rem;font-weight:700;color:var(--cyan)">4.8 ★</div><div style="font-size:.35rem;color:var(--text-muted)">Rating</div></div>
+                        </div>
+                        <div style="margin:.3rem .4rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:.35rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.2rem"><span style="font-size:.4rem;background:rgba(139,233,253,.1);color:var(--cyan);padding:.08rem .25rem;border-radius:4px;font-weight:600">✈ Airport</span><span style="font-family:'Space Grotesk',sans-serif;font-size:.55rem;font-weight:700;color:var(--green)">Ksh 3,200</span></div>
+                            <div style="font-size:.45rem">JKIA → Karen</div>
+                        </div>
+                        <div style="margin:.3rem .4rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:.35rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.2rem"><span style="font-size:.4rem;background:rgba(255,184,108,.1);color:var(--orange);padding:.08rem .25rem;border-radius:4px;font-weight:600">📦 Cargo</span><span style="font-family:'Space Grotesk',sans-serif;font-size:.55rem;font-weight:700;color:var(--green)">Ksh 5,800</span></div>
+                            <div style="font-size:.45rem">Kitengela → Thika</div>
+                        </div>
+                        <div style="margin:.3rem .4rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:.35rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.2rem"><span style="font-size:.4rem;background:rgba(189,147,249,.1);color:var(--purple);padding:.08rem .25rem;border-radius:4px;font-weight:600">🏗 EPC</span><span style="font-family:'Space Grotesk',sans-serif;font-size:.55rem;font-weight:700;color:var(--green)">Ksh 4,500</span></div>
+                            <div style="font-size:.45rem">Limuru → Konza</div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</div>
+                        <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Trips</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/></svg>Rewards</div>
+                    </div>
+                </div>
+            </div>
+            <div class="phone-screen-label">Trips</div>
+        </div>
+
+        <div>
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar"><span class="time">9:41</span><div class="status-icons"></div></div>
+                    <div style="background:linear-gradient(170deg,#1a1b26,#282a36,#2d3045);height:100%;display:flex;flex-direction:column;align-items:center;padding:.5rem">
+                        <div style="font-family:'Space Grotesk',sans-serif;font-size:.7rem;font-weight:700;margin-top:.3rem">🎡 Daily Spin</div>
+                        <div style="width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--green) 0deg 60deg,var(--purple) 60deg 120deg,var(--orange) 120deg 180deg,var(--cyan) 180deg 240deg,var(--pink) 240deg 300deg,var(--yellow) 300deg 360deg);margin:.6rem 0;box-shadow:0 0 30px rgba(80,250,123,.08);position:relative;display:flex;align-items:center;justify-content:center">
+                            <div style="width:35px;height:35px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.7rem;box-shadow:0 2px 8px rgba(0,0,0,.4)">🎯</div>
+                        </div>
+                        <div style="background:var(--green);color:#1a1b26;border:none;border-radius:10px;padding:.35rem 1.5rem;font-family:'Space Grotesk',sans-serif;font-size:.6rem;font-weight:700">SPIN NOW</div>
+                    </div>
+                </div>
+            </div>
+            <div class="phone-screen-label">Spin Wheel</div>
+        </div>
+
+        <div>
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar"><span class="time">9:41</span><div class="status-icons"></div></div>
+                    <div style="background:var(--bg);height:100%;padding-bottom:40px">
+                        <div style="text-align:center;padding:.45rem .5rem .25rem;font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:700">My Rewards</div>
+                        <div style="margin:.25rem .4rem;background:linear-gradient(135deg,rgba(80,250,123,.05),rgba(189,147,249,.05));border:1px solid rgba(80,250,123,.12);border-radius:10px;padding:.5rem;text-align:center">
+                            <div style="font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:700;color:var(--green)">1,240</div>
+                            <div style="font-size:.4rem;color:var(--text-muted)">Points — worth Ksh 1,240</div>
+                        </div>
+                        <div style="padding:.25rem .4rem">
+                            <div style="height:5px;background:rgba(68,71,90,.5);border-radius:3px;overflow:hidden"><div style="height:100%;width:68%;background:linear-gradient(90deg,#c0c0c0,#ffd700);border-radius:3px"></div></div>
+                            <div style="display:flex;justify-content:space-between;font-size:.35rem;color:var(--text-muted);margin-top:.15rem"><span>🥈 Silver</span><span>🥇 Gold</span></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.2rem;padding:.25rem .4rem">
+                            <div style="background:var(--bg-card);border:1px solid rgba(80,250,123,.2);border-radius:6px;padding:.25rem;text-align:center"><div style="font-size:.7rem">⭐</div><div style="font-size:.32rem;color:var(--green);font-weight:600">Safety</div></div>
+                            <div style="background:var(--bg-card);border:1px solid rgba(80,250,123,.2);border-radius:6px;padding:.25rem;text-align:center"><div style="font-size:.7rem">⛽</div><div style="font-size:.32rem;color:var(--green);font-weight:600">Fuel</div></div>
+                            <div style="background:var(--bg-card);border:1px solid rgba(80,250,123,.2);border-radius:6px;padding:.25rem;text-align:center"><div style="font-size:.7rem">🔥</div><div style="font-size:.32rem;color:var(--green);font-weight:600">Streak</div></div>
+                            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:.25rem;text-align:center;opacity:.4"><div style="font-size:.7rem">🏆</div><div style="font-size:.32rem;color:var(--text-muted);font-weight:600">1K</div></div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Trips</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat</div>
+                        <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/></svg>Rewards</div>
+                    </div>
+                </div>
+            </div>
+            <div class="phone-screen-label">Rewards</div>
+        </div>
+
+        <div>
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="status-bar"><span class="time">9:41</span><div class="status-icons"></div></div>
+                    <div style="background:var(--bg);height:100%;padding-bottom:40px">
+                        <div style="padding:.45rem .6rem;border-bottom:1px solid var(--border);font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:700">Messages</div>
+                        <div style="display:flex;border-bottom:1px solid var(--border)">
+                            <div style="flex:1;text-align:center;padding:.3rem;font-size:.45rem;font-weight:600;color:var(--green);border-bottom:2px solid var(--green)">Feed</div>
+                            <div style="flex:1;text-align:center;padding:.3rem;font-size:.45rem;font-weight:600;color:var(--text-muted)">DMs</div>
+                            <div style="flex:1;text-align:center;padding:.3rem;font-size:.45rem;font-weight:600;color:var(--text-muted)">Broadcasts</div>
+                        </div>
+                        <div style="display:flex;gap:.3rem;padding:.35rem .4rem;border-bottom:1px solid rgba(68,71,90,.3)">
+                            <div style="width:22px;height:22px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0">🏆</div>
+                            <div><div style="font-size:.42rem;line-height:1.3"><strong>James</strong> hit <span style="color:var(--green);font-weight:600">500 trips!</span> 🎉</div><div style="font-size:.32rem;color:var(--text-dim)">10m ago</div></div>
+                        </div>
+                        <div style="display:flex;gap:.3rem;padding:.35rem .4rem;border-bottom:1px solid rgba(68,71,90,.3)">
+                            <div style="width:22px;height:22px;border-radius:50%;background:var(--purple-dim);display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0">👏</div>
+                            <div><div style="font-size:.42rem;line-height:1.3"><strong>Sarah</strong> sent kudos to <strong>David</strong></div><div style="font-size:.32rem;color:var(--text-dim)">32m ago</div></div>
+                        </div>
+                        <div style="display:flex;gap:.3rem;padding:.35rem .4rem;border-bottom:1px solid rgba(68,71,90,.3)">
+                            <div style="width:22px;height:22px;border-radius:50%;background:rgba(255,184,108,.08);display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0">⛽</div>
+                            <div><div style="font-size:.42rem;line-height:1.3"><strong>Team Alpha</strong> — <span style="color:var(--green);font-weight:600">Fuel Champions!</span></div><div style="font-size:.32rem;color:var(--text-dim)">1h ago</div></div>
+                        </div>
+                        <div style="display:flex;gap:.3rem;padding:.35rem .4rem;border-bottom:1px solid rgba(68,71,90,.3)">
+                            <div style="width:22px;height:22px;border-radius:50%;background:rgba(255,121,198,.08);display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0">👋</div>
+                            <div><div style="font-size:.42rem;line-height:1.3">Welcome <strong>Grace</strong> to ArrowFleet! 🎊</div><div style="font-size:.32rem;color:var(--text-dim)">3h ago</div></div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Trips</div>
+                        <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat</div>
+                        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/></svg>Rewards</div>
+                    </div>
+                </div>
+            </div>
+            <div class="phone-screen-label">Messages</div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="showcase-footer">
+    <div class="footer-brand">
+        <span style="color: var(--green)">→</span> ArrowFleet
+    </div>
+    <div class="footer-tagline">Fleet management that rewards you — PWA for Kenya's roads</div>
+</footer>
+
+</body>
+</html>

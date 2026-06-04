@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArrowFleet — Admin Mobile Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green: #50fa7b;
+            --green-dim: rgba(80, 250, 123, 0.08);
+            --green-glow: rgba(80, 250, 123, 0.25);
+            --purple: #bd93f9;
+            --purple-dim: rgba(189, 147, 249, 0.08);
+            --cyan: #8be9fd;
+            --cyan-dim: rgba(139, 233, 253, 0.08);
+            --orange: #ffb86c;
+            --orange-dim: rgba(255, 184, 108, 0.08);
+            --red: #ff5555;
+            --red-dim: rgba(255, 85, 85, 0.08);
+            --pink: #ff79c6;
+            --yellow: #f1fa8c;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bg-deep: #08090f;
+            --bg: #282a36;
+            --bg-alt: #21222c;
+            --bg-card: #2d2f3d;
+            --border: #44475a;
+            --text: #f8f8f2;
+            --text-muted: #9ca3af;
+            --text-dim: #6b7280;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Hero ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(189, 147, 249, 0.05) 0%, transparent 60%);
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(80, 250, 123, 0.04) 0%, transparent 60%);
+            bottom: -100px;
+            right: -100px;
+        }
+
+        /* Subtle grid overlay */
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(189, 147, 249, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(189, 147, 249, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(189, 147, 249, 0.06);
+            border: 1px solid rgba(189, 147, 249, 0.15);
+            border-radius: 100px;
+            padding: .4rem 1.2rem;
+            font-size: .78rem;
+            font-weight: 500;
+            color: var(--purple);
+            letter-spacing: .03em;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            animation: fadeDown .7s ease;
+        }
+
+        .hero-pill::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--purple);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .4; }
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 5.5rem);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+            animation: fadeUp .7s ease .1s both;
+        }
+
+        .hero-title .g { color: var(--green); }
+        .hero-title .p { color: var(--purple); }
+
+        .hero-sub {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            font-weight: 300;
+            color: var(--text-muted);
+            max-width: 560px;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
+            animation: fadeUp .7s ease .2s both;
+        }
+
+        .scroll-cue {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .5rem;
+            color: var(--text-dim);
+            font-size: .7rem;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+            animation: fadeUp .7s ease .35s both;
+        }
+
+        .scroll-cue-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--purple), transparent);
+            animation: scroll-pulse 2s infinite;
+        }
+
+        @keyframes scroll-pulse {
+            0%, 100% { opacity: 1; transform: scaleY(1); }
+            50% { opacity: .4; transform: scaleY(.6); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== Sections ===== */
+        .section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .section:nth-child(odd) {
+            background: rgba(255, 255, 255, 0.008);
+        }
+
+        .section-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .section-grid.flip { direction: rtl; }
+        .section-grid.flip > * { direction: ltr; }
+
+        .section-copy {}
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .section-tag.green { color: var(--green); }
+        .section-tag.purple { color: var(--purple); }
+        .section-tag.cyan { color: var(--cyan); }
+        .section-tag.orange { color: var(--orange); }
+        .section-tag.red { color: var(--red); }
+        .section-tag.pink { color: var(--pink); }
+
+        .section-h {
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.2rem;
+        }
+
+        .section-p {
+            font-family: 'Inter', sans-serif;
+            font-size: .95rem;
+            font-weight: 300;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 440px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+            margin-top: 1.5rem;
+        }
+
+        .tag {
+            font-family: 'Inter', sans-serif;
+            font-size: .72rem;
+            font-weight: 500;
+            padding: .3rem .75rem;
+            border-radius: 100px;
+            background: var(--green-dim);
+            border: 1px solid rgba(80,250,123,.12);
+            color: var(--green);
+        }
+
+        .tag.p { background: var(--purple-dim); border-color: rgba(189,147,249,.12); color: var(--purple); }
+        .tag.c { background: var(--cyan-dim); border-color: rgba(139,233,253,.12); color: var(--cyan); }
+        .tag.o { background: var(--orange-dim); border-color: rgba(255,184,108,.12); color: var(--orange); }
+        .tag.r { background: var(--red-dim); border-color: rgba(255,85,85,.12); color: var(--red); }
+
+        /* ===== Phone ===== */
+        .phone-wrap {
+            display: flex;
+            justify-content: center;
+        }
+
+        .phone {
+            width: 300px;
+            height: 630px;
+            background: #111219;
+            border-radius: 42px;
+            border: 3px solid #33354a;
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.02),
+                0 30px 70px rgba(0,0,0,0.55),
+                0 0 100px rgba(189, 147, 249, 0.03);
+            overflow: hidden;
+            position: relative;
+            transition: transform .45s cubic-bezier(.22,.95,.36,1), box-shadow .45s ease;
+        }
+
+        .phone:hover {
+            transform: translateY(-10px) scale(1.015);
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.04),
+                0 40px 90px rgba(0,0,0,0.6),
+                0 0 140px rgba(189, 147, 249, 0.06);
+        }
+
+        .phone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 26px;
+            background: #111219;
+            border-radius: 0 0 16px 16px;
+            z-index: 20;
+        }
+
+        .phone::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 96px;
+            height: 4px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 2px;
+            z-index: 20;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            position: relative;
+        }
+
+        /* Status bar */
+        .sbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+            position: relative;
+            z-index: 15;
+        }
+
+        .sbar .t { font-family: 'Space Grotesk', sans-serif; }
+
+        .sbar-r {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .sbar-r svg { width: 13px; height: 13px; }
+
+        /* Admin bottom nav */
+        .admin-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17, 18, 25, 0.96);
+            backdrop-filter: blur(14px);
+            border-top: 1px solid rgba(68,71,90,.5);
+            display: flex;
+            justify-content: space-around;
+            padding: 7px 0 22px;
+            z-index: 20;
+        }
+
+        .nav-i {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 8.5px;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        .nav-i.on { color: var(--purple); }
+        .nav-i svg { width: 19px; height: 19px; }
+
+        /* ===== SCREEN INTERNALS ===== */
+
+        /* Shared */
+        .s-bg { background: var(--bg); height: 100%; overflow-y: auto; padding-bottom: 68px; }
+        .s-header { padding: .7rem .85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .s-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; }
+        .s-header-sub { font-size: .65rem; color: var(--text-muted); }
+
+        /* --- Screen 1: Admin Dashboard --- */
+        .adm-welcome {
+            background: linear-gradient(135deg, rgba(189,147,249,.06), rgba(80,250,123,.03));
+            border-bottom: 1px solid rgba(189,147,249,.1);
+            padding: .7rem .85rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .adm-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple-dim), var(--green-dim));
+            border: 2px solid rgba(189,147,249,.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--purple);
+            flex-shrink: 0;
+        }
+
+        .adm-greet { flex: 1; }
+        .adm-greet h3 { font-family: 'Space Grotesk', sans-serif; font-size: .88rem; font-weight: 600; }
+        .adm-greet p { font-size: .68rem; color: var(--text-muted); }
+
+        .adm-notif {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .adm-notif svg { width: 18px; height: 18px; color: var(--text-muted); }
+
+        .adm-notif-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: var(--red);
+            border-radius: 50%;
+            font-size: .55rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            border: 2px solid var(--bg);
+        }
+
+        /* KPI cards */
+        .adm-kpi-scroll {
+            display: flex;
+            gap: .5rem;
+            padding: .65rem .65rem .5rem;
+            overflow-x: auto;
+        }
+
+        .adm-kpi-scroll::-webkit-scrollbar { display: none; }
+
+        .adm-kpi {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .65rem .7rem;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+
+        .adm-kpi-label {
+            font-size: .62rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: .3rem;
+        }
+
+        .adm-kpi-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .adm-kpi-change {
+            display: inline-flex;
+            align-items: center;
+            gap: .15rem;
+            font-size: .58rem;
+            font-weight: 600;
+            margin-top: .25rem;
+            padding: .1rem .35rem;
+            border-radius: 20px;
+        }
+
+        .adm-kpi-change.up { color: var(--green); background: rgba(80,250,123,.08); }
+        .adm-kpi-change.down { color: var(--red); background: rgba(255,85,85,.08); }
+
+        /* Fleet map card */
+        .adm-map {
+            margin: 0 .65rem .5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .7rem;
+        }
+
+        .adm-map-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+            margin-bottom: .5rem;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+
+        .adm-map-zones {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: .35rem;
+        }
+
+        .adm-zone {
+            background: var(--bg-alt);
+            border-radius: 8px;
+            padding: .45rem;
+            text-align: center;
+        }
+
+        .adm-zone-count {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .adm-zone-name {
+            font-size: .58rem;
+            color: var(--text-muted);
+        }
+
+        /* Alert feed */
+        .adm-alerts {
+            margin: 0 .65rem .5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .7rem;
+        }
+
+        .adm-alerts-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+            margin-bottom: .4rem;
+        }
+
+        .adm-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: .4rem;
+            padding: .35rem 0;
+            border-bottom: 1px solid rgba(68,71,90,.3);
+        }
+
+        .adm-alert:last-child { border: none; }
+
+        .adm-alert-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: .25rem;
+        }
+
+        .adm-alert-dot.red { background: var(--red); }
+        .adm-alert-dot.orange { background: var(--orange); }
+        .adm-alert-dot.green { background: var(--green); }
+        .adm-alert-dot.cyan { background: var(--cyan); }
+
+        .adm-alert-text {
+            font-size: .68rem;
+            line-height: 1.35;
+            flex: 1;
+        }
+
+        .adm-alert-text strong { font-weight: 600; }
+
+        .adm-alert-time {
+            font-size: .55rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Revenue mini chart */
+        .adm-chart {
+            margin: 0 .65rem .5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .7rem;
+        }
+
+        .adm-chart-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+            margin-bottom: .5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .adm-chart-total {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .adm-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 65px;
+        }
+
+        .adm-bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .adm-bar {
+            width: 100%;
+            border-radius: 3px 3px 0 0;
+            background: linear-gradient(180deg, var(--purple), rgba(189,147,249,.3));
+            min-height: 3px;
+        }
+
+        .adm-bar-label {
+            font-size: .42rem;
+            color: var(--text-dim);
+        }
+
+        /* --- Screen 2: Vehicles --- */
+        .veh-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: .4rem;
+            padding: .5rem .65rem;
+        }
+
+        .veh-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .55rem;
+        }
+
+        .veh-plate {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .72rem;
+            font-weight: 600;
+            margin-bottom: .2rem;
+        }
+
+        .veh-type {
+            font-size: .58rem;
+            color: var(--text-muted);
+            margin-bottom: .35rem;
+        }
+
+        .veh-status {
+            display: inline-block;
+            font-size: .52rem;
+            font-weight: 600;
+            padding: .1rem .35rem;
+            border-radius: 20px;
+            margin-bottom: .35rem;
+        }
+
+        .veh-status.avail { background: rgba(80,250,123,.1); color: var(--green); }
+        .veh-status.in-use { background: rgba(139,233,253,.1); color: var(--cyan); }
+        .veh-status.maint { background: rgba(255,184,108,.1); color: var(--orange); }
+
+        /* Mini fuel gauge */
+        .veh-fuel {
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+
+        .veh-fuel-bar {
+            flex: 1;
+            height: 5px;
+            background: rgba(68,71,90,.5);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .veh-fuel-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .veh-fuel-fill.high { background: var(--green); }
+        .veh-fuel-fill.mid { background: var(--orange); }
+        .veh-fuel-fill.low { background: var(--red); }
+
+        .veh-fuel-pct {
+            font-size: .55rem;
+            font-weight: 600;
+            width: 22px;
+            text-align: right;
+        }
+
+        /* --- Screen 3: Active Trips --- */
+        .atrip-card {
+            margin: .35rem .65rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .65rem;
+        }
+
+        .atrip-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .35rem;
+        }
+
+        .atrip-driver {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .atrip-av {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .55rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .atrip-name { font-size: .72rem; font-weight: 600; }
+        .atrip-vehicle { font-size: .58rem; color: var(--text-muted); }
+
+        .atrip-status {
+            font-size: .55rem;
+            font-weight: 600;
+            padding: .12rem .4rem;
+            border-radius: 20px;
+        }
+
+        .atrip-status.active { background: rgba(80,250,123,.12); color: var(--green); }
+        .atrip-status.dispatched { background: rgba(139,233,253,.12); color: var(--cyan); }
+        .atrip-status.scheduled { background: rgba(189,147,249,.12); color: var(--purple); }
+
+        .atrip-route {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .68rem;
+            margin-bottom: .3rem;
+        }
+
+        .atrip-dots {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .atrip-d { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid var(--green); }
+        .atrip-l { width: 1.5px; height: 12px; background: var(--border); }
+        .atrip-d.end { border-color: var(--purple); background: var(--purple); }
+
+        .atrip-places { flex: 1; }
+        .atrip-place { font-weight: 500; }
+        .atrip-time-sm { font-size: .55rem; color: var(--text-muted); }
+
+        .atrip-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: .6rem;
+            color: var(--text-muted);
+            padding-top: .3rem;
+            border-top: 1px solid rgba(68,71,90,.3);
+        }
+
+        .atrip-fuel {
+            display: flex;
+            align-items: center;
+            gap: .2rem;
+        }
+
+        .atrip-amount {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--green);
+            font-size: .72rem;
+        }
+
+        /* --- Screen 4: Finance --- */
+        .fin-hero {
+            text-align: center;
+            padding: .85rem .65rem .5rem;
+        }
+
+        .fin-hero-label {
+            font-size: .62rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: .25rem;
+        }
+
+        .fin-hero-amount {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--green);
+            line-height: 1;
+        }
+
+        .fin-hero-change {
+            display: inline-flex;
+            align-items: center;
+            gap: .2rem;
+            font-size: .62rem;
+            font-weight: 600;
+            color: var(--green);
+            background: rgba(80,250,123,.08);
+            padding: .12rem .4rem;
+            border-radius: 20px;
+            margin-top: .3rem;
+        }
+
+        .fin-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .4rem;
+            padding: 0 .65rem;
+            margin-bottom: .5rem;
+        }
+
+        .fin-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .5rem;
+            text-align: center;
+        }
+
+        .fin-stat-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .92rem;
+            font-weight: 700;
+        }
+
+        .fin-stat-label {
+            font-size: .52rem;
+            color: var(--text-muted);
+            margin-top: .1rem;
+        }
+
+        .fin-txn {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .4rem .65rem;
+            border-bottom: 1px solid rgba(68,71,90,.25);
+        }
+
+        .fin-txn-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .75rem;
+            flex-shrink: 0;
+        }
+
+        .fin-txn-info { flex: 1; }
+        .fin-txn-name { font-size: .7rem; font-weight: 600; }
+        .fin-txn-desc { font-size: .55rem; color: var(--text-muted); }
+
+        .fin-txn-amount {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .fin-txn-amount.income { color: var(--green); }
+        .fin-txn-amount.expense { color: var(--red); }
+
+        /* --- Screen 5: Drivers --- */
+        .drv-search {
+            margin: .5rem .65rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .5rem .65rem;
+            font-size: .72rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .drv-search svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+        .drv-stats-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: .45rem .5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .drv-stat-item { text-align: center; }
+        .drv-stat-val { font-family: 'Space Grotesk', sans-serif; font-size: .82rem; font-weight: 700; }
+        .drv-stat-label { font-size: .5rem; color: var(--text-muted); }
+
+        .drv-card {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            padding: .5rem .65rem;
+            border-bottom: 1px solid rgba(68,71,90,.25);
+        }
+
+        .drv-av {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .65rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .drv-info { flex: 1; }
+        .drv-name { font-size: .78rem; font-weight: 600; }
+        .drv-meta { font-size: .58rem; color: var(--text-muted); display: flex; gap: .5rem; align-items: center; }
+
+        .drv-badge {
+            font-size: .52rem;
+            font-weight: 600;
+            padding: .1rem .35rem;
+            border-radius: 20px;
+        }
+
+        .drv-badge.active { background: rgba(80,250,123,.1); color: var(--green); }
+        .drv-badge.pending { background: rgba(255,184,108,.1); color: var(--orange); }
+        .drv-badge.inactive { background: rgba(255,85,85,.1); color: var(--red); }
+
+        .drv-rating {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--yellow);
+        }
+
+        /* --- Screen 6: Maintenance --- */
+        .mnt-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mnt-tab {
+            flex: 1;
+            text-align: center;
+            padding: .45rem;
+            font-size: .68rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+        }
+
+        .mnt-tab.active {
+            color: var(--orange);
+            border-bottom-color: var(--orange);
+        }
+
+        .mnt-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .35rem;
+            padding: .5rem .65rem;
+        }
+
+        .mnt-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .4rem;
+            text-align: center;
+        }
+
+        .mnt-stat-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+        }
+
+        .mnt-stat-label {
+            font-size: .48rem;
+            color: var(--text-muted);
+        }
+
+        .mnt-order {
+            margin: .3rem .65rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .55rem;
+        }
+
+        .mnt-order-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .25rem;
+        }
+
+        .mnt-order-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .62rem;
+            font-weight: 600;
+        }
+
+        .mnt-order-priority {
+            font-size: .5rem;
+            font-weight: 600;
+            padding: .1rem .3rem;
+            border-radius: 20px;
+        }
+
+        .mnt-order-priority.high { background: rgba(255,85,85,.1); color: var(--red); }
+        .mnt-order-priority.medium { background: rgba(255,184,108,.1); color: var(--orange); }
+        .mnt-order-priority.low { background: rgba(139,233,253,.1); color: var(--cyan); }
+
+        .mnt-order-desc {
+            font-size: .68rem;
+            font-weight: 500;
+            margin-bottom: .2rem;
+        }
+
+        .mnt-order-meta {
+            font-size: .55rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .mnt-order-status {
+            font-size: .52rem;
+            font-weight: 600;
+            padding: .08rem .3rem;
+            border-radius: 20px;
+        }
+
+        .mnt-order-status.open { background: rgba(139,233,253,.1); color: var(--cyan); }
+        .mnt-order-status.progress { background: rgba(255,184,108,.1); color: var(--orange); }
+        .mnt-order-status.done { background: rgba(80,250,123,.1); color: var(--green); }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 900px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+                text-align: center;
+            }
+            .section-grid.flip { direction: ltr; }
+            .section-p { max-width: 100%; margin: 0 auto; }
+            .tags { justify-content: center; }
+            .phone { width: 280px; height: 590px; }
+        }
+
+        @media (max-width: 500px) {
+            .section { padding: 3.5rem 1rem; }
+            .phone { width: 260px; height: 545px; }
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-top: 1px solid rgba(68,71,90,.25);
+        }
+
+        .footer-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: .4rem;
+        }
+
+        .footer-sub {
+            font-family: 'Inter', sans-serif;
+            font-size: .82rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-pill">Admin Control Panel</div>
+    <h1 class="hero-title">
+        Command your<br>
+        <span class="p">entire fleet</span>
+    </h1>
+    <p class="hero-sub">
+        ArrowFleet admin on mobile — KPIs, live trips, fuel alerts, driver management, finance, and maintenance. Full operational control from anywhere in Kenya.
+    </p>
+    <div class="scroll-cue">
+        <span>Six screens</span>
+        <div class="scroll-cue-line"></div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 1: ADMIN DASHBOARD ===== -->
+<section class="section">
+    <div class="section-grid">
+        <div class="section-copy">
+            <div class="section-tag purple">01 — Fleet Overview</div>
+            <h2 class="section-h">The whole operation<br>at a glance</h2>
+            <p class="section-p">
+                Revenue, vehicle utilization, trip count, fuel efficiency — all the KPIs scroll horizontally. Fleet distribution by zone, live alerts, and a 14-day revenue sparkline below. One screen, full picture.
+            </p>
+            <div class="tags">
+                <span class="tag p">Revenue KPI</span>
+                <span class="tag">42/50 Vehicles</span>
+                <span class="tag c">Fuel Efficiency</span>
+                <span class="tag o">Live Alerts</span>
+            </div>
+        </div>
+        <div class="phone-wrap">
+            <div class="phone">
+                <div class="screen">
+                    <div class="sbar">
+                        <span class="t">9:41</span>
+                        <div class="sbar-r">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg>
+                        </div>
+                    </div>
+                    <div class="s-bg">
+                        <!-- Welcome -->
+                        <div class="adm-welcome">
+                            <div class="adm-avatar">AD</div>
+                            <div class="adm-greet">
+                                <h3>Fleet Overview</h3>
+                                <p>March 13, 2026 — Kitengela HQ</p>
+                            </div>
+                            <div class="adm-notif">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                                <div class="adm-notif-dot">5</div>
+                            </div>
+                        </div>
+
+                        <!-- KPIs (horizontal scroll) -->
+                        <div class="adm-kpi-scroll">
+                            <div class="adm-kpi">
+                                <div class="adm-kpi-label">Revenue</div>
+                                <div class="adm-kpi-val" style="color: var(--green)">Ksh 2.85M</div>
+                                <div class="adm-kpi-change up">▲ 8% this month</div>
+                            </div>
+                            <div class="adm-kpi">
+                                <div class="adm-kpi-label">Active Vehicles</div>
+                                <div class="adm-kpi-val">42<span style="font-size: .7rem; color: var(--text-muted)">/50</span></div>
+                                <div class="adm-kpi-change up">84% utilization</div>
+                            </div>
+                            <div class="adm-kpi">
+                                <div class="adm-kpi-label">Total Trips</div>
+                                <div class="adm-kpi-val">1,284</div>
+                                <div class="adm-kpi-change up">▲ 12% vs last</div>
+                            </div>
+                            <div class="adm-kpi">
+                                <div class="adm-kpi-label">Fuel Efficiency</div>
+                                <div class="adm-kpi-val" style="color: var(--cyan)">7.8 <span style="font-size:.65rem;font-weight:400">km/L</span></div>
+                                <div class="adm-kpi-change up">▲ 2%</div>
+                            </div>
+                        </div>
+
+                        <!-- Fleet Map -->
+                        <div class="adm-map">
+                            <div class="adm-map-title">📍 Fleet Distribution</div>
+                            <div class="adm-map-zones">
+                                <div class="adm-zone"><div class="adm-zone-count">18</div><div class="adm-zone-name">Kitengela</div></div>
+                                <div class="adm-zone"><div class="adm-zone-count">12</div><div class="adm-zone-name">Limuru</div></div>
+                                <div class="adm-zone"><div class="adm-zone-count" style="color: var(--cyan)">8</div><div class="adm-zone-name">Nairobi CBD</div></div>
+                                <div class="adm-zone"><div class="adm-zone-count" style="color: var(--purple)">4</div><div class="adm-zone-name">JKIA Airport</div></div>
+                            </div>
+                        </div>
+
+                        <!-- Alerts -->
+                        <div class="adm-alerts">
+                            <div class="adm-alerts-title">🔔 Recent Alerts</div>
+                            <div class="adm-alert">
+                                <div class="adm-alert-dot red"></div>
+                                <div class="adm-alert-text"><strong>KBZ 901A</strong> — Fuel anomaly. 40% above normal.</div>
+                                <div class="adm-alert-time">2h</div>
+                            </div>
+                            <div class="adm-alert">
+                                <div class="adm-alert-dot orange"></div>
+                                <div class="adm-alert-text"><strong>KCA 456B</strong> — 50,000 km service due</div>
+                                <div class="adm-alert-time">Today</div>
+                            </div>
+                            <div class="adm-alert">
+                                <div class="adm-alert-dot green"></div>
+                                <div class="adm-alert-text"><strong>Sarah W.</strong> — Achieved Gold tier! 🏆</div>
+                                <div class="adm-alert-time">3h</div>
+                            </div>
+                            <div class="adm-alert">
+                                <div class="adm-alert-dot red"></div>
+                                <div class="adm-alert-text"><strong>KDA 234C</strong> — Insurance expiring in 3 days</div>
+                                <div class="adm-alert-time">5h</div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Revenue Chart -->
+                        <div class="adm-chart">
+                            <div class="adm-chart-title">
+                                <span>📈 Daily Revenue</span>
+                                <span class="adm-chart-total">Ksh 2.85M</span>
+                            </div>
+                            <div class="adm-bars">
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:60%"></div><div class="adm-bar-label">M1</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:72%"></div><div class="adm-bar-label">M2</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:65%"></div><div class="adm-bar-label">M3</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:82%"></div><div class="adm-bar-label">M4</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:75%"></div><div class="adm-bar-label">M5</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:80%"></div><div class="adm-bar-label">M6</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:90%"></div><div class="adm-bar-label">M7</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:84%"></div><div class="adm-bar-label">M8</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:95%"></div><div class="adm-bar-label">M9</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:78%"></div><div class="adm-bar-label">M10</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:86%"></div><div class="adm-bar-label">M11</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:100%"></div><div class="adm-bar-label">M12</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:92%"></div><div class="adm-bar-label">M13</div></div>
+                                <div class="adm-bar-col"><div class="adm-bar" style="height:97%"></div><div class="adm-bar-label">T</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-nav">
+                        <div class="nav-i on">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            Overview
+                        </div>
+                        <div class="nav-i">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                            Fleet
+                        </div>
+                        <div class="nav-i">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                            Trips
+                        </div>
+                        <div class="nav-i">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                            Finance
+                        </div>
+                        <div class="nav-i">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                            Drivers
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 2: VEHICLES ===== -->
+<section class="section">
+    <div class="section-grid flip">
+        <div class="section-copy">
+            <div class="section-tag green">02 — Fleet Inventory</div>
+            <h2 class="section-h">50 vehicles,<br>one grid</h2>
+            <p class="section-p">
+                Every vehicle at a glance — plate number, type, status badge, and a live fuel gauge bar sourced from GSU tracker data. Color-coded: green for available, cyan for in-use, orange for maintenance. Tap any card for full vehicle detail.
+            </p>
+            <div class="tags">
+                <span class="tag">Status Badges</span>
+                <span class="tag c">GSU Fuel Bars</span>
+                <span class="tag o">Maintenance Flag</span>
+                <span class="tag p">Vehicle Types</span>
+            </div>
+        </div>
+        <div class="phone-wrap">
+            <div class="phone">
+                <div class="screen">
+                    <div class="sbar"><span class="t">9:41</span><div class="sbar-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg></div></div>
+                    <div class="s-bg">
+                        <div class="s-header">
+                            <div><h2>Vehicles</h2><div class="s-header-sub">42 active of 50 total</div></div>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-muted)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+
+                        <div class="veh-grid">
+                            <div class="veh-card">
+                                <div class="veh-plate">KBZ 901A</div>
+                                <div class="veh-type">Toyota Hilux</div>
+                                <div class="veh-status in-use">In Use</div>
+                                <div class="veh-fuel"><div class="veh-fuel-bar"><div class="veh-fuel-fill high" style="width:72%"></div></div><div class="veh-fuel-pct" style="color:var(--green)">72%</div></div>
+                            </div>
+                            <div class="veh-card">
+                                <div class="veh-plate">KCA 456B</div>
+                                <div class="veh-type">Isuzu FRR</div>
+                                <div class="veh-status maint">Maintenance</div>
+                                <div class="veh-fuel"><div class="veh-fuel-bar"><div class="veh-fuel-fill mid" style="width:45%"></div></div><div class="veh-fuel-pct" style="color:var(--orange)">45%</div></div>
+                            </div>
+                            <div class="veh-card">
+                                <div class="veh-plate">KDA 234C</div>
+                                <div class="veh-type">Nissan NV350</div>
+                                <div class="veh-status avail">Available</div>
+                                <div class="veh-fuel"><div class="veh-fuel-bar"><div class="veh-fuel-fill high" style="width:88%"></div></div><div class="veh-fuel-pct" style="color:var(--green)">88%</div></div>
+                            </div>
+                            <div class="veh-card">
+                                <div class="veh-plate">KBY 112D</div>
+                                <div class="veh-type">Toyota Prado</div>
+                                <div class="veh-status in-use">In Use</div>
+                                <div class="veh-fuel"><div class="veh-fuel-bar"><div class="veh-fuel-fill low" style="width:18%"></div></div><div class="veh-fuel-pct" style="color:var(--red)">18%</div></div>
+                            </div>
+                            <div class="veh-card">
+                                <div class="veh-plate">KCB 789E</div>
+                                <div class="veh-type">Mitsubishi Canter</div>
+                                <div class="veh-status in-use">In Use</div>
+                                <div class="veh-fuel"><div class="veh-fuel-bar"><div class="veh-fuel-fill high" style="width:61%"></div></div><div class="veh-fuel-pct" style="color:var(--green)">61%</div></div>
+                            </div>
+                            <div class="veh-card">
+                                <div class="veh-plate">KAZ 567F</div>
+                                <div class="veh-type">Toyota Landcruiser</div>
+                                <div class="veh-status avail">Available</div>
+                                <div class="veh-fuel"><div class="veh-fuel-bar"><div class="veh-fuel-fill high" style="width:95%"></div></div><div class="veh-fuel-pct" style="color:var(--green)">95%</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-nav">
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overview</div>
+                        <div class="nav-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fleet</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Trips</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Finance</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Drivers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 3: ACTIVE TRIPS ===== -->
+<section class="section">
+    <div class="section-grid">
+        <div class="section-copy">
+            <div class="section-tag cyan">03 — Live Dispatch</div>
+            <h2 class="section-h">Every trip,<br>tracked live</h2>
+            <p class="section-p">
+                Active trips with driver, vehicle, route, ETA, fare amount, and fuel level — all in one card. Status badges show dispatched, in-progress, or scheduled. The dispatch board in your pocket.
+            </p>
+            <div class="tags">
+                <span class="tag c">Live Status</span>
+                <span class="tag">Driver + Vehicle</span>
+                <span class="tag p">Route Tracking</span>
+                <span class="tag o">Fuel Monitoring</span>
+            </div>
+        </div>
+        <div class="phone-wrap">
+            <div class="phone">
+                <div class="screen">
+                    <div class="sbar"><span class="t">9:41</span><div class="sbar-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg></div></div>
+                    <div class="s-bg">
+                        <div class="s-header">
+                            <div><h2>Active Trips</h2><div class="s-header-sub">8 trips in progress</div></div>
+                            <div style="display:flex;gap:.3rem">
+                                <div style="font-size:.6rem;font-weight:600;padding:.2rem .45rem;border-radius:20px;background:rgba(80,250,123,.1);color:var(--green)">Live</div>
+                            </div>
+                        </div>
+
+                        <div class="atrip-card">
+                            <div class="atrip-top">
+                                <div class="atrip-driver">
+                                    <div class="atrip-av" style="background:rgba(255,215,0,.12);border:1.5px solid #ffd700;color:#ffd700">SW</div>
+                                    <div><div class="atrip-name">Sarah Wanjiku</div><div class="atrip-vehicle">KBZ 901A · Toyota Hilux</div></div>
+                                </div>
+                                <div class="atrip-status active">In Progress</div>
+                            </div>
+                            <div class="atrip-route">
+                                <div class="atrip-dots"><div class="atrip-d"></div><div class="atrip-l"></div><div class="atrip-d end"></div></div>
+                                <div class="atrip-places">
+                                    <div><span class="atrip-place">JKIA Terminal 1</span> <span class="atrip-time-sm">10:15 AM</span></div>
+                                    <div style="height:6px"></div>
+                                    <div><span class="atrip-place">Westlands, Nairobi</span> <span class="atrip-time-sm">ETA 11:30</span></div>
+                                </div>
+                            </div>
+                            <div class="atrip-footer">
+                                <div class="atrip-fuel">⛽ 72% · 186 km range</div>
+                                <div class="atrip-amount">Ksh 3,500</div>
+                            </div>
+                        </div>
+
+                        <div class="atrip-card">
+                            <div class="atrip-top">
+                                <div class="atrip-driver">
+                                    <div class="atrip-av" style="background:rgba(192,192,192,.12);border:1.5px solid #c0c0c0;color:#c0c0c0">JM</div>
+                                    <div><div class="atrip-name">James Mwangi</div><div class="atrip-vehicle">KCB 789E · Canter</div></div>
+                                </div>
+                                <div class="atrip-status active">In Progress</div>
+                            </div>
+                            <div class="atrip-route">
+                                <div class="atrip-dots"><div class="atrip-d"></div><div class="atrip-l"></div><div class="atrip-d end"></div></div>
+                                <div class="atrip-places">
+                                    <div><span class="atrip-place">Kitengela Depot</span> <span class="atrip-time-sm">6:00 AM</span></div>
+                                    <div style="height:6px"></div>
+                                    <div><span class="atrip-place">Thika Industrial</span> <span class="atrip-time-sm">ETA 12:00</span></div>
+                                </div>
+                            </div>
+                            <div class="atrip-footer">
+                                <div class="atrip-fuel">⛽ 61% · 148 km range</div>
+                                <div class="atrip-amount">Ksh 5,800</div>
+                            </div>
+                        </div>
+
+                        <div class="atrip-card">
+                            <div class="atrip-top">
+                                <div class="atrip-driver">
+                                    <div class="atrip-av" style="background:rgba(80,250,123,.08);border:1.5px solid rgba(80,250,123,.3);color:var(--green)">GN</div>
+                                    <div><div class="atrip-name">Grace Nyambura</div><div class="atrip-vehicle">KBY 112D · Prado</div></div>
+                                </div>
+                                <div class="atrip-status dispatched">Dispatched</div>
+                            </div>
+                            <div class="atrip-route">
+                                <div class="atrip-dots"><div class="atrip-d"></div><div class="atrip-l"></div><div class="atrip-d end"></div></div>
+                                <div class="atrip-places">
+                                    <div><span class="atrip-place">Limuru Office</span> <span class="atrip-time-sm">12:30 PM</span></div>
+                                    <div style="height:6px"></div>
+                                    <div><span class="atrip-place">Konza Techno City</span> <span class="atrip-time-sm">~2h 30m</span></div>
+                                </div>
+                            </div>
+                            <div class="atrip-footer">
+                                <div class="atrip-fuel" style="color:var(--red)">⛽ 18% · ⚠ Low fuel</div>
+                                <div class="atrip-amount">Ksh 4,500</div>
+                            </div>
+                        </div>
+
+                        <div class="atrip-card">
+                            <div class="atrip-top">
+                                <div class="atrip-driver">
+                                    <div class="atrip-av" style="background:rgba(189,147,249,.08);border:1.5px solid rgba(189,147,249,.3);color:var(--purple)">DK</div>
+                                    <div><div class="atrip-name">David Kamau</div><div class="atrip-vehicle">KDA 234C · NV350</div></div>
+                                </div>
+                                <div class="atrip-status scheduled">Scheduled</div>
+                            </div>
+                            <div class="atrip-route">
+                                <div class="atrip-dots"><div class="atrip-d"></div><div class="atrip-l"></div><div class="atrip-d end"></div></div>
+                                <div class="atrip-places">
+                                    <div><span class="atrip-place">Nairobi CBD</span> <span class="atrip-time-sm">2:00 PM</span></div>
+                                    <div style="height:6px"></div>
+                                    <div><span class="atrip-place">Mombasa Road Site</span> <span class="atrip-time-sm">~45m</span></div>
+                                </div>
+                            </div>
+                            <div class="atrip-footer">
+                                <div class="atrip-fuel">⛽ 88% · 215 km range</div>
+                                <div class="atrip-amount">Ksh 2,200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-nav">
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overview</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fleet</div>
+                        <div class="nav-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Trips</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Finance</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Drivers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 4: FINANCE ===== -->
+<section class="section">
+    <div class="section-grid flip">
+        <div class="section-copy">
+            <div class="section-tag green">04 — Finance</div>
+            <h2 class="section-h">Revenue, expenses,<br>payouts — real time</h2>
+            <p class="section-p">
+                Total revenue headline, then expenses, driver payouts, and pending invoices at a glance. Recent transactions below with income/expense color coding. Process M-Pesa payouts right from your phone.
+            </p>
+            <div class="tags">
+                <span class="tag">Revenue Ksh 2.85M</span>
+                <span class="tag r">Expenses</span>
+                <span class="tag p">Driver Payouts</span>
+                <span class="tag o">M-Pesa / Kopokopo</span>
+            </div>
+        </div>
+        <div class="phone-wrap">
+            <div class="phone">
+                <div class="screen">
+                    <div class="sbar"><span class="t">9:41</span><div class="sbar-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg></div></div>
+                    <div class="s-bg">
+                        <div class="s-header"><div><h2>Finance</h2><div class="s-header-sub">March 2026</div></div></div>
+
+                        <div class="fin-hero">
+                            <div class="fin-hero-label">Total Revenue</div>
+                            <div class="fin-hero-amount">Ksh 2.85M</div>
+                            <div class="fin-hero-change">▲ 8% vs February</div>
+                        </div>
+
+                        <div class="fin-row">
+                            <div class="fin-stat">
+                                <div class="fin-stat-val" style="color:var(--red)">Ksh 820K</div>
+                                <div class="fin-stat-label">Expenses</div>
+                            </div>
+                            <div class="fin-stat">
+                                <div class="fin-stat-val" style="color:var(--purple)">Ksh 1.4M</div>
+                                <div class="fin-stat-label">Driver Payouts</div>
+                            </div>
+                            <div class="fin-stat">
+                                <div class="fin-stat-val" style="color:var(--orange)">Ksh 340K</div>
+                                <div class="fin-stat-label">Pending</div>
+                            </div>
+                        </div>
+
+                        <div style="padding:.3rem .65rem;font-family:'Space Grotesk',sans-serif;font-size:.78rem;font-weight:600;color:var(--text-muted)">Recent Transactions</div>
+
+                        <div class="fin-txn">
+                            <div class="fin-txn-icon" style="background:rgba(80,250,123,.08)">💰</div>
+                            <div class="fin-txn-info"><div class="fin-txn-name">Client Payment — ABC Corp</div><div class="fin-txn-desc">Airport transfer · M-Pesa</div></div>
+                            <div class="fin-txn-amount income">+Ksh 8,500</div>
+                        </div>
+                        <div class="fin-txn">
+                            <div class="fin-txn-icon" style="background:rgba(189,147,249,.08)">📤</div>
+                            <div class="fin-txn-info"><div class="fin-txn-name">Payout — Sarah Wanjiku</div><div class="fin-txn-desc">Weekly earnings · M-Pesa B2C</div></div>
+                            <div class="fin-txn-amount expense">-Ksh 68,400</div>
+                        </div>
+                        <div class="fin-txn">
+                            <div class="fin-txn-icon" style="background:rgba(255,184,108,.08)">⛽</div>
+                            <div class="fin-txn-info"><div class="fin-txn-name">Fuel — Shell Kitengela</div><div class="fin-txn-desc">KBZ 901A · 60L @ 217.50</div></div>
+                            <div class="fin-txn-amount expense">-Ksh 13,050</div>
+                        </div>
+                        <div class="fin-txn">
+                            <div class="fin-txn-icon" style="background:rgba(80,250,123,.08)">💰</div>
+                            <div class="fin-txn-info"><div class="fin-txn-name">Client Payment — EPC Ltd</div><div class="fin-txn-desc">Cargo transport · Kopokopo</div></div>
+                            <div class="fin-txn-amount income">+Ksh 24,000</div>
+                        </div>
+                        <div class="fin-txn">
+                            <div class="fin-txn-icon" style="background:rgba(255,85,85,.08)">🔧</div>
+                            <div class="fin-txn-info"><div class="fin-txn-name">Parts — Brake Pads x4</div><div class="fin-txn-desc">KCA 456B · AutoXpress</div></div>
+                            <div class="fin-txn-amount expense">-Ksh 4,200</div>
+                        </div>
+                        <div class="fin-txn">
+                            <div class="fin-txn-icon" style="background:rgba(80,250,123,.08)">💰</div>
+                            <div class="fin-txn-info"><div class="fin-txn-name">Client Payment — Individual</div><div class="fin-txn-desc">Airport pickup · M-Pesa</div></div>
+                            <div class="fin-txn-amount income">+Ksh 3,200</div>
+                        </div>
+                    </div>
+                    <div class="admin-nav">
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overview</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fleet</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Trips</div>
+                        <div class="nav-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Finance</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Drivers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 5: DRIVERS ===== -->
+<section class="section">
+    <div class="section-grid">
+        <div class="section-copy">
+            <div class="section-tag orange">05 — Driver Roster</div>
+            <h2 class="section-h">37 drivers,<br>every one tracked</h2>
+            <p class="section-p">
+                Searchable driver roster with status badges, tier colours, client love scores, and trip counts. Active, pending verification, inactive — all visible. Tap a driver for full profile, documents, earnings history, and kudos received.
+            </p>
+            <div class="tags">
+                <span class="tag o">Status Badges</span>
+                <span class="tag">Client Ratings</span>
+                <span class="tag p">Tier Levels</span>
+                <span class="tag c">Trip Counts</span>
+            </div>
+        </div>
+        <div class="phone-wrap">
+            <div class="phone">
+                <div class="screen">
+                    <div class="sbar"><span class="t">9:41</span><div class="sbar-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg></div></div>
+                    <div class="s-bg">
+                        <div class="s-header"><div><h2>Drivers</h2><div class="s-header-sub">37 active drivers</div></div></div>
+
+                        <div class="drv-search">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            Search drivers...
+                        </div>
+
+                        <div class="drv-stats-bar">
+                            <div class="drv-stat-item"><div class="drv-stat-val" style="color:var(--green)">37</div><div class="drv-stat-label">Active</div></div>
+                            <div class="drv-stat-item"><div class="drv-stat-val" style="color:var(--orange)">5</div><div class="drv-stat-label">Pending</div></div>
+                            <div class="drv-stat-item"><div class="drv-stat-val" style="color:var(--red)">3</div><div class="drv-stat-label">Inactive</div></div>
+                            <div class="drv-stat-item"><div class="drv-stat-val" style="color:var(--purple)">45</div><div class="drv-stat-label">Total</div></div>
+                        </div>
+
+                        <div class="drv-card">
+                            <div class="drv-av" style="background:rgba(255,215,0,.12);border:2px solid #ffd700;color:#ffd700">SW</div>
+                            <div class="drv-info">
+                                <div class="drv-name">Sarah Wanjiku</div>
+                                <div class="drv-meta">32 trips this week · <span style="color:#ffd700">Gold</span></div>
+                            </div>
+                            <div class="drv-rating">4.9 ★</div>
+                        </div>
+                        <div class="drv-card">
+                            <div class="drv-av" style="background:rgba(192,192,192,.12);border:2px solid #c0c0c0;color:#c0c0c0">JM</div>
+                            <div class="drv-info">
+                                <div class="drv-name">James Mwangi</div>
+                                <div class="drv-meta">28 trips · <span style="color:#c0c0c0">Silver</span></div>
+                            </div>
+                            <div class="drv-rating">4.8 ★</div>
+                        </div>
+                        <div class="drv-card">
+                            <div class="drv-av" style="background:rgba(229,228,226,.12);border:2px solid #e5e4e2;color:#e5e4e2">JMu</div>
+                            <div class="drv-info">
+                                <div class="drv-name">Joseph Mutua</div>
+                                <div class="drv-meta">26 trips · <span style="color:#e5e4e2">Platinum</span></div>
+                            </div>
+                            <div class="drv-rating">4.9 ★</div>
+                        </div>
+                        <div class="drv-card">
+                            <div class="drv-av" style="background:rgba(255,215,0,.12);border:2px solid #ffd700;color:#ffd700">GN</div>
+                            <div class="drv-info">
+                                <div class="drv-name">Grace Nyambura</div>
+                                <div class="drv-meta">24 trips · <span style="color:#ffd700">Gold</span></div>
+                            </div>
+                            <div class="drv-rating">4.7 ★</div>
+                        </div>
+                        <div class="drv-card">
+                            <div class="drv-av" style="background:rgba(192,192,192,.12);border:2px solid #c0c0c0;color:#c0c0c0">DK</div>
+                            <div class="drv-info">
+                                <div class="drv-name">David Kamau</div>
+                                <div class="drv-meta">22 trips · <span style="color:#c0c0c0">Silver</span></div>
+                            </div>
+                            <div class="drv-rating">4.6 ★</div>
+                        </div>
+                        <div class="drv-card">
+                            <div class="drv-av" style="background:rgba(255,184,108,.08);border:2px solid rgba(255,184,108,.3);color:var(--orange)">PM</div>
+                            <div class="drv-info">
+                                <div class="drv-name">Peter Maina</div>
+                                <div class="drv-meta"><span class="drv-badge pending">Pending Verification</span></div>
+                            </div>
+                            <div class="drv-rating" style="color:var(--text-dim)">—</div>
+                        </div>
+                        <div class="drv-card">
+                            <div class="drv-av" style="background:rgba(205,127,50,.12);border:2px solid #cd7f32;color:#cd7f32">MN</div>
+                            <div class="drv-info">
+                                <div class="drv-name">Mary Njeri</div>
+                                <div class="drv-meta">18 trips · <span style="color:#cd7f32">Bronze</span></div>
+                            </div>
+                            <div class="drv-rating">4.5 ★</div>
+                        </div>
+                    </div>
+                    <div class="admin-nav">
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overview</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fleet</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Trips</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Finance</div>
+                        <div class="nav-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Drivers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SCREEN 6: MAINTENANCE ===== -->
+<section class="section">
+    <div class="section-grid flip">
+        <div class="section-copy">
+            <div class="section-tag red">06 — Maintenance</div>
+            <h2 class="section-h">Work orders,<br>parts, inspections</h2>
+            <p class="section-p">
+                Open work orders with priority badges, vehicle and mechanic assignment, parts tracking, and estimated costs. Tabs switch between work orders, spare parts inventory, and inspection reports. Service scheduling keeps the fleet running.
+            </p>
+            <div class="tags">
+                <span class="tag r">Priority Levels</span>
+                <span class="tag o">Work Orders</span>
+                <span class="tag">Parts Inventory</span>
+                <span class="tag c">Inspections</span>
+            </div>
+        </div>
+        <div class="phone-wrap">
+            <div class="phone">
+                <div class="screen">
+                    <div class="sbar"><span class="t">9:41</span><div class="sbar-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l4 4 4-4"/><path d="M5 10V3"/><rect x="14" y="4" width="2" height="16" rx="1"/><rect x="18" y="8" width="2" height="12" rx="1"/><rect x="22" y="2" width="2" height="18" rx="1"/></svg></div></div>
+                    <div class="s-bg">
+                        <div class="s-header"><div><h2>Maintenance</h2><div class="s-header-sub">Fleet health center</div></div></div>
+
+                        <div class="mnt-tabs">
+                            <div class="mnt-tab active">Work Orders</div>
+                            <div class="mnt-tab">Parts</div>
+                            <div class="mnt-tab">Inspections</div>
+                        </div>
+
+                        <div class="mnt-summary">
+                            <div class="mnt-stat"><div class="mnt-stat-val" style="color:var(--red)">3</div><div class="mnt-stat-label">Open</div></div>
+                            <div class="mnt-stat"><div class="mnt-stat-val" style="color:var(--orange)">2</div><div class="mnt-stat-label">In Progress</div></div>
+                            <div class="mnt-stat"><div class="mnt-stat-val" style="color:var(--green)">14</div><div class="mnt-stat-label">Completed</div></div>
+                        </div>
+
+                        <div class="mnt-order">
+                            <div class="mnt-order-top">
+                                <div class="mnt-order-id">WO-2026-0047</div>
+                                <div class="mnt-order-priority high">High</div>
+                            </div>
+                            <div class="mnt-order-desc">Brake pad replacement — all 4 wheels</div>
+                            <div class="mnt-order-meta">
+                                <span>KCA 456B · Isuzu FRR</span>
+                                <span class="mnt-order-status progress">In Progress</span>
+                            </div>
+                        </div>
+
+                        <div class="mnt-order">
+                            <div class="mnt-order-top">
+                                <div class="mnt-order-id">WO-2026-0046</div>
+                                <div class="mnt-order-priority high">High</div>
+                            </div>
+                            <div class="mnt-order-desc">Engine oil leak — front seal</div>
+                            <div class="mnt-order-meta">
+                                <span>KBY 112D · Toyota Prado</span>
+                                <span class="mnt-order-status open">Open</span>
+                            </div>
+                        </div>
+
+                        <div class="mnt-order">
+                            <div class="mnt-order-top">
+                                <div class="mnt-order-id">WO-2026-0045</div>
+                                <div class="mnt-order-priority medium">Medium</div>
+                            </div>
+                            <div class="mnt-order-desc">50,000 km scheduled service</div>
+                            <div class="mnt-order-meta">
+                                <span>KBZ 901A · Toyota Hilux</span>
+                                <span class="mnt-order-status open">Open</span>
+                            </div>
+                        </div>
+
+                        <div class="mnt-order">
+                            <div class="mnt-order-top">
+                                <div class="mnt-order-id">WO-2026-0044</div>
+                                <div class="mnt-order-priority low">Low</div>
+                            </div>
+                            <div class="mnt-order-desc">AC compressor check — weak cooling</div>
+                            <div class="mnt-order-meta">
+                                <span>KDA 234C · NV350</span>
+                                <span class="mnt-order-status open">Open</span>
+                            </div>
+                        </div>
+
+                        <div class="mnt-order">
+                            <div class="mnt-order-top">
+                                <div class="mnt-order-id">WO-2026-0043</div>
+                                <div class="mnt-order-priority medium">Medium</div>
+                            </div>
+                            <div class="mnt-order-desc">Tire rotation + alignment</div>
+                            <div class="mnt-order-meta">
+                                <span>KCB 789E · Canter</span>
+                                <span class="mnt-order-status progress">In Progress</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-nav">
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overview</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fleet</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Trips</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Finance</div>
+                        <div class="nav-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Drivers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="footer-brand"><span style="color: var(--purple)">→</span> ArrowFleet Admin</div>
+    <div class="footer-sub">Full fleet control from your pocket — built for Kenya's roads</div>
+</footer>
+
+</body>
+</html>

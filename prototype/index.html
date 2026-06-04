@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SommyComfort PWA Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#guest">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 20V9.5L12 4l8 5.5V20"/><path d="M8 20v-7h8v7"/><path d="M9 10h6"/></svg>
+        </span>
+        <span>
+          <strong>SommyComfort</strong>
+          <small>Accommodation PWA</small>
+        </span> 
+      </a>
+
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="guest">
+          <span data-icon="bed"></span>
+          Guest Booking
+        </button>
+        <button class="nav-item" data-view="admin">
+          <span data-icon="dashboard"></span>
+          Admin
+        </button>
+        <button class="nav-item" data-view="frontdesk">
+          <span data-icon="calendar"></span>
+          Front Desk
+        </button>
+        <button class="nav-item" data-view="operations">
+          <span data-icon="wrench"></span>
+          Operations
+        </button>
+        <button class="nav-item" data-view="housekeeping">
+          <span data-icon="brush"></span>
+          Housekeeping
+        </button>
+        <button class="nav-item" data-view="kitchen">
+          <span data-icon="chef"></span>
+          Kitchen
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="online-pill">
+          <span></span>
+          PWA ready
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span class="sun" data-icon="sun"></span>
+          <span class="moon" data-icon="moon"></span>
+          <strong>Theme</strong>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">
+          <span data-icon="menu"></span>
+        </button>
+        <div>
+          <p class="eyebrow">Rental operations suite</p>
+          <h1 id="pageTitle">Guest Booking</h1>
+        </div>
+        <div class="top-actions">
+          <label class="search">
+            <span data-icon="search"></span>
+            <input type="search" placeholder="Search bookings, guests, rooms">
+          </label>
+          <button class="icon-btn" aria-label="Notifications">
+            <span data-icon="bell"></span>
+            <span class="dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <section class="view active" id="guest">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="hero-badge">Premium stay management</div>
+            <h2>Book rooms, manage stays, and keep every team in sync.</h2>
+            <p>Guest booking, front desk, caretaker, housekeeping, kitchen, inventory, payments, and reporting in one installable PWA.</p>
+            <div class="hero-actions">
+              <button class="btn primary" data-scroll-target="bookingForm">
+                <span data-icon="calendar-plus"></span>
+                Book a Room
+              </button>
+              <button class="btn ghost">
+                <span data-icon="smartphone"></span>
+                Install PWA
+              </button>
+            </div>
+          </div>
+          <article class="booking-card">
+            <div class="card-head">
+              <span class="status success">Available</span>
+              <span class="price">KES 3,500 <small>/ night</small></span>
+            </div>
+            <div class="room-visual">
+              <div class="room-window"></div>
+              <div class="room-bed"></div>
+              <div class="room-lamp"></div>
+            </div>
+            <h3>Executive Studio 6A</h3>
+            <p>Westlands - Sarit Centre. 4 guests, 2 beds, WiFi, kitchenette, secure parking.</p>
+            <div class="chip-row">
+              <span>WiFi</span>
+              <span>2 beds</span>
+              <span>Clean</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Public booking</p>
+            <h2>Rooms and suites</h2>
+          </div>
+          <div class="segmented">
+            <button class="active">All</button>
+            <button>Available</button>
+            <button>Premium</button>
+          </div>
+        </div>
+
+        <div class="room-grid">
+          <article class="room-card">
+            <span class="status success">Available</span>
+            <div class="mini-room green"></div>
+            <h3>Executive Studio 6A</h3>
+            <p>4 guests - 2 beds - Westlands</p>
+            <strong>KES 3,500/night</strong>
+          </article>
+          <article class="room-card">
+            <span class="status warning">Cleaning</span>
+            <div class="mini-room orange"></div>
+            <h3>Standard Room 103</h3>
+            <p>2 guests - 1 bed - Floor 2</p>
+            <strong>KES 1,000/night</strong>
+          </article>
+          <article class="room-card">
+            <span class="status info">Confirmed</span>
+            <div class="mini-room cyan"></div>
+            <h3>Room ENZI Heights</h3>
+            <p>3 guests - Mombasa Road</p>
+            <strong>KES 1,000/night</strong>
+          </article>
+        </div>
+
+        <form class="booking-form" id="bookingForm">
+          <div class="form-title">
+            <p class="eyebrow">Fast booking</p>
+            <h2>Complete reservation</h2>
+          </div>
+          <div class="form-grid">
+            <label>Check-in <input type="date"></label>
+            <label>Check-out <input type="date"></label>
+            <label>Full name <input type="text" placeholder="As shown on ID"></label>
+            <label>Phone <input type="tel" placeholder="+254 7XX XXX XXX"></label>
+            <label>Email <input type="email" placeholder="guest@example.com"></label>
+            <label>ID number <input type="text" placeholder="National ID or passport"></label>
+          </div>
+          <div class="payment-strip">
+            <button type="button" class="payment-option active">Cash</button>
+            <button type="button" class="payment-option">M-Pesa</button>
+            <button type="button" class="payment-option">Card</button>
+          </div>
+          <button class="btn primary" type="button" id="confirmBooking">
+            <span data-icon="shield"></span>
+            Confirm Booking
+          </button>
+        </form>
+      </section>
+
+      <section class="view" id="admin">
+        <div class="metric-grid">
+          <article class="metric"><span data-icon="bed"></span><small>Occupancy</small><strong>80%</strong><p>4 of 5 rooms occupied</p></article>
+          <article class="metric"><span data-icon="credit"></span><small>Revenue</small><strong>KES 7,006</strong><p>This month</p></article>
+          <article class="metric"><span data-icon="warning"></span><small>Outstanding</small><strong>KES 46,958</strong><p>Unpaid balances</p></article>
+          <article class="metric"><span data-icon="brush"></span><small>Housekeeping</small><strong>2</strong><p>Open tasks</p></article>
+        </div>
+        <div class="dashboard-layout">
+          <article class="panel">
+            <div class="panel-head">
+              <h2>Recent bookings</h2>
+              <button class="btn small">View all</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Ref</th><th>Guest</th><th>Room</th><th>Status</th><th>Balance</th></tr></thead>
+                <tbody>
+                  <tr><td>BK-0005</td><td>Kemet Tech</td><td>ENZI Heights</td><td><span class="status info">Checked in</span></td><td>KES 6,000</td></tr>
+                  <tr><td>BK-0004</td><td>Kemet Admin</td><td>Room 103</td><td><span class="status warning">Confirmed</span></td><td>Paid</td></tr>
+                  <tr><td>BK-0003</td><td>Guest Walk-in</td><td>Studio 6A</td><td><span class="status success">Checked out</span></td><td>Paid</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h2>Payment breakdown</h2>
+            </div>
+            <div class="breakdown">
+              <div><span>Cash</span><strong>KES 6,000</strong><i style="--w:86%"></i></div>
+              <div><span>M-Pesa</span><strong>KES 1,006</strong><i style="--w:32%"></i></div>
+              <div><span>Card</span><strong>KES 0</strong><i style="--w:4%"></i></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="frontdesk">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Front desk</p>
+            <h2>Availability calendar</h2>
+          </div>
+          <button class="btn primary"><span data-icon="calendar-plus"></span> New Booking</button>
+        </div>
+        <div class="calendar-board">
+          <div class="calendar-labels">
+            <span>Room</span><span>Today</span><span>Tomorrow</span><span>Weekend</span>
+          </div>
+          <div class="calendar-row"><strong>Studio 6A</strong><span class="slot available">Available</span><span class="slot booked">Booked</span><span class="slot clean">Clean</span></div>
+          <div class="calendar-row"><strong>Room 103</strong><span class="slot clean">Cleaning</span><span class="slot available">Available</span><span class="slot booked">Booked</span></div>
+          <div class="calendar-row"><strong>ENZI Heights</strong><span class="slot booked">Occupied</span><span class="slot booked">Occupied</span><span class="slot warning">Checkout</span></div>
+        </div>
+      </section>
+
+      <section class="view" id="operations">
+        <div class="phone-stage">
+          <div class="phone">
+            <div class="phone-top"></div>
+            <div class="phone-content">
+              <p class="eyebrow">Operations manager</p>
+              <h2>Today</h2>
+              <div class="ops-alert"><span data-icon="warning"></span> Room 103 needs priority cleaning</div>
+              <div class="ops-list">
+                <button><span class="status-dot success"></span> 1 room available <strong>Open</strong></button>
+                <button><span class="status-dot warning"></span> 2 housekeeping tasks <strong>Assign</strong></button>
+                <button><span class="status-dot danger"></span> 1 unpaid balance <strong>Review</strong></button>
+                <button><span class="status-dot info"></span> 1 kitchen order pending <strong>View</strong></button>
+              </div>
+              <button class="btn primary full">Create task</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="housekeeping">
+        <div class="task-board">
+          <article class="task-card">
+            <span class="status warning">In progress</span>
+            <h3>Room 103 daily cleaning</h3>
+            <p>Guest checked out. Verify towels, bed lights, cups, and bathroom kit.</p>
+            <div class="checklist">
+              <label><input type="checkbox" checked> Bedding changed</label>
+              <label><input type="checkbox"> Bathroom cleaned</label>
+              <label><input type="checkbox"> Assets verified</label>
+            </div>
+            <button class="btn primary complete-task">Mark complete</button>
+          </article>
+          <article class="task-card">
+            <span class="status danger">Urgent</span>
+            <h3>ENZI Heights damage check</h3>
+            <p>Missing glass cup reported. Capture photo and manager note.</p>
+            <button class="btn ghost">Upload evidence</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="kitchen">
+        <div class="kanban">
+          <article>
+            <h3>Pending</h3>
+            <div class="order-card"><strong>ORD-811D6E</strong><p>Room service - ENZI Heights</p><span>KES 1,000</span></div>
+          </article>
+          <article>
+            <h3>Preparing</h3>
+            <div class="order-card"><strong>ORD-812A10</strong><p>2 sodas, breakfast tray</p><span>KES 850</span></div>
+          </article>
+          <article>
+            <h3>Ready</h3>
+            <div class="empty-state">No ready orders</div>
+          </article>
+          <article>
+            <h3>Served</h3>
+            <div class="empty-state">No served orders</div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
