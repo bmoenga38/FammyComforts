@@ -50,8 +50,8 @@ development_status:
   # ===== Epic 1: Platform Foundation & Design System (R1) =====
   epic-1: in-progress
   1-1-initialize-the-monorepo-from-the-turborepo-starter: done
-  1-2-establish-design-tokens-typography-and-theming: backlog
-  1-3-build-the-core-ui-primitives: backlog
+  1-2-establish-design-tokens-typography-and-theming: done
+  1-3-build-the-core-ui-primitives: ready-for-dev
   1-4-build-the-composite-domain-components: backlog
   1-5-installable-pwa-app-shell: backlog
   1-6-offline-data-background-sync-and-lighthouse-target: backlog
@@ -59,6 +59,7 @@ development_status:
   1-8-shared-contracts-realtime-and-data-plumbing: backlog
   1-9-ci-cd-pipeline-and-containerized-deploy: backlog
   1-10-daily-backup-and-disaster-recovery-baseline: backlog
+  1-11-test-harness-unit-and-integration-foundation: done
   epic-1-retrospective: optional
 
   # ===== Epic 2: Identity, Access & Staff Management (R1) =====

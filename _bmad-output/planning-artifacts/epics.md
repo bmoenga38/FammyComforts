@@ -380,6 +380,34 @@ So that the property's data is recoverable.
 **When** a restore drill is performed in a non-prod environment
 **Then** data is recoverable and the procedure is documented
 
+### Story 1.11: Test harness — unit & integration foundation
+
+As a developer,
+I want a working unit + integration test harness with a real ephemeral database and injection seams,
+so that the high-risk money, availability, and RBAC code (Epics 2, 4, 5) is built test-first and protected by regression tests.
+
+> **Build-order gate (added 2026-06-05 after the party-mode plan review — Murat/Amelia):** this story is a **hard prerequisite for Epic 2** and must be `done` before any RBAC, availability, or payment code. Recommended to build it **next** (ahead of the remaining Epic 1 UI stories 1.4–1.10) so those are written test-aware too. E2E/browser tests (Playwright) remain with CI in Story 1.9.
+
+**Acceptance Criteria:**
+
+**Given** the monorepo
+**When** the harness is set up
+**Then** Vitest runs across the workspace (`pnpm test`), wired into the Turborepo task graph and the CI gate (Story 1.9)
+
+**Given** the api needs DB-backed tests
+**When** an integration test runs
+**Then** it executes against an ephemeral PostgreSQL (Testcontainers or a disposable schema) with a seed/factory layer, isolated per run
+
+**Given** code that depends on time or external services (the M-Pesa gateway)
+**When** it is written
+**Then** injection seams exist (clock, gateway interface) so those paths are unit-testable without real network/time
+
+**Given** the harness exists
+**Then** these become hard CI gates: (a) **before the first Epic 5 payment story** — integration tests for M-Pesa callback idempotency, double-spend, and ledger-balance invariants; (b) **before the first Epic 4 availability story** — a concurrency test firing parallel reservation attempts; (c) **before Epic 2 RBAC** — a table-driven authorization test covering the role × permission grid including negative cases
+
+**Given** money/permission logic
+**Then** unit tests cover integer-cents arithmetic and the RBAC permission resolver
+
 ---
 
 ## Epic 2: Identity, Access & Staff Management

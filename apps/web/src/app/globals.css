@@ -1,26 +1,132 @@
 @import "tailwindcss";
 
+/* Class-based / attribute-based dark mode: `dark:` utilities key off data-theme. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ── Dark theme (default) — from DESIGN_SYSTEM.md ───────────────────────── */
+:root,
+[data-theme="dark"] {
+  --primary: #50fa7b;
+  --primary-dark: #69ff90;
+  --primary-dim: rgba(80, 250, 123, 0.08);
+  --primary-glow: rgba(80, 250, 123, 0.25);
+  --accent: #bd93f9;
+  --accent-dim: rgba(189, 147, 249, 0.08);
+  --cyan: #8be9fd;
+  --orange: #ffb86c;
+  --red: #ff5555;
+  --pink: #ff79c6;
+  --yellow: #f1fa8c;
+
+  --bg-deep: #0c0d14;
+  --bg: #282a36;
+  --bg-alt: #21222c;
+  --bg-card: #2d2f3d;
+  --bg-input: #353849;
+  --border: #44475a;
+  --border-focus: #50fa7b;
+
+  --text: #f8f8f2;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+  --heading: #f8f8f2;
+
+  color-scheme: dark;
+}
+
+/* ── Light theme — from DESIGN_SYSTEM.md ────────────────────────────────── */
+[data-theme="light"] {
+  --primary: #16a34a;
+  --primary-dark: #065f28;
+  --primary-dim: rgba(22, 163, 74, 0.08);
+  --primary-glow: rgba(22, 163, 74, 0.15);
+  --accent: #7c3aed;
+  --accent-dim: #f5f3ff;
+  --cyan: #0891b2;
+  --orange: #ea580c;
+  --red: #dc2626;
+  --pink: #db2777;
+  --yellow: #a16207;
+
+  --bg-deep: #f1f5f9;
+  --bg: #f8fafc;
+  --bg-alt: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #e2e8f0;
+  --border: #cbd5e1;
+  --border-focus: #16a34a;
+
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --heading: #0f172a;
+
+  color-scheme: light;
+}
+
+/* ── Semantic status colors (resolve per-theme via the vars above) ──────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --status-success: var(--primary);
+  --status-info: var(--cyan);
+  --status-warning: var(--orange);
+  --status-danger: var(--red);
+  --status-premium: var(--accent);
+
+  --badge-danger-bg: rgba(255, 85, 85, 0.12);
+  --badge-warning-bg: rgba(255, 184, 108, 0.12);
+  --badge-info-bg: rgba(139, 233, 253, 0.1);
+  --badge-success-bg: rgba(80, 250, 123, 0.1);
 }
 
+/* ── Expose tokens to Tailwind as utilities (bg-bg, text-text, etc.) ────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg-deep: var(--bg-deep);
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-bg-card: var(--bg-card);
+  --color-bg-input: var(--bg-input);
+  --color-border: var(--border);
+  --color-border-focus: var(--border-focus);
+
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-dim: var(--text-dim);
+  --color-heading: var(--heading);
+
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-accent: var(--accent);
+  --color-cyan: var(--cyan);
+  --color-orange: var(--orange);
+  --color-red: var(--red);
+  --color-pink: var(--pink);
+  --color-yellow: var(--yellow);
+
+  --color-success: var(--status-success);
+  --color-info: var(--status-info);
+  --color-warning: var(--status-warning);
+  --color-danger: var(--status-danger);
+  --color-premium: var(--status-premium);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+  --font-expressive: var(--font-syne);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ── Base element styles ────────────────────────────────────────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  color: var(--heading);
 }
