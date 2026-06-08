@@ -3,6 +3,16 @@
 **Date:** 2026-06-04
 **Source:** `PRD.md` §8 (Key Data Entities) + `architecture.md` conventions. Owner: this is the field-level schema referenced by AR4 and Epic 1 Story 1.8; tables are created **per-story when first needed** (the schema here is the target, not a "create everything up front" instruction).
 
+> **⚠️ Engine changed → Convex (2026-06-08).** The Prisma/PostgreSQL schema below is **superseded** by Convex (see the Backend Platform Addendum in `architecture.md`). The **entities, fields, relationships, enums, and invariants here remain the target** — re-express them in `convex/schema.ts` (`defineTable` + `v.*` validators). Mapping rules:
+> - `model X { ... @@map("xs") }` → `xs: defineTable({ ... })` in `defineSchema`.
+> - PK `id String @id @default(uuidv7())` → Convex's built-in `_id: Id<"xs">` + `_creationTime` (drop the manual `id`/`createdAt` where the built-ins suffice; keep explicit `createdAt` only when it must differ from insert time).
+> - FK `xId String @db.Uuid` → `xId: v.id("xs")`; add `.index("by_x", ["xId"])` for lookups (Convex has no implicit FK indexes).
+> - `amountCents BigInt` → `v.int64()` (or a number of cents); `Decimal` (tax rates) → `v.number()` with documented precision; money invariants unchanged (integer minor units, never floats).
+> - Postgres enums → `v.union(v.literal("..."), ...)` (or a shared TS union in `packages/shared`).
+> - `Json?` → `v.optional(v.any())` or a precise `v.object({...})`; soft-delete `deletedAt` → `v.optional(v.number())`.
+> - Relations are resolved in queries via indexes (no joins); audit (`auditLogs`) is written from mutations (AR9 unchanged).
+> The Prisma blocks below are kept for the field-level reference; treat them as the source-of-truth for *shape*, not for the *engine*.
+
 ## Conventions (from architecture)
 
 - **Engine:** PostgreSQL 18 + Prisma 7. Place at `packages/db/prisma/schema.prisma`.

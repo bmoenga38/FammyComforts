@@ -24,6 +24,50 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 > **Run mode note:** This document was produced via the BMAD `create-architecture` workflow in autonomous ("YOLO") mode. The facilitator made the decisions below on Brian's behalf, grounded in `PRD.md` and the generated `docs/`. Every decision is a reasonable default for the stated requirements — review and override any you disagree with (especially backend framework, payments, and hosting).
 
+---
+
+## ⚠️ Backend Platform Addendum — Convex (supersedes 2026-06-08)
+
+**Decision (Brian, 2026-06-08): the backend is built on [Convex](https://convex.dev), not the NestJS/Prisma/PostgreSQL stack described below.** Where the sections that follow (and AR3/AR4/AR6/AR7/AR8) describe NestJS + Prisma + PostgreSQL + Socket.IO + Redis/BullMQ + S3, **this addendum overrides them.** The original text is kept for history; treat it as superseded.
+
+**Convex project:** `bry-code/sommycomfort` — Development deployment `quixotic-boar-465`, Production deployment `notable-cod-441` (dashboards in the team's records / the `sommycomfort-convex-backend` memory).
+
+### What Convex replaces (concern → mechanism)
+
+| Concern | Was (superseded) | Now — Convex |
+|---|---|---|
+| API / business logic | NestJS 11 REST `/api/v1` + OpenAPI | Convex **functions**: `query` (reactive reads), `mutation` (transactional writes), `action` (side-effects / external calls, e.g. M-Pesa) |
+| Database + ORM | PostgreSQL 18 + Prisma 7 | Convex **document DB** + `convex/schema.ts` (`defineSchema`/`defineTable` + `v.*` validators); ACID transactions in mutations |
+| IDs | UUID v7 | Convex document `_id` (typed `Id<"table">`) + `_creationTime` |
+| Realtime | Socket.IO gateway, rooms by property+role | **built-in** — every `query` is a live subscription; clients re-render on data change automatically |
+| Async / jobs | Redis + BullMQ | Convex **scheduler** (`ctx.scheduler.runAfter/runAt`) + **crons** (`convex/crons.ts`) |
+| Auth | JWT + rotating refresh + argon2id + `PermissionsGuard` | **Convex Auth** (`@convex-dev/auth`) for identity; app-level roles/permissions enforced **inside** each function via `ctx.auth` + a `userRoles`/permission check helper |
+| File storage | S3 / MinIO + signed URLs | Convex **file storage** (`ctx.storage.generateUploadUrl()` / `getUrl()`) |
+| Validation contract (AR5) | shared Zod schemas as the web↔api DTO contract | Convex **argument validators** (`v.*`) are the server contract + generate end-to-end types via `convex/_generated`. Shared **domain** helpers (money integer-cents, KES formatting, status enums) still live in `packages/shared`; Zod may still validate web forms (React Hook Form), but the server boundary is Convex validators, not Zod DTOs |
+| Money / audit (AR9) | `amount_cents BIGINT`, `audit_logs` table | same invariants: store integer minor units (`v.int64()` or number-of-cents), keep an `auditLogs` table written from mutations |
+
+### Revised architecture requirements
+
+- **AR3′ — Backend:** Convex functions (query/mutation/action) replace the NestJS REST API + Socket.IO + Redis/BullMQ. No `/api/v1` REST surface for first-party clients (Convex client calls functions directly); HTTP **actions** (`convex/http.ts`) are used only for inbound webhooks (e.g. M-Pesa callback).
+- **AR4′ — Data:** Convex document DB; schema in `convex/schema.ts`; tables added **per-story when first needed** (unchanged principle). `data-model.md` entities still apply — re-expressed as Convex tables (relations via `Id<"...">` fields + indexes).
+- **AR6′ — Auth:** Convex Auth for identity; RBAC enforced in-function (a shared `requirePermission(ctx, area, action)` helper) — the permission **model** from `PRD.md`/`data-model.md` is unchanged, only the enforcement point moves.
+- **AR7′ — Integrations:** M-Pesa STK push + callback via Convex **actions** + an **HTTP action** webhook; object storage = Convex file storage (drop S3/MinIO for MVP); email/SMS/WhatsApp/web-push via actions (+ scheduler).
+- **AR8′ — CI/CD:** Web CI gates unchanged (lint/typecheck/Vitest/Playwright). Backend deploy = **`convex deploy`** (per-deployment: dev `quixotic-boar-465`, prod `notable-cod-441`) — **not** Docker images / `prisma migrate`. No Postgres/Redis/MinIO containers; `docker-compose.yml` becomes optional/only-if-needed.
+
+### Repo & web impact
+
+- **Backend lives at `packages/backend/convex/`** (the Convex deployment root). `apps/api` (NestJS) is **superseded** — kept temporarily, to be removed once nothing depends on it.
+- **Web** stays Next.js 16 + React 19 + Tailwind v4. Add `convex` + `ConvexProvider` (`convex/react`) wired from `NEXT_PUBLIC_CONVEX_URL`; use `useQuery`/`useMutation`. TanStack Query (Story 1.6) is no longer the primary server-state layer for Convex data (Convex queries are reactive) — keep it only for any non-Convex fetches.
+- **Offline (NFR2/NFR3/NFR5):** Convex has its own client cache + reconnection; the offline **indicator** (Story 1.6) stays. Revisit the offline **mutation queue** strategy against Convex's client behavior when the first mutations land.
+- **Testing:** use `convex-test` (+ Vitest) for function unit tests; keep the existing web Vitest/Playwright harness.
+
+### Story impact (already built under the old stack)
+
+- **Story 1.8** (NestJS `PrismaService` / `ConfigModule` / Socket.IO `RealtimeGateway` / `/api/v1/health` / pg adapter) is **largely superseded** by the Convex backend. The shared money/util layer survives; the Prisma schema (`AuditLog`) maps to a Convex `auditLogs` table.
+- **Story 1.9** — drop the **api** Dockerfile + `postgres/redis/minio` compose + `prisma migrate deploy`; backend ships via `convex deploy`. Keep the web CI gates + Playwright; add a `convex deploy` step (gated on `CONVEX_DEPLOY_KEY`).
+
+---
+
 ## Project Context Analysis
 
 ### Requirements Overview

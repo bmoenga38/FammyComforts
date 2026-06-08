@@ -6,6 +6,8 @@ baseline_commit: cb5faa03fec9293f4fb5676429ca9365e8528788
 
 Status: done
 
+> **⚠️ PARTIALLY SUPERSEDED — Convex (2026-06-08).** The backend-deploy parts of this story are superseded: the **`apps/api/Dockerfile`**, the `postgres`/`redis`/`minio` services in `docker-compose.yml`, and the **`prisma migrate deploy`** job no longer apply — the Convex backend ships via **`convex deploy`** (dev `quixotic-boar-465` / prod `notable-cod-441`), gated on `CONVEX_DEPLOY_KEY`. **Still valid:** the web CI gates (lint/typecheck/Vitest/Playwright), the web Dockerfile (if self-hosting the Next app), and `DEPLOY.md`'s structure. Update `deploy.yml` to a `convex deploy` step (replacing build-images→migrate) when wiring real deploys. See the Backend Platform Addendum in `architecture.md`.
+
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
 ## Story

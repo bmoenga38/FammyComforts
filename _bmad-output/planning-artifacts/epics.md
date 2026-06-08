@@ -120,15 +120,18 @@ This document provides the complete epic and story breakdown for SommyComfort, d
 ### Additional Requirements
 
 (From `architecture.md`.)
+
+> **⚠️ Backend superseded → Convex (2026-06-08).** AR3/AR4/AR6/AR7/AR8 describe the original NestJS/Prisma/Postgres/Socket.IO stack and are **superseded** by Convex — the binding versions are AR3′/AR4′/AR6′/AR7′/AR8′ in the **Backend Platform Addendum** of `architecture.md`. Convex project `bry-code/sommycomfort` (dev `quixotic-boar-465`, prod `notable-cod-441`).
+
 - AR1: Initialize the project from the **Turborepo (pnpm) monorepo** starter with `apps/web`, `apps/api`, and `packages/{shared,db,config}` — this is **Epic 1, Story 1**.
 - AR2: Web stack — Next.js 16.2 (App Router) + React 19 + TypeScript + Tailwind v4 + shadcn/ui + lucide-react; PWA via Serwist.
-- AR3: API stack — NestJS 11.1 REST `/api/v1` + OpenAPI; Socket.IO gateway; Redis + BullMQ.
-- AR4: Data — PostgreSQL 18 + Prisma 7; UUID v7 keys; snake_case DB ↔ camelCase TS via `@@map`. Tables created **only** by the first story that needs them. (Field-level schema: `data-model.md`.)
-- AR5: Shared Zod schemas in `packages/shared` are the single web↔api contract; money via shared integer-cents utility; dates ISO-8601 UTC.
-- AR6: Auth — JWT access + rotating refresh, argon2id; `PermissionsGuard` + `@RequirePermission(...)` on every non-public endpoint.
-- AR7: Integrations — M-Pesa Daraja (STK push + manual reference + callback webhook; see `mpesa-daraja-integration-spec.md`); S3-compatible object storage with signed URLs; email/SMS/WhatsApp/web-push.
-- AR8: CI/CD — GitHub Actions (lint + typecheck + Vitest + Playwright); Docker images per app; migrate-then-deploy.
-- AR9: Audit-first — every money-affecting or sensitive action writes an `audit_log` row.
+- AR3: API stack — NestJS 11.1 REST `/api/v1` + OpenAPI; Socket.IO gateway; Redis + BullMQ. **[SUPERSEDED → Convex functions (query/mutation/action); realtime built-in; scheduler/crons replace BullMQ.]**
+- AR4: Data — PostgreSQL 18 + Prisma 7; UUID v7 keys; snake_case DB ↔ camelCase TS via `@@map`. Tables created **only** by the first story that needs them. (Field-level schema: `data-model.md`.) **[SUPERSEDED → Convex document DB + `convex/schema.ts`; per-story-tables principle unchanged.]**
+- AR5: Shared Zod schemas in `packages/shared` are the single web↔api contract; money via shared integer-cents utility; dates ISO-8601 UTC. **[REVISED → server boundary uses Convex `v.*` validators; shared money/enum helpers + React-Hook-Form Zod still apply.]**
+- AR6: Auth — JWT access + rotating refresh, argon2id; `PermissionsGuard` + `@RequirePermission(...)` on every non-public endpoint. **[SUPERSEDED → Convex Auth + in-function `requirePermission(ctx, area, action)`; permission model unchanged.]**
+- AR7: Integrations — M-Pesa Daraja (STK push + manual reference + callback webhook; see `mpesa-daraja-integration-spec.md`); S3-compatible object storage with signed URLs; email/SMS/WhatsApp/web-push. **[SUPERSEDED → M-Pesa via Convex actions + HTTP-action webhook; Convex file storage (drop S3/MinIO for MVP); notifications via actions+scheduler.]**
+- AR8: CI/CD — GitHub Actions (lint + typecheck + Vitest + Playwright); Docker images per app; migrate-then-deploy. **[SUPERSEDED → web CI gates unchanged; backend ships via `convex deploy` (dev/prod); no Docker API image / `prisma migrate`.]**
+- AR9: Audit-first — every money-affecting or sensitive action writes an `audit_log` row. **[UNCHANGED — `auditLogs` table written from Convex mutations.]**
 
 ### UX Design Requirements
 

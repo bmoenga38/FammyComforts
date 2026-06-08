@@ -76,3 +76,15 @@
 - **Actual host rollout.** `deploy.yml`'s release step is a placeholder — wire the chosen target (Render/Railway/Fly.io/VPS) + host secrets.
 - **Playwright browser run is CI-only.** The smoke spec + config are authored; chromium is installed and the e2e suite runs in CI (`e2e` job). Locally it needs `playwright install` + a built web server.
 - **Verify native build scripts on the CI base image** (`@swc/core`, `esbuild` in `ignoredBuiltDependencies`) — carried from 1.11; confirm prebuilt binaries resolve on the runner.
+
+## Backend pivot → Convex (2026-06-08)
+
+Architecture/epics/data-model updated + `packages/backend/convex/` scaffolded (schema `auditLogs` + `auditLogs`/`health` functions). Outstanding:
+
+- **Run `npx convex dev` against the dev deployment (`quixotic-boar-465`).** Requires Convex login + network (blocked in this environment — `convex codegen` errors with "No CONVEX_DEPLOYMENT set"). This produces `convex/_generated` + `.env.local`. Until then `packages/backend` has no `typecheck`/`test` wired into the gates.
+- **Add backend type-check + `convex-test` unit tests** once `_generated` exists (wire a `typecheck`/`test` script into Turbo; e.g. round-trip `auditLogs.record`/`listForEntity`). Add `@edge-runtime/vm` + a vitest edge-runtime config for `convex-test`.
+- **Wire the web Convex provider:** add `convex` to `apps/web`, `ConvexProvider` from `NEXT_PUBLIC_CONVEX_URL`, and migrate Convex-backed reads to `useQuery` (supersedes TanStack Query for those). Revisit the offline-mutation-queue approach (Story 1.6) against Convex's client cache/reconnect.
+- **Update `deploy.yml`** to a `convex deploy` step (gated on `CONVEX_DEPLOY_KEY`) replacing the build-images→`prisma migrate`→deploy chain; drop the api Docker image + postgres/redis/minio compose services.
+- **Remove `apps/api` (NestJS) + `packages/db` (Prisma)** once nothing depends on them — superseded by Convex. (Kept now as committed history; plan a cleanup story.)
+- **Re-express `data-model.md` entities as Convex tables** in `convex/schema.ts`, per-story when first needed (Identity/Auth tables with Convex Auth in Epic 2).
+- **Auth (Epic 2):** adopt `@convex-dev/auth`; implement the in-function `requirePermission(ctx, area, action)` RBAC helper from the unchanged permission model.

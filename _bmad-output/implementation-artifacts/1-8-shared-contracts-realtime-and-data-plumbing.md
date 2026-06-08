@@ -6,6 +6,8 @@ baseline_commit: cb5faa03fec9293f4fb5676429ca9365e8528788
 
 Status: review
 
+> **⚠️ SUPERSEDED (backend) — Convex (2026-06-08).** The NestJS-specific deliverables of this story — `PrismaService`/`PrismaModule`, the Prisma 7 schema + pg adapter, `ConfigModule`, the Socket.IO `RealtimeGateway`, and `GET /api/v1/health` — are **superseded by the Convex backend** (`packages/backend/convex/`; see the Backend Platform Addendum in `architecture.md`). What survives: the shared **money/util layer** and the idea of a typed contract (now Convex `v.*` validators + shared domain helpers). The `AuditLog` Prisma model maps to the Convex `auditLogs` table. `apps/api` (NestJS) is kept temporarily and slated for removal. This story file is retained as history.
+
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
 ## Story
