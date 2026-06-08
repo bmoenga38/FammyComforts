@@ -1,5 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, Syne, JetBrains_Mono } from "next/font/google";
+import { ToastProvider } from "@/components/ui/toast";
+import { QueryProvider } from "@/components/query-provider";
+import { OfflineBanner } from "@/components/offline-banner";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,9 +30,19 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SommyComfort",
+  title: {
+    default: "SommyComfort",
+    template: "%s · SommyComfort",
+  },
   description:
     "Accommodation & rental operations — guest booking, front desk, housekeeping, payments, and reporting in one installable PWA.",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#282a36" },
+  ],
 };
 
 // Runs synchronously before the body paints so the stored theme (default dark)
@@ -49,7 +62,12 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        {children}
+        <QueryProvider>
+          <ToastProvider>
+            <OfflineBanner />
+            {children}
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );
