@@ -29,4 +29,23 @@ export default defineSchema({
   })
     .index("by_entity", ["entityType", "entityId"])
     .index("by_actor", ["actorId"]),
+
+  // Backup/DR run ledger (Story 1.10, NFR12). A row is written from a mutation
+  // for each scheduled `convex export`; the artifact blob lives in `_storage`
+  // and `prune` deletes both the row and the blob beyond the retention window.
+  backupRuns: defineTable({
+    status: v.union(
+      v.literal("started"),
+      v.literal("completed"),
+      v.literal("failed"),
+    ),
+    startedAt: v.number(),
+    finishedAt: v.optional(v.number()),
+    storageId: v.optional(v.id("_storage")),
+    sizeBytes: v.optional(v.int64()),
+    error: v.optional(v.string()),
+    trigger: v.union(v.literal("cron"), v.literal("manual")),
+  })
+    .index("by_status", ["status"])
+    .index("by_started", ["startedAt"]),
 });

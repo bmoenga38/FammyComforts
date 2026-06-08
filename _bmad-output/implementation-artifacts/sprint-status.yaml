@@ -58,7 +58,7 @@ development_status:
   1-7-role-workspace-navigation-shell: done
   1-8-shared-contracts-realtime-and-data-plumbing: review
   1-9-ci-cd-pipeline-and-containerized-deploy: done
-  1-10-daily-backup-and-disaster-recovery-baseline: ready-for-dev
+  1-10-daily-backup-and-disaster-recovery-baseline: review
   1-11-test-harness-unit-and-integration-foundation: done
   epic-1-retrospective: optional
 

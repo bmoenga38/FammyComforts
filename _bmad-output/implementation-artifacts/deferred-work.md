@@ -88,3 +88,15 @@ Architecture/epics/data-model updated + `packages/backend/convex/` scaffolded (s
 - **Remove `apps/api` (NestJS) + `packages/db` (Prisma)** once nothing depends on them — superseded by Convex. (Kept now as committed history; plan a cleanup story.)
 - **Re-express `data-model.md` entities as Convex tables** in `convex/schema.ts`, per-story when first needed (Identity/Auth tables with Convex Auth in Epic 2).
 - **Auth (Epic 2):** adopt `@convex-dev/auth`; implement the in-function `requirePermission(ctx, area, action)` RBAC helper from the unchanged permission model.
+
+## Deferred from: story 1.10 (backup & DR baseline — Convex)
+
+Schema (`backupRuns`), `backups.ts` (action + run mutations + prune + listRecent), `crons.ts` (daily 00:00 EAT), and the restore runbook (`packages/backend/convex/BACKUP.md`) are authored. Blocked on a Convex login / live deployment:
+
+- **Wire `runExport()`** in `backups.ts` — replace the throwing seam with a real deployment export persisted via `ctx.storage.store(...)` (returns the `_storage` id + size). Then run a real `convex export` and confirm the artifact bytes + `sizeBytes`.
+- **Cron only fires after `convex deploy`** — verify the daily job runs on schedule against `quixotic-boar-465` (dev) / `notable-cod-441` (prod).
+- **Verify Convex managed-snapshot / PITR** availability + window on the current plan (dashboard); confirm it matches the RPO claim in BACKUP.md.
+- **Verify retention end-to-end** — `prune` deletes blobs (`ctx.storage.delete`) beyond the 30-copy window against the live deployment.
+- **Execute the non-prod restore drill** in BACKUP.md (`convex import` / restore-to-PITR → `health:check` + known-entity assertion → sign-off table). Exact steps are in the runbook.
+- **Run `backups.test.ts`** — needs `convex/_generated` (`npx convex dev`/`codegen`) + the Story 1.11 `convex-test` + `edge-runtime` harness wired into `packages/backend` (deps + `test` script + edge-runtime vitest config). Authored now, inert until then.
+- **Failure alerting** on a `failed` `backupRuns` row — TODO seam, later notifications epic.
