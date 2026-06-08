@@ -1,0 +1,73 @@
+name: Deploy
+
+# Runs on merge to main (after CI). Builds images per app, applies DB migrations,
+# then releases — migrate-then-deploy (AR8). Image push + migrate + deploy are
+# gated on repository secrets and require provisioned infra (see DEPLOY.md);
+# until those exist the build jobs run but push/deploy are placeholders.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  images:
+    name: Build images (api + web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build api image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          # Flip to true once a registry + REGISTRY_* secrets are configured.
+          push: false
+          tags: sommycomfort-api:${{ github.sha }}
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: false
+          tags: sommycomfort-web:${{ github.sha }}
+
+  migrate:
+    name: Apply DB migrations (prisma migrate deploy)
+    needs: images
+    # Gated until infra exists: set repo variable DEPLOY_ENABLED=true (and the
+    # DATABASE_URL secret) to turn on migrate + deploy. Until then images still
+    # build on push (validating the Dockerfiles), but the DB is never touched.
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # `prisma migrate` needs the schema engine — approve the Prisma build
+      # script on the runner (see DEPLOY.md) and set secrets.DATABASE_URL.
+      - name: Apply migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm --filter @sommycomfort/db exec prisma migrate deploy
+
+  deploy:
+    name: Release
+    needs: migrate # migrate-then-deploy: migrations applied before release
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll out
+        run: |
+          echo "TODO: push images to the registry and roll out to the host"
+          echo "(Render / Railway / Fly.io / VPS). Requires registry + host secrets."

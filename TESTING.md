@@ -45,7 +45,17 @@ These are **hard gates** — the listed tests must exist and pass before the nam
 - **`unplugin-swc` (api) is configured for constructor-DI only.** Before Epic 2, add tsconfig path-alias resolution and a `class-validator` DTO smoke test to catch decorator-metadata regressions for property injection / validation.
 - **`packages/db` has no `test` script yet** — add one when it gains code in Story 1.8 so `pnpm test` covers it.
 
+## CI gates (Story 1.9)
+
+`.github/workflows/ci.yml` runs on every PR + push to `main` (Node 24, pnpm 10):
+
+- **verify** job: `pnpm lint` → `pnpm typecheck` → `pnpm test` (Vitest) → `pnpm build` — exactly the local scripts.
+- **e2e** job: installs chromium, builds web, runs **Playwright** (`pnpm --filter @sommycomfort/web test:e2e`).
+
+Enable branch protection on `main` requiring both jobs so failures block merge. **E2E:** Playwright
+specs live in `apps/web/e2e/*.spec.ts` (outside the Vitest `src/**` glob); `apps/web/playwright.config.ts`
+serves a production build via `next start`. See `DEPLOY.md` for the full pipeline + deferred-execution notes.
+
 ## Out of scope here
 
-- E2E / browser tests (Playwright) → CI, Story 1.9.
 - The gate tests themselves → authored within their respective epics.

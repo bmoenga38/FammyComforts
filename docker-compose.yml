@@ -1,0 +1,50 @@
+# Local development backing services (architecture.md#Infrastructure-&-Deployment):
+# PostgreSQL 18, Redis, and MinIO (S3-compatible). Run `docker compose up -d`.
+# The API reads DATABASE_URL (see packages/db/.env.example / apps/api config).
+name: sommycomfort
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: sommycomfort
+      POSTGRES_PASSWORD: sommycomfort
+      POSTGRES_DB: sommycomfort
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sommycomfort -d sommycomfort"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: sommycomfort
+      MINIO_ROOT_PASSWORD: sommycomfort
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Console
+    volumes:
+      - miniodata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
