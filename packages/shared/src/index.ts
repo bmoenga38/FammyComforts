@@ -1,8 +1,9 @@
 /**
  * @sommycomfort/shared — the single source of truth shared by web and api.
- * Story 1.8 expands this with Zod schemas; for now it seeds the app constant
- * and the money utilities the architecture mandates (integer minor units).
+ * Money utilities (integer minor units) + the Zod web↔api contract (AR5).
  */
+
+export * from "./contracts";
 
 export const APP_NAME = "SommyComfort" as const;
 export const DEFAULT_CURRENCY = "KES" as const;

@@ -1,0 +1,36 @@
+// SommyComfort Prisma schema (AR4) — PostgreSQL 18 + Prisma 7.
+//
+// Tables are created per-story when first needed (see data-model.md, which is
+// the field-level target schema). Story 1.8 creates only `AuditLog` — the
+// cross-cutting audit table (AR9) — to establish the plumbing + conventions:
+//   - UUID v7 primary keys named `id` (Postgres 18 native `uuidv7()`)
+//   - snake_case tables (@@map) + columns (@map); camelCase in TS
+//   - JSONB before/after; timestamps `created_at`
+// Identity / property / booking / payment tables land with their owning stories.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma 7: the connection URL lives in prisma.config.ts (CLI/Migrate) and the
+// runtime client connects via a driver adapter (@prisma/adapter-pg). The
+// datasource block carries only the provider.
+datasource db {
+  provider = "postgresql"
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  actorId    String?  @map("actor_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}
