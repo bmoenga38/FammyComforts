@@ -49,8 +49,10 @@ jobs:
         run: pnpm --filter @sommycomfort/web exec playwright install --with-deps chromium
 
       # Build once; the Playwright webServer serves this build via `next start`.
-      - name: Build web
-        run: pnpm --filter @sommycomfort/web build
+      # Use Turbo so workspace deps (shared) build first per `^build` — a direct
+      # `pnpm --filter web build` skips them and fails to resolve `@sommycomfort/shared`.
+      - name: Build web (+ workspace deps)
+        run: pnpm exec turbo run build --filter=@sommycomfort/web
 
       - name: Run e2e
         run: pnpm --filter @sommycomfort/web test:e2e
