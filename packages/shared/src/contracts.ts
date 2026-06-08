@@ -20,8 +20,8 @@ export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
 
 // ---- Dates: ISO-8601 UTC (AR5) ----
 
-/** Validates an ISO-8601 datetime string. */
-export const isoUtcSchema = z.iso.datetime();
+/** Validates an ISO-8601 **UTC** datetime string (rejects non-`Z` offsets). */
+export const isoUtcSchema = z.iso.datetime({ offset: false });
 
 /** Serialize a Date to an ISO-8601 UTC string (the on-the-wire date format). */
 export function toIsoUtc(date: Date): string {

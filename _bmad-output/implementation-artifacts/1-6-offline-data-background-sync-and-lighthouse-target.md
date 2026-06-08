@@ -4,7 +4,9 @@ baseline_commit: cb5faa03fec9293f4fb5676429ca9365e8528788
 
 # Story 1.6: Offline data, background sync, and Lighthouse target
 
-Status: review
+Status: done
+
+> **Senior Developer Review (AI) — 2026-06-08 (Epic 1 close).** Outcome: Approved with fixes applied. Patches: **(Med)** mutations `retry: 2 → 0` in `query-provider.tsx` (non-idempotent bookings/payments must not auto-retry — double-charge/double-book risk); **(Med)** `OfflineBanner` switched from the translucent `bg-badge-warning` tint to an opaque `bg-bg-card` + `text-badge-warning-fg` (the AA-verified 1.3 pairing) + warning accent border, so contrast is deterministic over any content; **(Med coverage)** added an SSR server-snapshot test (`renderToString` → "online") — the headline SSR-safe AC was previously untested; **(Low)** added `"use client"` to `use-online-status.ts` (server-import footgun); **(Low)** `aria-label="Connection status"` on the banner so its `role="status"` doesn't collide with toasts (+ test updated). Deferred: SSR `HydrationBoundary` (reduced relevance under Convex) + banner-vs-sticky-top-bar offset (carried from 1.7) — in deferred-work. Gates green (web 37 tests).
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

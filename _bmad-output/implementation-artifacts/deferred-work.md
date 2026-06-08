@@ -100,3 +100,9 @@ Schema (`backupRuns`), `backups.ts` (action + run mutations + prune + listRecent
 - **Execute the non-prod restore drill** in BACKUP.md (`convex import` / restore-to-PITR → `health:check` + known-entity assertion → sign-off table). Exact steps are in the runbook.
 - **Run `backups.test.ts`** — needs `convex/_generated` (`npx convex dev`/`codegen`) + the Story 1.11 `convex-test` + `edge-runtime` harness wired into `packages/backend` (deps + `test` script + edge-runtime vitest config). Authored now, inert until then.
 - **Failure alerting** on a `failed` `backupRuns` row — TODO seam, later notifications epic.
+
+## Deferred from: code review of stories 1.6 / 1.8 / 1.10 (2026-06-08, Epic 1 close)
+
+- **[1.10] Orphan backup-run reaper.** Because scheduled actions are at-most-once (no retry), a `dailyExport` that dies between `startRun` and `completeRun` leaves a row stuck in `started` (and `failed` rows accumulate). `prune` only counts `completed`, so these are never swept. Add a reaper (mark stale `started` as `failed` after a timeout, prune old `failed`) when wiring the live export. Not an AC violation.
+- **[1.6] SSR `HydrationBoundary` for prefetched queries.** The root `QueryProvider` has no dehydrate/hydrate path; server-prefetched queries would refetch on the client. Lower priority now — under the **Convex** pivot, Convex reactive `useQuery` is the primary server-state layer, so TanStack Query's role shrinks; revisit only if/when SSR-prefetched TanStack queries are actually used.
+- **[1.6] Offline banner vs sticky top bar (carried from 1.7).** Still open — offset fixed/sticky chrome by the banner height when offline.

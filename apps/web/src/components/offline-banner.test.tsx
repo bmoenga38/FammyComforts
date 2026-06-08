@@ -18,7 +18,8 @@ describe("OfflineBanner", () => {
   it("shows an announced banner when offline", () => {
     setOnline(false);
     render(<OfflineBanner />);
-    const banner = screen.getByRole("status");
+    // Named so it doesn't collide with the toast region's role="status".
+    const banner = screen.getByRole("status", { name: /connection status/i });
     expect(banner).toHaveTextContent(/offline/i);
     expect(banner).toHaveAttribute("aria-live", "polite");
   });

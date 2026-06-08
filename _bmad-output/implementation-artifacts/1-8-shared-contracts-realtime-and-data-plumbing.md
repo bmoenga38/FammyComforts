@@ -4,7 +4,9 @@ baseline_commit: cb5faa03fec9293f4fb5676429ca9365e8528788
 
 # Story 1.8: Shared contracts, realtime, and data plumbing
 
-Status: review
+Status: done
+
+> **Senior Developer Review (AI) — 2026-06-08 (Epic 1 close, light pass on surviving parts).** Outcome: Approved. The NestJS/Prisma/Socket.IO deliverables are superseded (see banner below) and were not deeply reviewed. The **surviving** shared layer (`packages/shared/src/contracts.ts` + money utils) is clean: correct zod 4 API (`z.uuid()`/`z.iso.datetime()`/`z.coerce`), framework-agnostic `ok`/`fail`/envelope types that remain valid under Convex, well-tested. One Low patch applied: `isoUtcSchema` → `z.iso.datetime({ offset: false })` to make the UTC-only intent explicit. Status → done (note: the backend work it nominally covers is superseded; marking done closes Epic 1, with the Convex replacement tracked separately).
 
 > **⚠️ SUPERSEDED (backend) — Convex (2026-06-08).** The NestJS-specific deliverables of this story — `PrismaService`/`PrismaModule`, the Prisma 7 schema + pg adapter, `ConfigModule`, the Socket.IO `RealtimeGateway`, and `GET /api/v1/health` — are **superseded by the Convex backend** (`packages/backend/convex/`; see the Backend Platform Addendum in `architecture.md`). What survives: the shared **money/util layer** and the idea of a typed contract (now Convex `v.*` validators + shared domain helpers). The `AuditLog` Prisma model maps to the Convex `auditLogs` table. `apps/api` (NestJS) is kept temporarily and slated for removal. This story file is retained as history.
 

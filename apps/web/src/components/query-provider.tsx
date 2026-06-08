@@ -24,7 +24,10 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
           },
           mutations: {
             networkMode: "offlineFirst",
-            retry: 2,
+            // Do NOT auto-retry mutations: bookings/payments are non-idempotent,
+            // and a retry after a lost response could double-book / double-charge.
+            // Individual mutations opt in with an idempotency key (Epic 5).
+            retry: 0,
           },
         },
       }),

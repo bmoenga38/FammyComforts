@@ -48,17 +48,17 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # ===== Epic 1: Platform Foundation & Design System (R1) =====
-  epic-1: in-progress
+  epic-1: done
   1-1-initialize-the-monorepo-from-the-turborepo-starter: done
   1-2-establish-design-tokens-typography-and-theming: done
   1-3-build-the-core-ui-primitives: done
   1-4-build-the-composite-domain-components: done
   1-5-installable-pwa-app-shell: done
-  1-6-offline-data-background-sync-and-lighthouse-target: review
+  1-6-offline-data-background-sync-and-lighthouse-target: done
   1-7-role-workspace-navigation-shell: done
-  1-8-shared-contracts-realtime-and-data-plumbing: review
+  1-8-shared-contracts-realtime-and-data-plumbing: done
   1-9-ci-cd-pipeline-and-containerized-deploy: done
-  1-10-daily-backup-and-disaster-recovery-baseline: review
+  1-10-daily-backup-and-disaster-recovery-baseline: done
   1-11-test-harness-unit-and-integration-foundation: done
   epic-1-retrospective: optional
 

@@ -4,7 +4,9 @@ baseline_commit: 088c4c7af8d3ecab31f1e523e51c546a4ac3e5ed
 
 # Story 1.10: Daily backup and disaster-recovery baseline
 
-Status: review
+Status: done
+
+> **Senior Developer Review (AI) — 2026-06-08 (Epic 1 close).** Outcome: Approved — **no correctness defects** against documented Convex 1.40 semantics. Verified: `dailyExport` does zero direct `ctx.db` writes (routes all state through mutations — correct for at-most-once actions); idempotency guards on `completeRun`/`failRun`/`prune`; `prune` slice logic keeps newest 30, deletes blob (`ctx.storage.delete`, valid in a mutation per the orphan rule) + row, no-ops on rerun; `hourUTC:21` = 00:00 EAT; audit-from-mutation is atomic; validators/indexes/`internal*` imports correct; runbook states RPO ≤24h/RTO ≤2h + names both deployments. One **Low** deferred (not an AC violation): no reaper for rows stuck in `started`/`failed` (actions aren't retried) — tracked in deferred-work for the live-wiring phase. No code change required.
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

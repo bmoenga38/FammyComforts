@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { useOnlineStatus } from "./use-online-status";
 
 function setOnline(value: boolean) {
@@ -33,5 +34,11 @@ describe("useOnlineStatus", () => {
       window.dispatchEvent(new Event("online"));
     });
     expect(screen.getByText("online")).toBeInTheDocument();
+  });
+
+  it("is SSR-safe — the server snapshot renders 'online' (never touches navigator)", () => {
+    // getServerSnapshot must return true on the server; reading navigator there
+    // would crash SSR / cause a hydration mismatch. renderToString exercises it.
+    expect(renderToString(<Probe />)).toContain("online");
   });
 });
