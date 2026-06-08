@@ -58,17 +58,17 @@ development_status:
   1-7-role-workspace-navigation-shell: done
   1-8-shared-contracts-realtime-and-data-plumbing: review
   1-9-ci-cd-pipeline-and-containerized-deploy: done
-  1-10-daily-backup-and-disaster-recovery-baseline: backlog
+  1-10-daily-backup-and-disaster-recovery-baseline: ready-for-dev
   1-11-test-harness-unit-and-integration-foundation: done
   epic-1-retrospective: optional
 
   # ===== Epic 2: Identity, Access & Staff Management (R1) =====
-  epic-2: backlog
-  2-1-staff-authentication-with-jwt: backlog
-  2-2-password-reset: backlog
-  2-3-roles-and-granular-permissions-rbac: backlog
-  2-4-staff-management: backlog
-  2-5-audit-log-of-sensitive-actions: backlog
+  epic-2: in-progress
+  2-1-staff-authentication-with-jwt: ready-for-dev
+  2-2-password-reset: ready-for-dev
+  2-3-roles-and-granular-permissions-rbac: ready-for-dev
+  2-4-staff-management: ready-for-dev
+  2-5-audit-log-of-sensitive-actions: ready-for-dev
   epic-2-retrospective: optional
 
   # ===== Epic 3: Property, Rooms, Rates & Amenities Setup (R1) =====
