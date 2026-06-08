@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="SommyComfort">
+  <rect width="512" height="512" fill="#282a36"/>
+  <g transform="translate(102 102) scale(0.6)" fill="none" stroke="#50fa7b" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M128 416V224l128-96 128 96v192"/>
+    <path d="M208 416v-112h96v112"/>
+    <path d="M224 224h64"/>
+  </g>
+</svg>

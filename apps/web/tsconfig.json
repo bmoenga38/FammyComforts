@@ -36,6 +36,7 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "vitest.config.ts",
-    "vitest.setup.ts"
+    "vitest.setup.ts",
+    "src/app/sw.ts"
   ]
 }
