@@ -51,7 +51,7 @@ development_status:
   epic-1: in-progress
   1-1-initialize-the-monorepo-from-the-turborepo-starter: done
   1-2-establish-design-tokens-typography-and-theming: done
-  1-3-build-the-core-ui-primitives: ready-for-dev
+  1-3-build-the-core-ui-primitives: done
   1-4-build-the-composite-domain-components: backlog
   1-5-installable-pwa-app-shell: backlog
   1-6-offline-data-background-sync-and-lighthouse-target: backlog

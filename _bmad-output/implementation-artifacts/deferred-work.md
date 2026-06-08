@@ -18,3 +18,11 @@
 - **At Story 1.9 (CI):** verify `@swc/core` + `esbuild` work on the CI base image (musl/Alpine or non-x64) — they're in `ignoredBuiltDependencies`; remove from the ignore list if the prebuilt binary isn't available there.
 - **At Story 1.8:** add a `test` script to `packages/db` once it gains code, so `pnpm test` covers it.
 - **Optional:** decide whether test files should be `tsc`-type-checked (shared/web exclude them; api includes specs) — Vitest `test.typecheck` or a `tsconfig.test.json` would close the gap.
+
+## Deferred from: code review of story-1.3 (2026-06-05)
+
+- **`Table` ergonomics:** add `forwardRef` (to the `<table>`) and a `containerClassName`/`containerRef` for the scroll wrapper, before large/virtualized admin tables land (the stated use case). Today the caller's ref is dropped.
+- **`Input` label contract:** add a `Field`/`FormControl` wrapper that owns `label` + `id` + `aria-describedby`/`aria-invalid`, before the Epic-4 guest-details + booking forms (avoid placeholder-as-label across the app).
+- **Focus ring color:** `--border-focus` == primary (~3.15:1 in light) meets the 3:1 non-text floor but is weak on a primary-filled button — consider a dedicated, higher-contrast focus color.
+- **Automated contrast check:** the AA badge/button ratios were **computed**, not browser-measured (no browser/CI here) — run axe / a contrast checker once CI (Story 1.9) or a browser is available, and consider a contrast snapshot test so it can't regress.
+- **`Status` vs `RoomStatus`:** reconcile the 5-value chip `Status` union with the 6-value domain `RoomStatus` (`available·occupied·dirty·cleaning·maintenance·blocked`) so the mapping is explicit when Front-Desk/Housekeeping screens use chips.

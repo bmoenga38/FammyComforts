@@ -31,6 +31,18 @@
   --text-dim: #6b7280;
   --heading: #f8f8f2;
 
+  /* AA-tuned foregrounds for status badges (light text on the dark tinted bg). */
+  --badge-success-fg: #50fa7b;
+  --badge-info-fg: #8be9fd;
+  --badge-warning-fg: #ffb86c;
+  --badge-danger-fg: #fca5a5;
+  --badge-premium-fg: #d8b4fe;
+
+  /* Primary button: bright fill, dark label (AA in dark). */
+  --btn-primary-bg: var(--primary);
+  --btn-primary-bg-hover: var(--primary-dark);
+  --btn-primary-fg: var(--bg-deep);
+
   color-scheme: dark;
 }
 
@@ -61,6 +73,18 @@
   --text-dim: #94a3b8;
   --heading: #0f172a;
 
+  /* AA-tuned foregrounds for status badges (dark text on the pale tinted bg). */
+  --badge-success-fg: #166534;
+  --badge-info-fg: #155e75;
+  --badge-warning-fg: #9a3412;
+  --badge-danger-fg: #991b1b;
+  --badge-premium-fg: #5b21b6;
+
+  /* Primary button: darker green fill, white label (AA in light). */
+  --btn-primary-bg: #15803d;
+  --btn-primary-bg-hover: #166534;
+  --btn-primary-fg: #ffffff;
+
   color-scheme: light;
 }
 
@@ -71,11 +95,6 @@
   --status-warning: var(--orange);
   --status-danger: var(--red);
   --status-premium: var(--accent);
-
-  --badge-danger-bg: rgba(255, 85, 85, 0.12);
-  --badge-warning-bg: rgba(255, 184, 108, 0.12);
-  --badge-info-bg: rgba(139, 233, 253, 0.1);
-  --badge-success-bg: rgba(80, 250, 123, 0.1);
 }
 
 /* ── Expose tokens to Tailwind as utilities (bg-bg, text-text, etc.) ────── */
@@ -107,6 +126,23 @@
   --color-warning: var(--status-warning);
   --color-danger: var(--status-danger);
   --color-premium: var(--status-premium);
+
+  /* Per-theme status badge backgrounds — track the status color in each theme. */
+  --color-badge-success: color-mix(in srgb, var(--status-success) 14%, transparent);
+  --color-badge-info: color-mix(in srgb, var(--status-info) 14%, transparent);
+  --color-badge-warning: color-mix(in srgb, var(--status-warning) 14%, transparent);
+  --color-badge-danger: color-mix(in srgb, var(--status-danger) 14%, transparent);
+  --color-badge-premium: color-mix(in srgb, var(--status-premium) 14%, transparent);
+
+  /* AA-tuned badge text + primary-button colors (per-theme, see token blocks). */
+  --color-badge-success-fg: var(--badge-success-fg);
+  --color-badge-info-fg: var(--badge-info-fg);
+  --color-badge-warning-fg: var(--badge-warning-fg);
+  --color-badge-danger-fg: var(--badge-danger-fg);
+  --color-badge-premium-fg: var(--badge-premium-fg);
+  --color-btn-primary: var(--btn-primary-bg);
+  --color-btn-primary-hover: var(--btn-primary-bg-hover);
+  --color-on-primary: var(--btn-primary-fg);
 
   --font-sans: var(--font-inter);
   --font-display: var(--font-space-grotesk);
