@@ -16,6 +16,9 @@ import type * as health from "../health.js";
 import type * as http from "../http.js";
 import type * as identity from "../identity.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_permissions from "../lib/permissions.js";
+import type * as rbac from "../rbac.js";
+import type * as roles from "../roles.js";
 import type * as sso from "../sso.js";
 
 import type {
@@ -33,6 +36,9 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   identity: typeof identity;
   "lib/auth": typeof lib_auth;
+  "lib/permissions": typeof lib_permissions;
+  rbac: typeof rbac;
+  roles: typeof roles;
   sso: typeof sso;
 }>;
 

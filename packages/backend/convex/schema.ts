@@ -56,16 +56,63 @@ export default defineSchema({
     name: v.string(),
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
-    // Raw role string from the SSO payload. Granular RBAC (roles/permissions
-    // tables + `requirePermission`) is Story 2.3 — this is the seed it refines.
+    // Raw role string from the SSO payload. Granular RBAC (the tables below +
+    // `requirePermission`) is Story 2.3 — this is the seed it refines.
     role: v.string(),
     // Server-authoritative active gate (Story 2.4 deactivate builds on this).
     isActive: v.boolean(),
   })
     .index("by_org", ["orgId"])
     .index("by_bytebazaar_user", ["bytebazaarUserId"]),
+
+  // ===== RBAC (Story 2.3) — 12 roles × 18 areas × {read|write|manage} =====
+  // `permissions` is a GLOBAL catalog (the area:action definitions are the same
+  // for every tenant). `roles`/`rolePermissions`/`userRoles` are PER-ORG (each
+  // org gets its own seeded copy of the base roles + can customise), so they
+  // carry `orgId` + a `by_org*` index per the non-negotiable. Enforcement is the
+  // in-function `requirePermission(ctx, area, action)` helper (AR6′) — no FKs,
+  // uniqueness enforced by index-read inside the mutation.
+
+  permissions: defineTable({
+    area: v.string(),
+    action: v.union(
+      v.literal("read"),
+      v.literal("write"),
+      v.literal("manage"),
+    ),
+  }).index("by_area_action", ["area", "action"]),
+
+  roles: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    // System (seeded base) roles vs admin-created custom roles.
+    isSystem: v.boolean(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_name", ["orgId", "name"]),
+
+  rolePermissions: defineTable({
+    orgId: v.id("organizations"),
+    roleId: v.id("roles"),
+    permissionId: v.id("permissions"),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_role", ["roleId"]),
+
+  userRoles: defineTable({
+    orgId: v.id("organizations"),
+    userId: v.id("users"),
+    roleId: v.id("roles"),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_user", ["userId"])
+    .index("by_role", ["roleId"]),
   auditLogs: defineTable({
-    // → v.id("users") once the users table lands (Epic 2 / Convex Auth).
+    // Tenant scope (Story 2.3). Optional: Story-1 infra rows (backups) have no org.
+    orgId: v.optional(v.id("organizations")),
+    // actorId is the `users._id` string where known (kept as string so infra
+    // rows without an actor stay valid; resolved from `ctx.auth`, never client).
     actorId: v.optional(v.string()),
     action: v.string(),
     entityType: v.string(),
@@ -75,7 +122,8 @@ export default defineSchema({
     ip: v.optional(v.string()),
   })
     .index("by_entity", ["entityType", "entityId"])
-    .index("by_actor", ["actorId"]),
+    .index("by_actor", ["actorId"])
+    .index("by_org", ["orgId"]),
 
   // Backup/DR run ledger (Story 1.10, NFR12). A row is written from a mutation
   // for each scheduled `convex export`; the artifact blob lives in `_storage`

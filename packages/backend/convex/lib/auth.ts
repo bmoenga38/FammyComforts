@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { QueryCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
+import type { Area, Action } from "./permissions";
 
 /**
  * Org-scoped identity resolution (Epic 2, Story 2.1 — integration spec §2).
@@ -49,4 +50,62 @@ export async function requireOrgUser(ctx: QueryCtx): Promise<OrgIdentity> {
     });
   }
   return result;
+}
+
+/**
+ * Resolve the signed-in user's `area:action` grant set within their org —
+ * `userRoles` → `rolePermissions` → `permissions`. The single read path behind
+ * both {@link requirePermission} and `roles.myPermissions`.
+ */
+export async function resolvePermissions(
+  ctx: QueryCtx,
+  user: Doc<"users">,
+  orgId: Id<"organizations">,
+): Promise<Set<string>> {
+  const userRoles = await ctx.db
+    .query("userRoles")
+    .withIndex("by_user", (q) => q.eq("userId", user._id))
+    .collect();
+  // Defensive: userRoles are org-scoped, but never trust cross-org rows.
+  const roleIds = userRoles
+    .filter((ur) => ur.orgId === orgId)
+    .map((ur) => ur.roleId);
+
+  const granted = new Set<string>();
+  for (const roleId of roleIds) {
+    const rps = await ctx.db
+      .query("rolePermissions")
+      .withIndex("by_role", (q) => q.eq("roleId", roleId))
+      .collect();
+    for (const rp of rps) {
+      const perm = await ctx.db.get(rp.permissionId);
+      if (perm) granted.add(`${perm.area}:${perm.action}`);
+    }
+  }
+  return granted;
+}
+
+/**
+ * Authorization gate (AR6′) — the first line of any permission-protected
+ * function. Authenticates + org-scopes via {@link requireOrgUser}, then checks
+ * the caller has `area:action`. Returns the org identity on success; throws
+ * `UNAUTHENTICATED` (no session) or `FORBIDDEN` (signed in, not granted).
+ * Story 2.3's replacement for the superseded NestJS `@RequirePermission`.
+ */
+export async function requirePermission(
+  ctx: QueryCtx,
+  area: Area,
+  action: Action,
+): Promise<OrgIdentity> {
+  const identity = await requireOrgUser(ctx);
+  const granted = await resolvePermissions(ctx, identity.user, identity.orgId);
+  if (!granted.has(`${area}:${action}`)) {
+    throw new ConvexError({
+      code: "FORBIDDEN",
+      message: `${area}:${action}`,
+      area,
+      action,
+    });
+  }
+  return identity;
 }

@@ -159,6 +159,13 @@ Tracks what's actually landed vs gated, so the story file and this stay honest.
     schema; auth keys (`SITE_URL`/`JWT_PRIVATE_KEY`/`JWKS`) provisioned on the
     deployment. Web: `ConvexClientProvider` + `app/sso/page.tsx` (calls
     `signIn("sso-handoff", { token })`). Full turbo gate green; web build OK.
+- **Story 2.2** (recovery → ByteAuth): superseded; thin `/signin` redirect
+  affordance (`NEXT_PUBLIC_BYTEPLANE_URL`) — no FammyComfort credential/reset.
+- **Story 2.3** (RBAC, backend): global `permissions` catalog + per-org
+  `roles`/`rolePermissions`/`userRoles`; `requirePermission` wrapping
+  `requireOrgUser`; idempotent per-org seed (12 roles × 18 areas × 3 actions) +
+  audited `roles` admin functions. Backend **17/17**. Web Roles UI + SSO-role
+  auto-assignment deferred.
 
 **Gated on the shared secret + BB-1..BB-3 (cross-repo):**
 - The live `/sso` round-trip (`verifyHandoff` → mint session → `consumeHandoff`)

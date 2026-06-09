@@ -4,7 +4,26 @@ baseline_commit: 088c4c7af8d3ecab31f1e523e51c546a4ac3e5ed
 
 # Story 2.3: Roles and granular permissions (RBAC)
 
-Status: ready-for-dev
+Status: in-progress
+
+> **⚠️ Reconciled to SSO + orgId (read this).** This story was written for the
+> single-tenant Convex-Auth-Password model (`getAuthUserId`, no `orgId`). Under
+> the locked SSO direction it is **org-scoped**: `permissions` is a **global
+> catalog**, but `roles` / `rolePermissions` / `userRoles` are **per-org**
+> (carry `orgId` + `by_org*`), each org seeded its own copy of the 12 base roles.
+> `requirePermission(ctx, area, action)` **wraps `requireOrgUser`** (Story 2.1's
+> seam) — authenticate + org-scope, then check the grant — rather than bare
+> `getAuthUserId`. The `auditLogs.actorId → v.id("users")` migration in the task
+> list below was **not** done (kept `v.optional(v.string())` so Story-1 infra rows
+> stay valid); instead `auditLogs` gained `orgId` + `by_org`. The detailed tasks
+> below reflect the original plan; the **Dev Agent Record** at the bottom is the
+> source of truth for what landed.
+>
+> **Backend RBAC layer landed + tested (17/17 backend, full gate green).
+> Deferred:** the web Roles admin UI (Task 6) and wiring SSO-role →
+> `userRoles` into the live sign-in (the `seedOrg`/`assignRole` functions exist;
+> they need calling from the SSO completion once the role-name mapping is agreed
+> + the live round-trip is unblocked, Story 2.1 Task 7).
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -88,9 +107,35 @@ so that staff only access what they should.
 ## Dev Agent Record
 
 ### Agent Model Used
-
-### Debug Log References
+claude-opus-4-8[1m]
 
 ### Completion Notes List
+- **Backend RBAC layer landed + verified** against dev `quixotic-boar-465`
+  (codegen + typecheck + tests). Org-scoped per the reconciliation banner.
+  - Schema: global `permissions` catalog + per-org `roles`/`rolePermissions`/
+    `userRoles` (orgId + by_org*); `auditLogs` gained `orgId` + `by_org`.
+  - `lib/permissions.ts`: typed 18 areas × 3 actions + 12 base roles w/ default
+    grants (`manage` discrete — no implication logic).
+  - `lib/auth.ts`: `resolvePermissions` + `requirePermission(ctx, area, action)`
+    wrapping `requireOrgUser` (UNAUTHENTICATED / FORBIDDEN).
+  - `rbac.ts`: idempotent `seedOrg` (catalog + 12 roles + default grants) +
+    `assignRole` (SSO-role → userRole, idempotent).
+  - `roles.ts`: `list` / `getWithPermissions` / `myPermissions` (org-scoped reads)
+    + `create` / `setPermission` (gated by `Roles:manage`, audited atomically).
+  - `rbac.test.ts`: seed idempotency (54 perms / 12 roles), grant/deny/anonymous,
+    per-org isolation, `setPermission` grant→revoke + audit. **Backend 17/17**;
+    full turbo gate green.
+- **Variance from the task list:** AR6 guard/decorator → in-function
+  `requirePermission` (AR6′, as planned); permission *model* unchanged; but
+  **org-scoped** (not single-tenant) and **no `actorId → v.id("users")` migration**
+  (kept string; added `orgId` instead) — see the banner.
+- **Deferred:** (Task 6) the web Roles admin grid + `usePermissions()` gate;
+  wiring `seedOrg`/`assignRole` into the live SSO completion (needs the SSO-role →
+  base-role name mapping + Story 2.1 Task 7's live round-trip).
 
 ### File List
+- Added (backend): `convex/lib/permissions.ts`, `convex/rbac.ts`,
+  `convex/roles.ts`, `convex/rbac.test.ts`
+- Modified (backend): `convex/schema.ts` (4 RBAC tables + `auditLogs.orgId`),
+  `convex/lib/auth.ts` (`resolvePermissions` + `requirePermission`),
+  `convex/_generated/*` (codegen)

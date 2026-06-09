@@ -65,8 +65,8 @@ development_status:
   # ===== Epic 2: Identity, Access & Staff Management (R1) =====
   epic-2: in-progress
   2-1-staff-authentication-with-jwt: in-progress
-  2-2-password-reset: ready-for-dev
-  2-3-roles-and-granular-permissions-rbac: ready-for-dev
+  2-2-password-reset: done # superseded → ByteAuth recovery + thin redirect (built+tested)
+  2-3-roles-and-granular-permissions-rbac: in-progress # backend RBAC done; web UI + SSO-role wiring deferred
   2-4-staff-management: ready-for-dev
   2-5-audit-log-of-sensitive-actions: ready-for-dev
   epic-2-retrospective: optional
