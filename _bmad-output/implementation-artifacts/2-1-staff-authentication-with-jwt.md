@@ -97,16 +97,24 @@ separate password — and can only ever see my own organization's data.
   - [x] `convex/identity.test.ts`: upsert+idempotency, `me` authed/unauthed,
         inactive gate, tenant isolation, unauthenticated rejection. **9/9 green**
         (5 new + 4 existing) with `convex codegen` run against `quixotic-boar-465`.
-- [ ] **Task 6: `/sso` web route — DEFERRED (gated, see Dev Notes)**
-  - [ ] Add `convex` to `apps/web`; a server-side `ConvexHttpClient` helper.
-  - [ ] `app/sso/route.ts` (Next 16 route handler — **read
-        `node_modules/next/dist/docs/` first** per `apps/web/AGENTS.md`): read
-        `?token=`, call `api.sso.completeHandoff`, set the session cookie,
-        redirect into the shell.
-  - [ ] Configure `@convex-dev/auth` with a **custom credentials provider** that
-        trusts the verified handoff, to mint the session for the resolved
-        `userId` (the `completeHandoff` step-4 seam).
-- [ ] **Task 7: env + cross-repo prerequisites — DEFERRED**
+- [x] **Task 6: Session minting + `/sso` web route (AC #2)**
+  - [x] `convex/auth.ts`: `convexAuth({ providers: [ConvexCredentials({ id:
+        "sso-handoff", authorize })] })` — `authorize` calls the shared
+        `resolveHandoff` (verify→upsert→consume) and returns the `userId` Convex
+        Auth mints a session for. `convex/http.ts` mounts the auth routes;
+        `convex/auth.config.ts` declares the JWT issuer.
+  - [x] `...authTables` merged into `convex/schema.ts` (our `users` override
+        keeps the app/tenancy fields). Codegen + typecheck + 9/9 tests green.
+  - [x] Auth keys provisioned on `quixotic-boar-465` (`SITE_URL`,
+        `JWT_PRIVATE_KEY`, `JWKS` via `scripts/gen-auth-keys.mjs`).
+  - [x] Web: `convex` + `@convex-dev/auth` added; `ConvexClientProvider`
+        (`ConvexAuthProvider` + a single `ConvexReactClient`) nested in the root
+        layout; `app/sso/page.tsx` (client) reads `?token=`, calls
+        `signIn("sso-handoff", { token })`, redirects. `NEXT_PUBLIC_CONVEX_URL`
+        env added. Web lint+typecheck+tests (37) green; **production build OK**
+        (`/sso` prerenders). *(Client-side auth only — SSR/proxy route-guarding
+        is Story 2.3; Next 16 renames middleware→proxy.)*
+- [ ] **Task 7: env + cross-repo prerequisites — DEFERRED (the only remaining gate)**
   - [ ] Generate the shared secret; set `BYTEBAZAAR_SERVICE_TOKEN` +
         `BYTEBAZAAR_CONVEX_URL` on FammyComfort (and the `_BYTESTAY` twins on
         Bytebazaar). (spec §5)
@@ -116,27 +124,28 @@ separate password — and can only ever see my own organization's data.
 ## Dev Notes
 
 ### What landed (verifiable here — dev deployment `quixotic-boar-465` reachable)
-- `convex/schema.ts`: orgId convention documented; `organizations` + `users`
-  identity-cache tables with their indexes.
+- `convex/schema.ts`: orgId convention + `organizations`/`users` identity-cache
+  tables; `...authTables` merged (our `users` override keeps the app fields).
 - `convex/lib/auth.ts`: `requireOrgUser` / `getOptionalOrgUser` (the org-scoped
   identity seam; subject parsed as `"<userId>|<sessionId>"`-tolerant).
 - `convex/identity.ts`: `upsertFromHandoff` (idempotent), `me`, `listOrgStaff`.
-- `convex/sso.ts`: `completeHandoff` action (env-guarded orchestration).
-- `convex/identity.test.ts`: 5 tests; full backend suite **9/9 green**;
-  `pnpm typecheck` clean. `convex codegen` regenerated `_generated` (committed).
+- `convex/sso.ts`: `resolveHandoff` (shared verify→upsert→consume) + the
+  `completeHandoff` action wrapper (env-guarded).
+- `convex/auth.ts` + `http.ts` + `auth.config.ts`: Convex Auth with the
+  `sso-handoff` credentials provider (mints the session from a verified handoff).
+- Auth keys provisioned on the deployment (`SITE_URL`/`JWT_PRIVATE_KEY`/`JWKS`
+  via `scripts/gen-auth-keys.mjs`).
+- Web: `ConvexClientProvider` in the root layout + `app/sso/page.tsx`; backend
+  9/9 + web 37/37 tests green, full turbo gate green, **web production build OK**.
 
-### Gated (cannot complete offline / without the cross-repo work)
-1. **End-to-end `/sso` round-trip.** Needs `BYTEBAZAAR_CONVEX_URL` +
-   `BYTEBAZAAR_SERVICE_TOKEN` set and **BB-1..BB-3** landed so a real handoff is
-   issued. `completeHandoff` throws `SSO_NOT_CONFIGURED` until then (by design).
-2. **Session minting.** `@convex-dev/auth` with a custom credentials provider
-   (trusting the verified handoff) must be installed + configured against the
-   deployment (`npx @convex-dev/auth` generates `auth.config.ts` + keys). This is
-   the `completeHandoff` step-4 seam — AC #2's "lands an authenticated session"
-   is not fully verifiable until it's wired.
-3. **Web route.** `apps/web` has no `convex` dep yet, and the Next.js version is
-   flagged as unfamiliar (`apps/web/AGENTS.md`) — the route handler must be
-   written against the local `node_modules/next/dist/docs/`, not from memory.
+### Gated — the ONLY remaining step (cross-repo, see Task 7)
+**End-to-end `/sso` round-trip.** Everything FammyComfort-side is wired and
+verified; the live sign-in just needs `BYTEBAZAAR_CONVEX_URL` +
+`BYTEBAZAAR_SERVICE_TOKEN` set on this deployment and **BB-1..BB-3** landed in
+the Bytebazaar repo so the ByteStay tile issues a real handoff. Until then,
+`resolveHandoff` throws `SSO_NOT_CONFIGURED` by design — so AC #2/#3's live
+"tile → authenticated session" can't be exercised here, though every piece it
+depends on is built, typechecked, and unit-tested.
 
 ### Design notes
 - **`organizations` is the tenant root** — it carries its own `bytebazaarOrgId`,
@@ -168,17 +177,23 @@ separate password — and can only ever see my own organization's data.
 claude-opus-4-8[1m]
 
 ### Completion Notes List
-- Foundation slice landed + verified offline against the live dev deployment:
-  schema (orgId + identity cache), `requireOrgUser` gate, SSO cache functions,
-  `completeHandoff` orchestration, 9/9 backend tests, clean typecheck.
-- `/sso` web route + session minting + cross-repo env/BB-1..BB-3 are the
-  remaining gated steps (Tasks 6–7) — documented, not started.
+- Foundation slice + session minting (A1+A2) landed and verified against the live
+  dev deployment `quixotic-boar-465`: schema (orgId + identity cache + authTables),
+  `requireOrgUser` gate, SSO cache functions, `resolveHandoff`/`completeHandoff`,
+  Convex Auth `sso-handoff` provider, auth keys provisioned, web client provider +
+  `/sso` page. Backend 9/9 + web 37/37 tests, full turbo gate green, web prod build OK.
+- **Only Task 7 remains** (cross-repo): set `BYTEBAZAAR_CONVEX_URL` +
+  `BYTEBAZAAR_SERVICE_TOKEN`, land BB-1..BB-3 → then the live tile→session round-trip
+  can be exercised. `auditLogs` orgId/actorId migration deferred to Story 2.5.
 
 ### File List
-- Added: `packages/backend/convex/identity.ts`,
-  `packages/backend/convex/lib/auth.ts`,
-  `packages/backend/convex/sso.ts`,
-  `packages/backend/convex/identity.test.ts`,
-  `docs/integrations/bytestay-fammycomfort-epic2-spec.md`
-- Modified: `packages/backend/convex/schema.ts`,
-  `packages/backend/convex/_generated/*` (codegen)
+- Added (backend): `convex/identity.ts`, `convex/lib/auth.ts`, `convex/sso.ts`,
+  `convex/auth.ts`, `convex/http.ts`, `convex/auth.config.ts`,
+  `convex/identity.test.ts`, `scripts/gen-auth-keys.mjs`
+- Added (web): `src/components/convex-client-provider.tsx`,
+  `src/app/sso/page.tsx`, `.env.example`
+- Added (docs): `docs/integrations/bytestay-fammycomfort-epic2-spec.md`
+- Modified (backend): `convex/schema.ts` (+authTables/identity), `package.json`,
+  `convex/_generated/*` (codegen)
+- Modified (web): `src/app/layout.tsx` (nest `ConvexClientProvider`), `package.json`
+- Env (deployment): `SITE_URL`, `JWT_PRIVATE_KEY`, `JWKS` set on `quixotic-boar-465`

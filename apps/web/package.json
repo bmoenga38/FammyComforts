@@ -12,11 +12,14 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@serwist/next": "^9.0.0",
+    "@auth/core": "0.41.1",
+    "@convex-dev/auth": "^0.0.94",
     "@fammycomforts/shared": "workspace:*",
+    "@serwist/next": "^9.0.0",
     "@tanstack/react-query": "^5.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "convex": "^1.40.0",
     "lucide-react": "^1.0.0",
     "next": "16.2.7",
     "react": "19.2.4",
@@ -25,8 +28,8 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
     "@fammycomforts/config": "workspace:*",
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.3.0",

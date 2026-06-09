@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, Syne, JetBrains_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ui/toast";
 import { QueryProvider } from "@/components/query-provider";
 import { OfflineBanner } from "@/components/offline-banner";
+import { ConvexClientProvider } from "@/components/convex-client-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -62,12 +63,14 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <QueryProvider>
-          <ToastProvider>
-            <OfflineBanner />
-            {children}
-          </ToastProvider>
-        </QueryProvider>
+        <ConvexClientProvider>
+          <QueryProvider>
+            <ToastProvider>
+              <OfflineBanner />
+              {children}
+            </ToastProvider>
+          </QueryProvider>
+        </ConvexClientProvider>
       </body>
     </html>
   );

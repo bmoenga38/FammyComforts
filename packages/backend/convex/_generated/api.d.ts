@@ -9,9 +9,11 @@
  */
 
 import type * as auditLogs from "../auditLogs.js";
+import type * as auth from "../auth.js";
 import type * as backups from "../backups.js";
 import type * as crons from "../crons.js";
 import type * as health from "../health.js";
+import type * as http from "../http.js";
 import type * as identity from "../identity.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as sso from "../sso.js";
@@ -24,9 +26,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auditLogs: typeof auditLogs;
+  auth: typeof auth;
   backups: typeof backups;
   crons: typeof crons;
   health: typeof health;
+  http: typeof http;
   identity: typeof identity;
   "lib/auth": typeof lib_auth;
   sso: typeof sso;

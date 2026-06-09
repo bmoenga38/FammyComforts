@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 /**
  * Fammy Comforts Convex schema (AR4′ — see architecture.md Backend Platform Addendum).
@@ -26,6 +27,13 @@ import { v } from "convex/values";
  *   No new tenant table ships without `orgId` — backfilling it later is painful.
  */
 export default defineSchema({
+  // Convex Auth managed tables (`authSessions`, `authAccounts`,
+  // `authRefreshTokens`, `authVerificationCodes`, `authVerifiers`,
+  // `authRateLimits`, and a default `users`). Our `users` definition below
+  // overrides the auth default to carry the app + tenancy fields. Session
+  // minting (the `sso-handoff` provider in `auth.ts`) reads/writes these.
+  ...authTables,
+
   // ===== Identity & Access (Epic 2, Story 2.1) — SSO identity cache =====
   // FammyComfort does NOT own credentials; staff authenticate via the
   // Bytebazaar (ByteAuth) SSO handoff. These two tables are a local cache of

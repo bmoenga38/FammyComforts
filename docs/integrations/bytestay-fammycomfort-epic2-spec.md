@@ -154,6 +154,11 @@ Tracks what's actually landed vs gated, so the story file and this stay honest.
   - `completeHandoff` handoff-orchestration action, env-guarded (`convex/sso.ts`);
   - `convex-test` coverage incl. tenant isolation — backend suite **9/9 green**,
     `pnpm typecheck` clean.
+  - **Session minting (A1+A2):** `convex/auth.ts` (`sso-handoff` Convex Auth
+    credentials provider) + `http.ts` + `auth.config.ts`; `...authTables` in the
+    schema; auth keys (`SITE_URL`/`JWT_PRIVATE_KEY`/`JWKS`) provisioned on the
+    deployment. Web: `ConvexClientProvider` + `app/sso/page.tsx` (calls
+    `signIn("sso-handoff", { token })`). Full turbo gate green; web build OK.
 
 **Gated on the shared secret + BB-1..BB-3 (cross-repo):**
 - The live `/sso` round-trip (`verifyHandoff` → mint session → `consumeHandoff`)
