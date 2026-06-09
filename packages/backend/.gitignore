@@ -1,3 +1,4 @@
-# Convex generates these from the deployment — reproduce with `convex dev`/`convex codegen`.
-convex/_generated/
+# convex/_generated IS committed (so CI typecheck/tests run without Convex auth).
+# Re-run `pnpm --filter @fammycomforts/backend codegen` (or `dev`) and commit it
+# whenever the schema or functions change.
 .env.local

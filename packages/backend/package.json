@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "convex dev",
     "deploy": "convex deploy",
-    "codegen": "convex codegen"
+    "codegen": "convex codegen",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
   },
   "dependencies": {
     "convex": "^1.40.0"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
     "@fammycomforts/config": "workspace:*",
-    "typescript": "^5"
+    "convex-test": "^0.0.53",
+    "typescript": "^5",
+    "vitest": "^3.0.0"
   }
 }

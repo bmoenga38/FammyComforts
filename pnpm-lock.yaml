@@ -131,7 +131,7 @@ importers:
         version: 1.5.9(@swc/core@1.15.40)(rollup@4.61.1)
       vitest:
         specifier: ^3.0.0
-        version: 3.2.6(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
+        version: 3.2.6(@edge-runtime/vm@5.0.0)(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
 
   apps/web:
     dependencies:
@@ -216,7 +216,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.6(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
+        version: 3.2.6(@edge-runtime/vm@5.0.0)(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
 
   packages/backend:
     dependencies:
@@ -224,12 +224,21 @@ importers:
         specifier: ^1.40.0
         version: 1.40.0(react@19.2.4)
     devDependencies:
+      '@edge-runtime/vm':
+        specifier: ^5.0.0
+        version: 5.0.0
       '@fammycomforts/config':
         specifier: workspace:*
         version: link:../config
+      convex-test:
+        specifier: ^0.0.53
+        version: 0.0.53(convex@1.40.0(react@19.2.4))
       typescript:
         specifier: ^5
         version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.6(@edge-runtime/vm@5.0.0)(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
 
   packages/config: {}
 
@@ -250,7 +259,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.6(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
+        version: 3.2.6(@edge-runtime/vm@5.0.0)(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
 
   packages/shared:
     dependencies:
@@ -266,7 +275,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.6(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
+        version: 3.2.6(@edge-runtime/vm@5.0.0)(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0)
 
 packages:
 
@@ -422,6 +431,14 @@ packages:
 
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
+    engines: {node: '>=18'}
+
+  '@edge-runtime/primitives@6.0.0':
+    resolution: {integrity: sha512-FqoxaBT+prPBHBwE1WXS1ocnu/VLTQyZ6NMUBAdbP7N2hsFTTxMC/jMu2D/8GAlMQfxeuppcPuCUk/HO3fpIvA==}
+    engines: {node: '>=18'}
+
+  '@edge-runtime/vm@5.0.0':
+    resolution: {integrity: sha512-NKBGBSIKUG584qrS1tyxVpX/AKJKQw5HgjYEnPLC0QsTw79JrGn+qUr8CXFb955Iy7GUdiiUv1rJ6JBGvaKb6w==}
     engines: {node: '>=18'}
 
   '@electric-sql/pglite-socket@0.1.1':
@@ -2712,6 +2729,11 @@ packages:
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
+
+  convex-test@0.0.53:
+    resolution: {integrity: sha512-bouZQTnTvZi8IHljHL++yClj1vcV+/9ZxEcd8JZz7RDxOfPkRKrkMgkk/xlX4M1EAiwcEJPNiQE7VJFvDM3lCQ==}
+    peerDependencies:
+      convex: ^1.32.0
 
   convex@1.40.0:
     resolution: {integrity: sha512-jChWEB45q+9Ibryc7hg0l6hB1xA4zwE2y6ZhkhGP6oJkqYeiURkMagA2ZQZYMy1/T8PZ9ztoVJJtbL/+Ob851Q==}
@@ -5374,6 +5396,12 @@ snapshots:
 
   '@csstools/css-tokenizer@3.0.4': {}
 
+  '@edge-runtime/primitives@6.0.0': {}
+
+  '@edge-runtime/vm@5.0.0':
+    dependencies:
+      '@edge-runtime/primitives': 6.0.0
+
   '@electric-sql/pglite-socket@0.1.1(@electric-sql/pglite@0.4.1)':
     dependencies:
       '@electric-sql/pglite': 0.4.1
@@ -7408,6 +7436,10 @@ snapshots:
   content-type@2.0.0: {}
 
   convert-source-map@2.0.0: {}
+
+  convex-test@0.0.53(convex@1.40.0(react@19.2.4)):
+    dependencies:
+      convex: 1.40.0(react@19.2.4)
 
   convex@1.40.0(react@19.2.4):
     dependencies:
@@ -9962,7 +9994,7 @@ snapshots:
       lightningcss: 1.32.0
       terser: 5.48.0
 
-  vitest@3.2.6(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0):
+  vitest@3.2.6(@edge-runtime/vm@5.0.0)(@types/node@24.13.0)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.48.0):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.6
@@ -9988,6 +10020,7 @@ snapshots:
       vite-node: 3.2.4(@types/node@24.13.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
+      '@edge-runtime/vm': 5.0.0
       '@types/node': 24.13.0
       jsdom: 26.1.0
     transitivePeerDependencies:
