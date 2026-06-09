@@ -35,7 +35,7 @@ Browser ── GET / ──▶  server.js (Node http)
 ### Key mechanisms
 
 1. **View switching** — `app.js` listens on `.nav-item` buttons; clicking one removes `.active` from all nav items and `.view` sections, adds `.active` to the chosen pair, updates `#pageTitle` from a `titleByView` map, and closes the mobile menu. No URL/router involvement.
-2. **Theming** — `data-theme` on `<html>` selects the CSS token set. The toggle button flips `dark`⇄`light` and persists to `localStorage["sommycomfort-theme"]`; the saved value is re-applied on load.
+2. **Theming** — `data-theme` on `<html>` selects the CSS token set. The toggle button flips `dark`⇄`light` and persists to `localStorage["fammycomforts-theme"]`; the saved value is re-applied on load.
 3. **Icon injection** — an `icons` object maps names to inline SVG markup; on load, every `[data-icon]` element is hydrated with the matching SVG.
 4. **Ephemeral feedback** — `showToast()` shows a `#toast` element for ~2.6s; used by booking confirm and housekeeping completion demos.
 5. **Server safety** — `server.js` normalizes the joined path and rejects anything not under `root` (path-traversal guard), returning `403`; missing files return `404`.

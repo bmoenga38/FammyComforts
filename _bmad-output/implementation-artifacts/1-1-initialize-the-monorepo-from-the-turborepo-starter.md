@@ -29,7 +29,7 @@ so that all later work builds on the architecture's defined structure and shared
 ## Tasks / Subtasks
 
 - [x] **Task 1: Scaffold the Turborepo workspace** (AC: #1, #6, #7)
-  - [x] Run `pnpm dlx create-turbo@latest . --package-manager pnpm` (or scaffold into `sommycomfort/` then relocate) — confirm `create-turbo` is current first
+  - [x] Run `pnpm dlx create-turbo@latest . --package-manager pnpm` (or scaffold into `fammycomforts/` then relocate) — confirm `create-turbo` is current first
   - [x] Set root `package.json` `packageManager` to a pinned `pnpm@<latest>`, add `engines.node: ">=24"`, add `.nvmrc` with `24`
   - [x] Configure `pnpm-workspace.yaml` to include `apps/*` and `packages/*`
   - [x] Update root `.gitignore` (`node_modules/`, `.next/`, `dist/`, `.turbo/`, `.env*`) and root `README.md` (install/dev/build commands)
@@ -64,7 +64,7 @@ so that all later work builds on the architecture's defined structure and shared
 Target tree (this story builds the skeleton; `(guest)`/`modules/*` etc. arrive in later stories):
 
 ```
-sommycomfort/
+fammycomforts/
 ├── package.json  pnpm-workspace.yaml  turbo.json  .nvmrc  .gitignore  README.md
 ├── apps/
 │   ├── web/   (Next 16, src/, Tailwind v4)

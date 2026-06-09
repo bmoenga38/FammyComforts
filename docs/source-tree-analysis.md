@@ -39,7 +39,7 @@ Fammy Comforts/
 ├── DEVELOPMENT_PHASES.md       # Delivery phases
 ├── DEMO_REVIEW_REPORT.md       # Findings from the reference (Kemet) app
 ├── UI_SAMPLES.md               # UI sample reference index
-├── SOMMYCOMFORT_METHOD.md      # Custom method overview
+├── FAMMY_COMFORTS_METHOD.md      # Custom method overview
 └── .gitignore
 ```
 

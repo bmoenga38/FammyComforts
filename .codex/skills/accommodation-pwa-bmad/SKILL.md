@@ -1,18 +1,18 @@
 ---
 name: accommodation-pwa-bmad
-description: Use for SommyComfort accommodation operations PWA work when planning, designing, implementing, or reviewing features with the local rental-app-specific method, PRD, Arrowpath-inspired design system, UI samples, PWA requirements, role-based workflows, or hotel/property operations domain context.
+description: Use for Fammy Comforts accommodation operations PWA work when planning, designing, implementing, or reviewing features with the local rental-app-specific method, PRD, Arrowpath-inspired design system, UI samples, PWA requirements, role-based workflows, or hotel/property operations domain context.
 ---
 
 # Accommodation PWA Method
 
-Use this skill to work on the SommyComfort accommodation operations PWA in this repository.
+Use this skill to work on the Fammy Comforts accommodation operations PWA in this repository.
 
 ## Core Workflow
 
 1. Read `PRD.md` for product scope.
 2. Read `DEMO_REVIEW_REPORT.md` when the task depends on the reviewed Kemettech demo.
 3. Read `DEVELOPMENT_PHASES.md` when sequencing delivery work.
-4. Read `SOMMYCOMFORT_METHOD.md` when using the project-specific planning, UX, architecture, backlog, implementation, QA, and launch method.
+4. Read `FAMMY_COMFORTS_METHOD.md` when using the project-specific planning, UX, architecture, backlog, implementation, QA, and launch method.
 5. Read `DESIGN_SYSTEM.md` when creating UI, frontend code, design tokens, icons, or samples.
 6. Read `UI_SAMPLES.md` when choosing which visual references or prototype screens to build.
 7. Use `method/` templates as the local planning source of truth.

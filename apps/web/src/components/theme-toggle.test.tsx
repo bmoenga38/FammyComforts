@@ -25,7 +25,7 @@ describe("ThemeToggle", () => {
     await user.click(screen.getByRole("button"));
 
     expect(document.documentElement.dataset.theme).toBe("light");
-    expect(localStorage.getItem("sommycomfort-theme")).toBe("light");
+    expect(localStorage.getItem("fammycomforts-theme")).toBe("light");
     expect(screen.getByRole("button")).toHaveTextContent("Light");
     expect(screen.getByRole("button")).toHaveAttribute("aria-pressed", "false");
   });
@@ -39,7 +39,7 @@ describe("ThemeToggle", () => {
     await user.click(button);
 
     expect(document.documentElement.dataset.theme).toBe("dark");
-    expect(localStorage.getItem("sommycomfort-theme")).toBe("dark");
+    expect(localStorage.getItem("fammycomforts-theme")).toBe("dark");
   });
 
   it("syncs across tabs via the storage event", () => {
@@ -49,7 +49,7 @@ describe("ThemeToggle", () => {
     // Another tab changed the stored theme → native storage event fires.
     act(() => {
       window.dispatchEvent(
-        new StorageEvent("storage", { key: "sommycomfort-theme", newValue: "light" }),
+        new StorageEvent("storage", { key: "fammycomforts-theme", newValue: "light" }),
       );
     });
 

@@ -7,8 +7,8 @@
   },
   "mode": "initial_scan",
   "scan_level": "deep",
-  "project_root": "c:/Users/brycode/Desktop/Nice_One/SommyComfort",
-  "project_knowledge": "c:/Users/brycode/Desktop/Nice_One/SommyComfort/docs",
+  "project_root": "c:/Users/brycode/Desktop/Nice_One/Fammy Comforts",
+  "project_knowledge": "c:/Users/brycode/Desktop/Nice_One/Fammy Comforts/docs",
   "repository_type": "monolith",
   "project_types": [
     {
@@ -19,7 +19,7 @@
   ],
   "completed_steps": [
     { "step": "step_1", "status": "completed", "timestamp": "2026-06-04T19:32:00Z", "summary": "Classified as monolith, 1 part, web (vanilla HTML/CSS/JS prototype + Node static server)" },
-    { "step": "step_2", "status": "completed", "timestamp": "2026-06-04T19:32:00Z", "summary": "Found 6 existing root docs (PRD, DESIGN_SYSTEM, DEVELOPMENT_PHASES, DEMO_REVIEW_REPORT, UI_SAMPLES, SOMMYCOMFORT_METHOD) + method/ templates + ui-samples/" },
+    { "step": "step_2", "status": "completed", "timestamp": "2026-06-04T19:32:00Z", "summary": "Found 6 existing root docs (PRD, DESIGN_SYSTEM, DEVELOPMENT_PHASES, DEMO_REVIEW_REPORT, UI_SAMPLES, FAMMY_METHOD) + method/ templates + ui-samples/" },
     { "step": "step_3", "status": "completed", "timestamp": "2026-06-04T19:32:00Z", "summary": "Tech stack: HTML5/CSS3/vanilla ES6 + Node http static server; no package.json, no framework" },
     { "step": "step_4", "status": "completed", "timestamp": "2026-06-04T19:32:00Z", "summary": "Conditional analysis: UI components inventoried; no API endpoints (static server); no in-code data models" },
     { "step": "step_5", "status": "completed", "timestamp": "2026-06-04T19:32:00Z", "summary": "Source tree documented (prototype/ = only code; method/, ui-samples/, docs/, _bmad/)" },

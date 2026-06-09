@@ -47,7 +47,7 @@ export const viewport: Viewport = {
 
 // Runs synchronously before the body paints so the stored theme (default dark)
 // is applied to <html> with no flash of the wrong theme.
-const themeInitScript = `(function(){try{var t=localStorage.getItem('sommycomfort-theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();`;
+const themeInitScript = `(function(){try{var t=localStorage.getItem('fammycomforts-theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();`;
 
 export default function RootLayout({
   children,

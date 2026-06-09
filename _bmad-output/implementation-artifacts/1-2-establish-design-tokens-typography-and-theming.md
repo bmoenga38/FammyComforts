@@ -18,7 +18,7 @@ so that the product looks consistent and on-brand from the very first screen.
 
 1. **Design tokens applied** — the dark and light palettes from `DESIGN_SYSTEM.md` (backgrounds, text, primary/accent/cyan/orange/red/pink/yellow, borders) plus the **semantic status colors** (success/info/warning/danger/premium) exist as CSS custom properties in `apps/web/src/app/globals.css`, with **dark as the default** (`:root, [data-theme="dark"]`) and light under `[data-theme="light"]`. Switching `data-theme` changes the computed colors. (UX-DR1, UX-DR3)
 2. **Typography loaded** — Inter (UI/sans), Space Grotesk (display/headings), Syne (expressive), and JetBrains Mono (mono/IDs) are loaded via `next/font/google` as self-hosted variable fonts, exposed as CSS variables, and usable as Tailwind font utilities (`font-sans`, `font-display`, `font-expressive`, `font-mono`). The Geist fonts from the scaffold are removed. (UX-DR2)
-3. **Theme toggle + persistence** — a control toggles `data-theme` on `<html>` between dark/light, persists the choice to `localStorage["sommycomfort-theme"]`, and the choice is restored on reload. (UX-DR8)
+3. **Theme toggle + persistence** — a control toggles `data-theme` on `<html>` between dark/light, persists the choice to `localStorage["fammycomforts-theme"]`, and the choice is restored on reload. (UX-DR8)
 4. **No flash of wrong theme (no-FOUC)** — the stored theme (default `dark` when none stored) is applied to `<html>` before first paint via an inline head script, so reloading in light mode does not flash dark first.
 5. **Tailwind dark variant keys off `data-theme`** — `dark:` utilities respond to `[data-theme="dark"]` (via `@custom-variant`), not `prefers-color-scheme`; the scaffold's `prefers-color-scheme` block is removed.
 6. **Clean + green** — boilerplate is gone (Geist fonts, `next.svg`/`vercel.svg` demo page, default metadata); `pnpm build`, `pnpm typecheck`, and `pnpm lint` stay green.
@@ -38,10 +38,10 @@ so that the product looks consistent and on-brand from the very first screen.
   - [x] Map tokens into `@theme inline` as `--color-*` (e.g. `--color-bg`, `--color-bg-card`, `--color-text`, `--color-text-muted`, `--color-primary`, `--color-accent`, `--color-border`, status colors) and the font families (`--font-sans: var(--font-inter)`, `--font-display: var(--font-space-grotesk)`, `--font-expressive: var(--font-syne)`, `--font-mono: var(--font-jetbrains-mono)`)
   - [x] Set base `body` to use `var(--bg)` / `var(--text)` / `font-sans`; remove the scaffold's hardcoded `--background/--foreground` and the `@media (prefers-color-scheme: dark)` block
 - [x] **Task 3: No-FOUC theme init script** (AC: #3, #4)
-  - [x] Add an inline `<script>` early in the layout (before the app renders) that reads `localStorage["sommycomfort-theme"]`, falls back to `"dark"`, and sets `document.documentElement.dataset.theme` before paint
+  - [x] Add an inline `<script>` early in the layout (before the app renders) that reads `localStorage["fammycomforts-theme"]`, falls back to `"dark"`, and sets `document.documentElement.dataset.theme` before paint
   - [x] Set `<html lang="en">` without a hardcoded `data-theme` (the script owns it); keep `suppressHydrationWarning` on `<html>` since the script mutates it pre-hydration
 - [x] **Task 4: ThemeToggle client component** (AC: #3)
-  - [x] Create `apps/web/src/components/theme-toggle.tsx` (`"use client"`) that reads current `document.documentElement.dataset.theme`, toggles dark⇄light, writes `localStorage["sommycomfort-theme"]`, and updates the attribute
+  - [x] Create `apps/web/src/components/theme-toggle.tsx` (`"use client"`) that reads current `document.documentElement.dataset.theme`, toggles dark⇄light, writes `localStorage["fammycomforts-theme"]`, and updates the attribute
   - [x] Accessible: a real `<button>` with `aria-label`, visible focus
 - [x] **Task 5: Minimal themed demo page** (AC: #1, #2, #6)
   - [x] Replace the boilerplate `apps/web/src/app/page.tsx` with a small page that renders the ThemeToggle, a few token swatches (bg/card/primary/accent + the 5 status colors), and one line in each of the four fonts — enough to visually confirm tokens + fonts + theme switching
@@ -59,7 +59,7 @@ so that the product looks consistent and on-brand from the very first screen.
 - **Authoritative token source:** `DESIGN_SYSTEM.md` — sections **Dark Mode Tokens**, **Light Mode Tokens**, **Semantic Status Colors**, **Font Families**. Copy values exactly (e.g. dark `--primary: #50fa7b`, `--bg: #282a36`, `--text: #f8f8f2`; light `--primary: #16a34a`, `--bg: #f8fafc`, `--text: #1e293b`). Do not invent colors.
 - **Working reference implementation:** the prototype already implements this exact behavior — mine it but translate to Next/Tailwind:
   - `prototype/index.html` — `<html data-theme="dark">`, Google-fonts `<link>` for the four families (we use `next/font` instead).
-  - `prototype/app.js` — theme toggle reads/writes `localStorage` key **`sommycomfort-theme`** and sets `root.dataset.theme`; restores saved theme on load. **Reuse the exact key and default-dark behavior.**
+  - `prototype/app.js` — theme toggle reads/writes `localStorage` key **`fammycomforts-theme`** and sets `root.dataset.theme`; restores saved theme on load. **Reuse the exact key and default-dark behavior.**
   - `prototype/styles.css` — the full token + status implementation for visual parity.
 - **Tailwind v4 specifics (verified June 2026):** v4 is CSS-first (no `tailwind.config` darkMode). Attribute dark mode = `@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));`. Tokens become utilities by declaring `--color-<name>` inside `@theme inline` (then `bg-bg`, `text-text-muted`, `border-border`, `text-primary`, etc. work). [Source: tailwindcss.com/docs/dark-mode]
 - **next/font (verified):** import each family from `next/font/google`, give each a `variable`, and combine all four `.variable` classes in the `<html>` className template literal. Self-hosted, no external requests. [Source: nextjs.org/docs/app/getting-started/fonts]
@@ -76,7 +76,7 @@ so that the product looks consistent and on-brand from the very first screen.
 
 - [Source: _bmad-output/planning-artifacts/epics.md#Story-1.2] — story + ACs (UX-DR1, UX-DR2, UX-DR8)
 - [Source: DESIGN_SYSTEM.md] — Dark/Light Mode Tokens, Semantic Status Colors, Font Families (exact values)
-- [Source: prototype/app.js] — theme toggle, `localStorage` key `sommycomfort-theme`, restore-on-load
+- [Source: prototype/app.js] — theme toggle, `localStorage` key `fammycomforts-theme`, restore-on-load
 - [Source: prototype/index.html] — default `data-theme="dark"`, font set
 - [Source: prototype/styles.css] — reference token + status implementation
 - [Source: _bmad-output/planning-artifacts/architecture.md#Frontend-Architecture] — Tailwind v4 + design-token theming decision
@@ -92,13 +92,13 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 ### Debug Log References
 
 - `pnpm build` 4/4 · `pnpm typecheck` 5/5 · `pnpm lint` clean.
-- Dev smoke (`next dev`, curl `/`): HTTP 200; no-FOUC inline script present (`sommycomfort-theme` found in served HTML); page content + app name render; typography samples present.
+- Dev smoke (`next dev`, curl `/`): HTTP 200; no-FOUC inline script present (`fammycomforts-theme` found in served HTML); page content + app name render; typography samples present.
 - Lint caught a real issue first pass: `react-hooks/set-state-in-effect` on the toggle's `useEffect`+`setState`. Rewrote `ThemeToggle` with `useSyncExternalStore` (server snapshot `dark`, client snapshot reads `<html data-theme>`) — hydration-safe and rule-compliant.
 
 ### Completion Notes List
 
 - **All 6 ACs satisfied.** Dark-default token system (dark/light + status) from `DESIGN_SYSTEM.md`, four `next/font` families, attribute-based theming with no-FOUC init + persistence, Tailwind `dark:` keyed to `data-theme`, boilerplate removed, all checks green.
-- **Theme switching mechanism:** inline head-equivalent script (first child of `<body>`) sets `<html data-theme>` from `localStorage["sommycomfort-theme"]` (default `dark`) before paint; `ThemeToggle` flips the attribute + persists + notifies via a custom event consumed by `useSyncExternalStore`.
+- **Theme switching mechanism:** inline head-equivalent script (first child of `<body>`) sets `<html data-theme>` from `localStorage["fammycomforts-theme"]` (default `dark`) before paint; `ThemeToggle` flips the attribute + persists + notifies via a custom event consumed by `useSyncExternalStore`.
 - **Tokens → utilities:** all tokens mapped through `@theme inline` so `bg-bg`, `bg-bg-card`, `text-text`, `text-text-muted`, `border-border`, `text-primary`, `text-success`, font utilities (`font-sans/display/expressive/mono`), etc. work and stay theme-reactive.
 - **Verification caveat:** the interactive toggle + persistence-across-reload was verified by SSR smoke + code logic, **not** browser automation (no Playwright/web test runner exists yet — that lands with the test harness in Story 1.9 / the `tea` module). Recommend a manual `pnpm dev` click-through during review.
 - **Scope kept tight:** added only the single `ThemeToggle` component required by AC#3; the full primitives library remains Story 1.3/1.4. The demo `page.tsx` is a throwaway design-system check, not production UI.

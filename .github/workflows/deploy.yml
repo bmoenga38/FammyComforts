@@ -28,7 +28,7 @@ jobs:
           file: apps/api/Dockerfile
           # Flip to true once a registry + REGISTRY_* secrets are configured.
           push: false
-          tags: sommycomfort-api:${{ github.sha }}
+          tags: fammycomforts-api:${{ github.sha }}
 
       - name: Build web image
         uses: docker/build-push-action@v6
@@ -36,7 +36,7 @@ jobs:
           context: .
           file: apps/web/Dockerfile
           push: false
-          tags: sommycomfort-web:${{ github.sha }}
+          tags: fammycomforts-web:${{ github.sha }}
 
   migrate:
     name: Apply DB migrations (prisma migrate deploy)

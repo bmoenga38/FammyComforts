@@ -77,7 +77,7 @@ Component styling follows [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md):
 | Behavior | Trigger | Effect |
 |---|---|---|
 | Icon hydration | on load | Fills `[data-icon]` with inline SVG |
-| Theme restore | on load | Applies saved `sommycomfort-theme` |
+| Theme restore | on load | Applies saved `fammycomforts-theme` |
 | Theme toggle | `#themeToggle` click | Flips theme, persists, toasts |
 | View switching | `.nav-item` click | Activates view + updates title |
 | Mobile menu | `#mobileMenu` click | Toggles `body.menu-open` |

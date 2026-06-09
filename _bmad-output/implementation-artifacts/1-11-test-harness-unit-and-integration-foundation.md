@@ -38,7 +38,7 @@ so that the high-risk money, availability, and RBAC code (Epics 2, 4, 5) is buil
 - [x] **Task 2: Web — Vitest + RTL + jsdom** (AC: #1, #3)
   - [x] Add `vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event` to `apps/web`
   - [x] `vitest.config.ts` (jsdom env, react plugin, setup file with jest-dom matchers, path alias `@/*`); `test` script
-  - [x] `src/components/theme-toggle.test.tsx` — renders; click toggles `document.documentElement.dataset.theme` dark⇄light; writes `localStorage['sommycomfort-theme']`
+  - [x] `src/components/theme-toggle.test.tsx` — renders; click toggles `document.documentElement.dataset.theme` dark⇄light; writes `localStorage['fammycomforts-theme']`
 - [x] **Task 3: API — replace Jest with Vitest** (AC: #1, #4)
   - [x] Remove jest config/deps (`jest`, `ts-jest`, `@types/jest`, jest block) from `apps/api`; add `vitest`, `unplugin-swc`, `@swc/core`
   - [x] `vitest.config.ts` using `unplugin-swc` (decorators + emitDecoratorMetadata), globals on; update `test` script

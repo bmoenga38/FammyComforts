@@ -37,9 +37,9 @@ docker compose up -d            # postgres:18, redis:8, minio
 cp packages/db/.env.example packages/db/.env   # then set DATABASE_URL if needed
 ```
 
-- Postgres → `localhost:5432` (user/pw/db: `sommycomfort`)
+- Postgres → `localhost:5432` (user/pw/db: `fammycomforts`)
 - Redis → `localhost:6379`
-- MinIO → API `localhost:9000`, console `localhost:9001` (`sommycomfort`/`sommycomfort`)
+- MinIO → API `localhost:9000`, console `localhost:9001` (`fammycomforts`/`fammycomforts`)
 
 ## Container images
 

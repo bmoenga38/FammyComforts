@@ -4,8 +4,8 @@ import { useSyncExternalStore } from "react";
 
 type Theme = "dark" | "light";
 
-const STORAGE_KEY = "sommycomfort-theme";
-const CHANGE_EVENT = "sommycomfort:themechange";
+const STORAGE_KEY = "fammycomforts-theme";
+const CHANGE_EVENT = "fammycomforts:themechange";
 
 /**
  * Toggles the Fammy Comforts theme. The initial theme is applied before paint by

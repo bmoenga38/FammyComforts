@@ -30,7 +30,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 **Decision (Brian, 2026-06-08): the backend is built on [Convex](https://convex.dev), not the NestJS/Prisma/PostgreSQL stack described below.** Where the sections that follow (and AR3/AR4/AR6/AR7/AR8) describe NestJS + Prisma + PostgreSQL + Socket.IO + Redis/BullMQ + S3, **this addendum overrides them.** The original text is kept for history; treat it as superseded.
 
-**Convex project:** `bry-code/sommycomfort` — Development deployment `quixotic-boar-465`, Production deployment `notable-cod-441` (dashboards in the team's records / the `sommycomfort-convex-backend` memory).
+**Convex project:** `bry-code/sommycomfort` — Development deployment `quixotic-boar-465`, Production deployment `notable-cod-441` (dashboards in the team's records / the `fammycomforts-convex-backend` memory).
 
 ### What Convex replaces (concern → mechanism)
 
@@ -118,8 +118,8 @@ Gives independently deployable `web` (PWA) and `api` (REST + realtime + queues) 
 
 ```bash
 # scaffold the monorepo
-pnpm dlx create-turbo@latest sommycomfort --package-manager pnpm
-cd sommycomfort
+pnpm dlx create-turbo@latest fammycomforts --package-manager pnpm
+cd fammycomforts
 
 # add the apps
 pnpm dlx create-next-app@latest apps/web --typescript --tailwind --app --eslint --src-dir
@@ -277,7 +277,7 @@ mkdir -p packages/shared packages/db
 ### Complete Project Directory Structure
 
 ```
-sommycomfort/
+fammycomforts/
 ├── package.json                 # pnpm workspace root
 ├── pnpm-workspace.yaml
 ├── turbo.json                   # Turborepo task graph
@@ -456,7 +456,7 @@ No **critical** (blocking) issues. The important gaps above are scoped as early 
 
 **First Implementation Priority:**
 ```bash
-pnpm dlx create-turbo@latest sommycomfort --package-manager pnpm
+pnpm dlx create-turbo@latest fammycomforts --package-manager pnpm
 # then add apps/web (Next.js 16) and apps/api (NestJS 11) and packages/{shared,db,config}
 ```
 Immediately followed by the Prisma schema for the core entities (`PRD.md` §8) and the auth + RBAC module.

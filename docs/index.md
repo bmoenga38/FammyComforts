@@ -36,7 +36,7 @@ Fammy Comforts is a planned mobile-first **accommodation / rental operations PWA
 - [DEVELOPMENT_PHASES.md](../DEVELOPMENT_PHASES.md) - Delivery phases
 - [DEMO_REVIEW_REPORT.md](../DEMO_REVIEW_REPORT.md) - Findings from the reference (Kemet) accommodation app
 - [UI_SAMPLES.md](../UI_SAMPLES.md) - UI sample reference index
-- [SOMMYCOMFORT_METHOD.md](../SOMMYCOMFORT_METHOD.md) - Custom delivery-method overview
+- [FAMMY_COMFORTS_METHOD.md](../FAMMY_COMFORTS_METHOD.md) - Custom delivery-method overview
 - [method/](../method/) - Stage-by-stage method templates (product → UX → architecture → backlog → implementation → QA → launch)
 - [ui-samples/arrowpath-reference/](../ui-samples/arrowpath-reference/) - HTML visual references (design-doc, login, mobile mockups)
 

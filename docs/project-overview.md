@@ -51,7 +51,7 @@ Cross-cutting prototype behaviors: light/dark theme toggle persisted to `localSt
 ## Architecture Highlights
 
 - **Single HTML shell, no router:** all six views live in `index.html`; `app.js` toggles an `.active` class to switch views and update the page title. No client-side routing library.
-- **Design-token theming:** `styles.css` defines CSS custom properties for dark and light palettes; the theme is switched by setting `data-theme` on `<html>` and saved to `localStorage` under `sommycomfort-theme`.
+- **Design-token theming:** `styles.css` defines CSS custom properties for dark and light palettes; the theme is switched by setting `data-theme` on `<html>` and saved to `localStorage` under `fammycomforts-theme`.
 - **Inline SVG icon registry:** `app.js` holds an `icons` map and hydrates any `[data-icon]` element — the production app is expected to migrate to `lucide-react` (per `DESIGN_SYSTEM.md`).
 - **Static, hardened server:** `server.js` resolves requests under the prototype root only (path-traversal guard via `file.startsWith(root)`), maps a small MIME table, and returns 403/404 appropriately. No application logic or APIs.
 
