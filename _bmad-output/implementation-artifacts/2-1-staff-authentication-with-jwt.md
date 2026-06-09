@@ -181,7 +181,8 @@ claude-opus-4-8[1m]
   dev deployment `quixotic-boar-465`: schema (orgId + identity cache + authTables),
   `requireOrgUser` gate, SSO cache functions, `resolveHandoff`/`completeHandoff`,
   Convex Auth `sso-handoff` provider, auth keys provisioned, web client provider +
-  `/sso` page. Backend 9/9 + web 37/37 tests, full turbo gate green, web prod build OK.
+  `/sso` page. **Backend 12/12 + web 41/41 tests** (incl. 3 `resolveHandoff` unit
+  tests + 4 `/sso` RTL tests for A1/A2), full turbo gate green, web prod build OK.
 - **Only Task 7 remains** (cross-repo): set `BYTEBAZAAR_CONVEX_URL` +
   `BYTEBAZAAR_SERVICE_TOKEN`, land BB-1..BB-3 → then the live tile→session round-trip
   can be exercised. `auditLogs` orgId/actorId migration deferred to Story 2.5.
@@ -190,8 +191,9 @@ claude-opus-4-8[1m]
 - Added (backend): `convex/identity.ts`, `convex/lib/auth.ts`, `convex/sso.ts`,
   `convex/auth.ts`, `convex/http.ts`, `convex/auth.config.ts`,
   `convex/identity.test.ts`, `scripts/gen-auth-keys.mjs`
+- Added (backend tests): `convex/identity.test.ts`, `convex/sso.test.ts`
 - Added (web): `src/components/convex-client-provider.tsx`,
-  `src/app/sso/page.tsx`, `.env.example`
+  `src/app/sso/page.tsx`, `src/app/sso/page.test.tsx`, `.env.example`
 - Added (docs): `docs/integrations/bytestay-fammycomfort-epic2-spec.md`
 - Modified (backend): `convex/schema.ts` (+authTables/identity), `package.json`,
   `convex/_generated/*` (codegen)
