@@ -4,7 +4,17 @@ baseline_commit: 088c4c7af8d3ecab31f1e523e51c546a4ac3e5ed
 
 # Story 2.4: Staff management
 
-Status: ready-for-dev
+Status: done
+
+> **✅ Implemented (org-scoped, SSO model).** Staff are provisioned via SSO
+> (Story 2.1); this story manages their active state + role assignments on top of
+> Story 2.3's RBAC. **Backend** `convex/staff.ts`: `list` (org staff + roles,
+> `Employees:read`), `setActive` (anti-lockout self-guard), `assignRole`/
+> `removeRole` — gated by `Employees:manage`, audited atomically. **Web**: the
+> Staff section of `/admin/access` (list, activate/deactivate, role chips),
+> permission-gated via `usePermissions`. **Tests:** `staff.test.ts` (3) + web
+> gating; full turbo gate + web build green. No local "create user" — identities
+> come from SSO, not signup.
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

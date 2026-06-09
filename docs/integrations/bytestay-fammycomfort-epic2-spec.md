@@ -161,11 +161,22 @@ Tracks what's actually landed vs gated, so the story file and this stay honest.
     `signIn("sso-handoff", { token })`). Full turbo gate green; web build OK.
 - **Story 2.2** (recovery → ByteAuth): superseded; thin `/signin` redirect
   affordance (`NEXT_PUBLIC_BYTEPLANE_URL`) — no FammyComfort credential/reset.
-- **Story 2.3** (RBAC, backend): global `permissions` catalog + per-org
+- **Story 2.3** (RBAC): global `permissions` catalog + per-org
   `roles`/`rolePermissions`/`userRoles`; `requirePermission` wrapping
   `requireOrgUser`; idempotent per-org seed (12 roles × 18 areas × 3 actions) +
-  audited `roles` admin functions. Backend **17/17**. Web Roles UI + SSO-role
-  auto-assignment deferred.
+  audited `roles` admin functions; **SSO-role → base-role auto-assignment** on
+  first sign-in (`rbac.bootstrapForUser`, called from `resolveHandoff`). Web:
+  Roles grid in `/admin/access` + `usePermissions` gate.
+- **Story 2.4** (staff management): `convex/staff.ts` (list/setActive/assign+remove
+  role, gated `Employees:*`, audited) + the Staff section of `/admin/access`.
+- **Story 2.5** (audit view): `convex/audit.ts` (org-scoped, gated
+  `Audit logs:read`, filterable) + the Audit section of `/admin/access`.
+- **2.1 contract fix:** `verifyHandoff` returns `{ valid }` (not null) — handled.
+- **Verification:** backend **25/25**, web **50/50**, full turbo gate **14/14**,
+  web production build OK (`/admin/access`, `/signin`, `/sso` all build).
+- **Only remaining for Epic 2:** set `BYTEBAZAAR_CONVEX_URL` +
+  `BYTEBAZAAR_SERVICE_TOKEN` (+ `NEXT_PUBLIC_BYTEPLANE_URL` for `/signin`) and
+  verify the live tile→session round-trip now that BB-1..BB-3 are done.
 
 **Gated on the shared secret + BB-1..BB-3 (cross-repo):**
 - The live `/sso` round-trip (`verifyHandoff` → mint session → `consumeHandoff`)

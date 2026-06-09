@@ -4,7 +4,16 @@ baseline_commit: 088c4c7af8d3ecab31f1e523e51c546a4ac3e5ed
 
 # Story 2.5: Audit log of sensitive actions
 
-Status: ready-for-dev
+Status: done
+
+> **✅ Implemented (org-scoped read surface).** Audit rows are *written*
+> throughout Epic 2 (auth, role, staff mutations) via the `auditLogs` table
+> (now with `orgId` + `by_org`). This story adds the *view*: **backend**
+> `convex/audit.ts` `list` — org-scoped, gated by `Audit logs:read`, newest-first,
+> with action-prefix / entityType filters; it never returns another org's rows or
+> infra (backup) rows. **Web**: the Audit section of `/admin/access`.
+> **Tests:** `audit.test.ts` (3 — ordering/filter/gate, cross-org isolation,
+> forbidden) + web gating; full turbo gate + web build green.
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
