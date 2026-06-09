@@ -59,7 +59,7 @@ so that I can keep working with intermittent connectivity and my actions aren't 
 
 - [Source: _bmad-output/planning-artifacts/epics.md#Story-1.6] — story + ACs (NFR1, NFR2, NFR3, NFR5)
 - [Source: _bmad-output/planning-artifacts/architecture.md#Frontend-Architecture] — TanStack Query offline mutation queue, Serwist PWA
-- [Source: _bmad-output/planning-artifacts/ux-designs/ux-SommyComfort-2026-06-05/EXPERIENCE.md] — offline a first-class state, clear indicators, accessibility floor
+- [Source: _bmad-output/planning-artifacts/ux-designs/ux-Fammy Comforts-2026-06-05/EXPERIENCE.md] — offline a first-class state, clear indicators, accessibility floor
 - [Source: apps/web/src/app/sw.ts] — the Story 1.5 SW this builds on
 - [Source: _bmad-output/implementation-artifacts/deferred-work.md] — 1.5 deferrals (Lighthouse measurement, PNG icons, SW update strategy)
 

@@ -1,4 +1,4 @@
-// SommyComfort Prisma schema (AR4) — PostgreSQL 18 + Prisma 7.
+// Fammy Comforts Prisma schema (AR4) — PostgreSQL 18 + Prisma 7.
 //
 // Tables are created per-story when first needed (see data-model.md, which is
 // the field-level target schema). Story 1.8 creates only `AuditLog` — the

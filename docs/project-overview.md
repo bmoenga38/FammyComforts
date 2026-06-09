@@ -1,4 +1,4 @@
-# SommyComfort - Project Overview
+# Fammy Comforts - Project Overview
 
 **Date:** 2026-06-04
 **Type:** Web (frontend) — installable PWA prototype
@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-SommyComfort is a mobile-first **accommodation / rental operations platform** intended to ship as a production Progressive Web App (PWA). It targets the full operational surface of a guest-house / serviced-apartment business: guest self-booking, front-desk reservations, room & asset management, housekeeping, inventory, restaurant / room-service, payments (cash, M-Pesa, card), role-based staff access, notifications, and business reporting.
+Fammy Comforts is a mobile-first **accommodation / rental operations platform** intended to ship as a production Progressive Web App (PWA). It targets the full operational surface of a guest-house / serviced-apartment business: guest self-booking, front-desk reservations, room & asset management, housekeeping, inventory, restaurant / room-service, payments (cash, M-Pesa, card), role-based staff access, notifications, and business reporting.
 
 The repository today is in the **planning + prototype** stage. It contains:
 
@@ -66,7 +66,7 @@ Cross-cutting prototype behaviors: light/dark theme toggle persisted to `localSt
 ```bash
 cd prototype
 node server.js
-# → SommyComfort prototype running on http://127.0.0.1:4173
+# → Fammy Comforts prototype running on http://127.0.0.1:4173
 ```
 
 Set `PORT` to override the default 4173.

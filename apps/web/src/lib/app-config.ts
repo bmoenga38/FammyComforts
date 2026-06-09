@@ -1,6 +1,6 @@
-import { APP_NAME, DEFAULT_CURRENCY } from "@sommycomfort/shared";
+import { APP_NAME, DEFAULT_CURRENCY } from "@fammycomforts/shared";
 
-// Proves the @sommycomfort/shared workspace package resolves & typechecks in web.
+// Proves the @fammycomforts/shared workspace package resolves & typechecks in web.
 // Real UI config grows here in later stories.
 export const appConfig = {
   name: APP_NAME,

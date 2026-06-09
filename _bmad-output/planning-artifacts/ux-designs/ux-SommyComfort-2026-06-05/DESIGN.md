@@ -5,7 +5,7 @@ owns: visual-identity
 defers_to: ../../../../DESIGN_SYSTEM.md
 ---
 
-# SommyComfort — DESIGN (visual identity)
+# Fammy Comforts — DESIGN (visual identity)
 
 > **This project's visual identity already exists** in [`DESIGN_SYSTEM.md`](../../../../DESIGN_SYSTEM.md) and is implemented in `apps/web` (Story 1.2 tokens + Story 1.3 primitives). That document is the authoritative DESIGN spine — colors, typography, status colors, component style, icons. This file intentionally does **not** duplicate it.
 

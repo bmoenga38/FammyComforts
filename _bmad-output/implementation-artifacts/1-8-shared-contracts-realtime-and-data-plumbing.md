@@ -26,7 +26,7 @@ so that later features have a typed contract, a live channel, and DB access read
 
 ## Acceptance Criteria
 
-1. **Shared Zod contract (AR5).** `packages/shared` exports Zod schemas + inferred types as the single web↔api contract: a reusable response **envelope** (`{ data, meta }` success / `{ error: { code, message, details } }` error), common primitives (e.g. a UUID id schema, a pagination query schema), and at least one concrete schema exercised by the API (the health response). Money utilities (`toCents`/`fromCents`/`formatKes`) are preserved and a date helper enforces **ISO-8601 UTC**. Both `apps/web` and `apps/api` can import from `@sommycomfort/shared` with no duplication.
+1. **Shared Zod contract (AR5).** `packages/shared` exports Zod schemas + inferred types as the single web↔api contract: a reusable response **envelope** (`{ data, meta }` success / `{ error: { code, message, details } }` error), common primitives (e.g. a UUID id schema, a pagination query schema), and at least one concrete schema exercised by the API (the health response). Money utilities (`toCents`/`fromCents`/`formatKes`) are preserved and a date helper enforces **ISO-8601 UTC**. Both `apps/web` and `apps/api` can import from `@fammycomforts/shared` with no duplication.
 2. **Prisma schema + client (AR4).** `packages/db/prisma/schema.prisma` exists with a `postgresql` datasource (`env("DATABASE_URL")`), a Prisma 7 client generator, and the `AuditLog` model following the `data-model.md` conventions (UUID v7 `id`, `snake_case` `@@map`/`@map`, `created_at`, JSON before/after, indexes). `prisma generate` succeeds (no DB required) and `packages/db` exports the typed `PrismaClient`. An `.env.example` documents `DATABASE_URL`.
 3. **Prisma wired into Nest (AR4, NFR10).** A `PrismaModule` + `PrismaService` (extends `PrismaClient`, connects on module init, disconnects on shutdown) is provided to the app. Connection failure when no DB is reachable is handled gracefully (logged, does not crash boot) so the API starts in this environment.
 4. **Typed config + global API shape.** A config module validates env with Zod (fails fast on bad/missing required env), the app uses the global `/api/v1` prefix, and a global validation pipe enforces the shared Zod schemas on inputs. Responses/errors follow the documented envelope.
@@ -71,7 +71,7 @@ From `data-model.md`: `id String @id @default(dbgenerated("uuidv7()")) @db.Uuid`
 
 ### Next.js / Nest version caveats
 - NestJS 11 + `@nestjs/platform-socket.io` — confirm the Socket.IO adapter is the default for `@WebSocketGateway`; if a custom `IoAdapter` is needed it's `app.useWebSocketAdapter(new IoAdapter(app))` in `main.ts`. Verify against installed `@nestjs/websockets` version.
-- Prisma 7: confirm the generator block + client import path (`@prisma/client`) against the installed 7.x; the `prisma` CLI is invoked via package scripts (`pnpm --filter @sommycomfort/db db:generate`).
+- Prisma 7: confirm the generator block + client import path (`@prisma/client`) against the installed 7.x; the `prisma` CLI is invoked via package scripts (`pnpm --filter @fammycomforts/db db:generate`).
 
 ### Project Structure Notes
 - **New:** `packages/shared/src/contracts/*` (or `schemas.ts`) + tests; `packages/db/prisma/schema.prisma`, `packages/db/.env.example`, `packages/db/src/index.ts` (rewritten), `packages/db` test(s); `apps/api/src/{prisma,health,realtime,config}/*` + tests.

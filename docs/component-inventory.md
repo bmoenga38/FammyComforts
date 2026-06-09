@@ -1,4 +1,4 @@
-# SommyComfort - Component Inventory
+# Fammy Comforts - Component Inventory
 
 **Date:** 2026-06-04
 

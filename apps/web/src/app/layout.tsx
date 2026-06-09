@@ -31,8 +31,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "SommyComfort",
-    template: "%s · SommyComfort",
+    default: "Fammy Comforts",
+    template: "%s · Fammy Comforts",
   },
   description:
     "Accommodation & rental operations — guest booking, front desk, housekeeping, payments, and reporting in one installable PWA.",

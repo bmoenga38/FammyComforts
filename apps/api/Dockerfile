@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# SommyComfort API (NestJS). Multi-stage, pnpm + Turborepo aware.
+# Fammy Comforts API (NestJS). Multi-stage, pnpm + Turborepo aware.
 # Built in CI (AR8) — not buildable in the dev environment (no Docker daemon).
 # Build context is the repo root (the monorepo workspace).
 
@@ -10,12 +10,12 @@ WORKDIR /app
 # ---- build: install the full workspace, build the api via Turbo ----
 # Build through Turbo so workspace deps (shared, db — db's build runs
 # `prisma generate` + tsc) compile FIRST per the `^build` graph. A direct
-# `pnpm --filter @sommycomfort/api build` would skip them and fail on the
-# missing `@sommycomfort/db` dist.
+# `pnpm --filter @fammycomforts/api build` would skip them and fail on the
+# missing `@fammycomforts/db` dist.
 FROM base AS build
 COPY . .
 RUN pnpm install --frozen-lockfile \
-  && pnpm exec turbo run build --filter=@sommycomfort/api
+  && pnpm exec turbo run build --filter=@fammycomforts/api
 
 # ---- runtime ----
 FROM base AS runtime

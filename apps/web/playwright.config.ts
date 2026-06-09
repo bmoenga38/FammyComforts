@@ -4,7 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
  * Playwright e2e config (Story 1.9, AR8). Specs live in `./e2e` (outside the
  * Vitest `src/**` glob, so the two runners never collide). The webServer serves
  * a prior production build via `next start`; build first (`pnpm --filter
- * @sommycomfort/web build`) — CI does this before `test:e2e`. Browsers are
+ * @fammycomforts/web build`) — CI does this before `test:e2e`. Browsers are
  * installed in CI via `playwright install --with-deps chromium`.
  */
 const PORT = 3100;

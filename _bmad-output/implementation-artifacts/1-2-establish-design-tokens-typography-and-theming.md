@@ -11,7 +11,7 @@ Status: done
 ## Story
 
 As a user,
-I want the app to render in the SommyComfort dark and light themes with the correct fonts and colors,
+I want the app to render in the Fammy Comforts dark and light themes with the correct fonts and colors,
 so that the product looks consistent and on-brand from the very first screen.
 
 ## Acceptance Criteria
@@ -30,7 +30,7 @@ so that the product looks consistent and on-brand from the very first screen.
 - [x] **Task 1: Load the four font families** (AC: #2)
   - [x] In `apps/web/src/app/layout.tsx`, replace `Geist`/`Geist_Mono` with `next/font/google` imports: `Inter` (`--font-inter`), `Space_Grotesk` (`--font-space-grotesk`), `Syne` (`--font-syne`), `JetBrains_Mono` (`--font-jetbrains-mono`); all `subsets: ["latin"]`, `display: "swap"`
   - [x] Apply all four `.variable` classes to the `<html>` className
-  - [x] Update `metadata` to SommyComfort (title `SommyComfort`, a real description)
+  - [x] Update `metadata` to Fammy Comforts (title `Fammy Comforts`, a real description)
 - [x] **Task 2: Build the token system in globals.css** (AC: #1, #3, #5)
   - [x] Keep `@import "tailwindcss";`. Add `@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));`
   - [x] Define `:root, [data-theme="dark"] { … }` with the full **Dark Mode Tokens** from `DESIGN_SYSTEM.md`, and `[data-theme="light"] { … }` with the **Light Mode Tokens**
@@ -70,7 +70,7 @@ so that the product looks consistent and on-brand from the very first screen.
 
 - New file: `apps/web/src/components/theme-toggle.tsx` (first entry under `src/components/` — primitives library proper arrives in Story 1.3; this single component is acceptable here as it's required to satisfy AC#3).
 - Keep everything inside `apps/web`; no changes to `packages/*` or `apps/api` in this story.
-- `app-config.ts` from Story 1.1 (`@sommycomfort/shared` import) stays; no need to touch it.
+- `app-config.ts` from Story 1.1 (`@fammycomforts/shared` import) stays; no need to touch it.
 
 ### References
 
@@ -116,7 +116,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 | Date | Change |
 |---|---|
 | 2026-06-05 | Story drafted (create-story). |
-| 2026-06-05 | Implemented: SommyComfort dark/light token system + 4 next/font families + attribute-based theming with no-FOUC init and `ThemeToggle` (useSyncExternalStore); boilerplate removed. build/typecheck/lint green; dev smoke passed. Status → review. |
+| 2026-06-05 | Implemented: Fammy Comforts dark/light token system + 4 next/font families + attribute-based theming with no-FOUC init and `ThemeToggle` (useSyncExternalStore); boilerplate removed. build/typecheck/lint green; dev smoke passed. Status → review. |
 | 2026-06-05 | Code review (3 layers). Auditor: all 6 ACs satisfied. Applied 3 patches to `ThemeToggle` (SSR-guard `getSnapshot`, cross-tab `storage` sync, stable `aria-label` + `aria-pressed`). 2 deferred. Re-verified build/typecheck/lint. Status → done. |
 
 ## Senior Developer Review (AI)

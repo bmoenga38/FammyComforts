@@ -4,7 +4,7 @@ import {
   type OnModuleInit,
   type OnModuleDestroy,
 } from '@nestjs/common';
-import { PrismaClient } from '@sommycomfort/db';
+import { PrismaClient } from '@fammycomforts/db';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 /**

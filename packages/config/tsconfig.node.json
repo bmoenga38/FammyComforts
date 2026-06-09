@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "@sommycomfort/config node library (extends base)",
+  "display": "@fammycomforts/config node library (extends base)",
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",

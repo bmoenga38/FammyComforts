@@ -1,4 +1,4 @@
-# Design System: SommyComfort Accommodation PWA
+# Design System: Fammy Comforts Accommodation PWA
 
 This visual direction is adapted from the Arrowpath project at `C:\Users\brycode\Desktop\Brian\Web\arrowpath`.
 

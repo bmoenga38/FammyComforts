@@ -45,7 +45,7 @@ so that the operational screens (dashboard, housekeeping, kitchen, front desk) r
 
 - **Builds on Story 1.3 primitives** (`@/components/ui`: `Button`, `Card`/`CardContent`, `StatusChip`, `Input`, `Table`) and the `cn` helper. **Compose them — do not re-style from scratch.** Reuse the AA-tuned tokens/utilities from 1.3 (`bg-bg-card`, `text-text`, `text-text-muted`, status + badge utilities, `bg-btn-primary`, etc.). [Source: apps/web/src/components/ui/, apps/web/src/app/globals.css]
 - **Visual/behavioral reference:** `docs/component-inventory.md` + `prototype/` (`.metric`, `.task-card`, `.kanban`/`.order-card`/`.empty-state`, `.calendar-row`/`.slot`, `.segmented`, `#toast`). Match the look; implement as React + tokens. [Source: docs/component-inventory.md; prototype/styles.css, prototype/app.js]
-- **Behavior the spec needs** (from `EXPERIENCE.md`): status never by color alone (CalendarSlot/StatusChip carry labels); mobile ops patterns = large tap targets, dense layouts (UX-DR6); Toast is `aria-live` so it's announced. [Source: _bmad-output/planning-artifacts/ux-designs/ux-SommyComfort-2026-06-05/EXPERIENCE.md]
+- **Behavior the spec needs** (from `EXPERIENCE.md`): status never by color alone (CalendarSlot/StatusChip carry labels); mobile ops patterns = large tap targets, dense layouts (UX-DR6); Toast is `aria-live` so it's announced. [Source: _bmad-output/planning-artifacts/ux-designs/ux-Fammy Comforts-2026-06-05/EXPERIENCE.md]
 - **Toast pattern:** a `"use client"` `ToastProvider` holding an array of toasts in state + a fixed render region; `useToast()` reads context. Auto-dismiss via `setTimeout` cleared on unmount. Keep it minimal (no external lib). Place the provider in a client boundary; the root `layout.tsx` can render `<ToastProvider>{children}</ToastProvider>` (ToastProvider is a client component, children stay server — fine).
 - **SegmentedControl a11y:** prefer `role="radiogroup"` with `role="radio" aria-checked` buttons and roving focus / arrow keys, OR a fieldset of visually-styled native radios. Either is acceptable if keyboard-operable with a visible focus ring.
 - **CalendarSlot state → status mapping:** available→success, booked→info, cleaning→warning, occupied→info (or a distinct), checkout→warning/danger — reuse StatusChip/status utilities; keep a label.
@@ -64,7 +64,7 @@ so that the operational screens (dashboard, housekeeping, kitchen, front desk) r
 - [Source: docs/component-inventory.md] — prototype composite components catalog
 - [Source: DESIGN_SYSTEM.md#Component-Style] — card/button/table/mobile-ops rules
 - [Source: apps/web/src/components/ui/] — Story 1.3 primitives to compose
-- [Source: _bmad-output/planning-artifacts/ux-designs/ux-SommyComfort-2026-06-05/EXPERIENCE.md] — status-not-by-color-alone, mobile ops, aria-live toast
+- [Source: _bmad-output/planning-artifacts/ux-designs/ux-Fammy Comforts-2026-06-05/EXPERIENCE.md] — status-not-by-color-alone, mobile ops, aria-live toast
 
 ## Dev Agent Record
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { PrismaClient, Prisma } from "./index";
 
-describe("@sommycomfort/db", () => {
+describe("@fammycomforts/db", () => {
   it("re-exports the generated PrismaClient constructor", () => {
     expect(typeof PrismaClient).toBe("function");
   });

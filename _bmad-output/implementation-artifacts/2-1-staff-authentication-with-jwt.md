@@ -61,7 +61,7 @@ so that I can access the tools my role permits.
 ## Tasks / Subtasks
 
 - [ ] **Task 1: Install Convex Auth + provision auth env (AC: #1, #3)** *(partially deferred — needs Convex login)*
-  - [ ] `pnpm --filter @sommycomfort/backend add @convex-dev/auth @auth/core` (pin `@auth/core` to the version the `@convex-dev/auth` README specifies). **[DEFERRED-online: the install is offline-OK, but `npx @convex-dev/auth` to generate `SITE_URL` + `JWKS`/`JWT_PRIVATE_KEY` and `convex/auth.config.ts` requires a Convex login — see Dev Notes.]**
+  - [ ] `pnpm --filter @fammycomforts/backend add @convex-dev/auth @auth/core` (pin `@auth/core` to the version the `@convex-dev/auth` README specifies). **[DEFERRED-online: the install is offline-OK, but `npx @convex-dev/auth` to generate `SITE_URL` + `JWKS`/`JWT_PRIVATE_KEY` and `convex/auth.config.ts` requires a Convex login — see Dev Notes.]**
   - [ ] After install, **verify the installed API** against `node_modules/.pnpm/@convex-dev+auth@*/.../server` — confirm `convexAuth`, `getAuthUserId`, `authTables` signatures (they evolved across 0.0.x) before relying on the guide's snippets.
 - [ ] **Task 2: Schema — add `users` + auth tables to `convex/schema.ts` (AC: #1, #2, #5)**
   - [ ] Spread `...authTables` from `@convex-dev/auth/server` into `defineSchema` (provides `users`, `authSessions`, `authAccounts`, …).

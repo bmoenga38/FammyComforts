@@ -1,4 +1,4 @@
-# M-Pesa Daraja Integration Spec — SommyComfort
+# M-Pesa Daraja Integration Spec — Fammy Comforts
 
 **Date:** 2026-06-04
 **Owner stories:** Epic 5 — Story 5.3 (STK initiation), Story 5.4 (callback processing), Story 5.5 (manual reference). Supports FR7, FR15, FR24; NFR14 (money correctness), AR7.
@@ -55,7 +55,7 @@ Request body:
   "PhoneNumber": "2547XXXXXXXX",
   "CallBackURL": "{MPESA_CALLBACK_URL}",
   "AccountReference": "{booking.reference}",
-  "TransactionDesc": "SommyComfort {booking.reference}"
+  "TransactionDesc": "Fammy Comforts {booking.reference}"
 }
 ```
 - **Phone normalization:** accept `07XXXXXXXX`, `+2547XXXXXXXX`, `2547XXXXXXXX` → normalize to `2547XXXXXXXX`; reject anything else with a 422.

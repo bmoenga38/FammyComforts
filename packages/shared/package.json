@@ -1,5 +1,5 @@
 {
-  "name": "@sommycomfort/shared",
+  "name": "@fammycomforts/shared",
   "version": "0.0.0",
   "private": true,
   "type": "commonjs",
@@ -20,7 +20,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@sommycomfort/config": "workspace:*",
+    "@fammycomforts/config": "workspace:*",
     "typescript": "^5",
     "vitest": "^3.0.0"
   }

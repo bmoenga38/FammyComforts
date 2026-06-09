@@ -1,22 +1,22 @@
-# SommyComfort - Source Tree Analysis
+# Fammy Comforts - Source Tree Analysis
 
 **Date:** 2026-06-04
 
 ## Overview
 
-SommyComfort is a single-repository (monolith) project that currently holds a front-end **prototype**, an extensive **planning/method layer**, and **visual reference** material. Application source is confined to `prototype/`; everything else is documentation, templates, or tooling.
+Fammy Comforts is a single-repository (monolith) project that currently holds a front-end **prototype**, an extensive **planning/method layer**, and **visual reference** material. Application source is confined to `prototype/`; everything else is documentation, templates, or tooling.
 
 ## Complete Directory Structure
 
 ```
-SommyComfort/
+Fammy Comforts/
 ├── prototype/                  # The runnable UI prototype (only executable code)
 │   ├── index.html              # App shell + all six role views (entry HTML)
 │   ├── app.js                  # Vanilla JS: icons, view switching, theme, toasts
 │   ├── styles.css              # Design-token CSS, theming, responsive layout
 │   └── server.js               # Zero-dependency Node static file server (entry)
 │
-├── method/                     # Custom delivery-method templates (SommyComfort Method)
+├── method/                     # Custom delivery-method templates (Fammy Comforts Method)
 │   ├── 01-product/             # product-brief + role-permission templates
 │   ├── 02-ux/                  # ux-design template
 │   ├── 03-architecture/        # architecture template
@@ -55,7 +55,7 @@ The only directory containing executable code. A self-contained static web proto
 
 ### `method/`
 
-**Purpose:** Houses the custom "SommyComfort Method" templates that mirror BMAD's planning discipline but are tailored to accommodation operations (product → UX → architecture → backlog → implementation → QA → launch).
+**Purpose:** Houses the custom "Fammy Comforts Method" templates that mirror BMAD's planning discipline but are tailored to accommodation operations (product → UX → architecture → backlog → implementation → QA → launch).
 **Contains:** One markdown template per stage folder (`01-product` … `07-launch`).
 
 ### `ui-samples/arrowpath-reference/`

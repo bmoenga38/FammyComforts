@@ -46,7 +46,7 @@ so that I can reach guest, admin, front desk, operations, housekeeping, and kitc
 ### Binding visual reference: the prototype
 - **`prototype/` is the binding layout reference** (UX-DR-NOTE: no standalone UX spec; the prototype is binding for screen layout, `DESIGN_SYSTEM.md` for tokens/components). Port the shell's structure and class intent into React + Tailwind v4 tokens — **do not** copy `prototype/styles.css` verbatim; use the existing token utilities (`bg-bg-card`, `text-text`, `text-text-dim`, status tokens) established in Stories 1.2–1.4.
 - **Shell anatomy (from `prototype/index.html`):**
-  - `aside.sidebar[aria-label="Main navigation"]` → brand (`SommyComfort` / "Accommodation PWA"), `nav.nav-list` of six `button.nav-item[data-view]`, `.sidebar-footer` with an `.online-pill` ("PWA ready") + the theme toggle.
+  - `aside.sidebar[aria-label="Main navigation"]` → brand (`Fammy Comforts` / "Accommodation PWA"), `nav.nav-list` of six `button.nav-item[data-view]`, `.sidebar-footer` with an `.online-pill` ("PWA ready") + the theme toggle.
   - `header.topbar` → `button.mobile-menu[aria-label="Open menu"]`, `.topbar-title` (eyebrow "Rental operations suite" + `h1#pageTitle`), `.top-actions` (search input + notifications icon-button with a dot).
   - `nav.bottom-nav[aria-label="Quick navigation"]` → five `button.bottom-item[data-view]` (Book/Admin/Desk/Clean/Kitchen).
   - Behavior in `prototype/app.js`: `titleByView` map, `switchView()` toggles `.active` across `.nav-item`+`.bottom-item` by `data-view` and sets the page title; `mobileMenu` toggles `body.menu-open`; `scrim` closes it. **Port these to App Router routing + `usePathname()`** (route-driven, not class-toggle).
@@ -162,7 +162,7 @@ Scope: the 1.7 diff only (shell + workspaces config + route group + six pages + 
 - [x] [Review][Patch] AppShell drawer state (open/scrim-close/Escape) was untested → added app-shell.test.tsx [apps/web/src/components/shell/app-shell.test.tsx]
 - [x] [Review][Patch] No skip-to-content link despite persistent nav before `<main>` (WCAG 2.4.1) → added skip link + `<main id="main-content" tabIndex={-1}>` [apps/web/src/components/shell/app-shell.tsx]
 - [x] [Review][Patch] Mobile drawer had no Escape-to-close → added a `keydown` listener (closes on Escape) [apps/web/src/components/shell/app-shell.tsx]
-- [x] [Review][Patch] Per-page `metadata.title` overrode site branding → added `title.template` "%s · SommyComfort" in the root layout [apps/web/src/app/layout.tsx]
+- [x] [Review][Patch] Per-page `metadata.title` overrode site branding → added `title.template` "%s · Fammy Comforts" in the root layout [apps/web/src/app/layout.tsx]
 - [x] [Review][Patch] Leftover `Home` export name on the relocated showcase → renamed `ShowcasePage` [apps/web/src/app/showcase/page.tsx]
 - [x] [Review][Patch] Bottom-nav focus ring used a negative offset inconsistently → kept the inset (correct at the screen's bottom edge) and documented why [apps/web/src/components/shell/bottom-nav.tsx]
 

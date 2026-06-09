@@ -1,6 +1,6 @@
-# @sommycomfort/backend — Convex
+# @fammycomforts/backend — Convex
 
-The SommyComfort backend (AR3′/AR4′ — see the **Backend Platform Addendum** in
+The Fammy Comforts backend (AR3′/AR4′ — see the **Backend Platform Addendum** in
 `_bmad-output/planning-artifacts/architecture.md`). Convex provides the document DB,
 reactive queries, transactional mutations, actions (external calls/webhooks), built-in
 realtime, auth, file storage, and scheduling — replacing the superseded NestJS/Prisma/
@@ -22,7 +22,7 @@ convex/
 ## First-time setup (requires Convex login — not possible offline)
 
 ```bash
-pnpm --filter @sommycomfort/backend dev      # `convex dev`: logs in, links the dev
+pnpm --filter @fammycomforts/backend dev      # `convex dev`: logs in, links the dev
                                              # deployment, writes .env.local + _generated
 ```
 

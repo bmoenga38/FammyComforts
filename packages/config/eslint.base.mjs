@@ -1,4 +1,4 @@
-// Shared ESLint flat-config base for all SommyComfort workspaces.
+// Shared ESLint flat-config base for all Fammy Comforts workspaces.
 // Apps spread this first, then layer their framework-specific config on top.
 // Keeps a single source of truth for repo-wide ignores so each app does not
 // re-declare them.

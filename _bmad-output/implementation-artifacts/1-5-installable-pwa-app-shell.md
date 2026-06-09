@@ -12,11 +12,11 @@ Status: done
 
 As a guest or staff member,
 I want to install the app and have its shell load,
-so that SommyComfort behaves like a native app with a home-screen icon and an offline fallback.
+so that Fammy Comforts behaves like a native app with a home-screen icon and an offline fallback.
 
 ## Acceptance Criteria
 
-1. **Web manifest** — `app/manifest.ts` (Next metadata route) returns a valid `MetadataRoute.Manifest`: `name`/`short_name` SommyComfort, `start_url: "/"`, `display: "standalone"`, theme/background colors from the design tokens, and icons. Next auto-links it. (NFR1)
+1. **Web manifest** — `app/manifest.ts` (Next metadata route) returns a valid `MetadataRoute.Manifest`: `name`/`short_name` Fammy Comforts, `start_url: "/"`, `display: "standalone"`, theme/background colors from the design tokens, and icons. Next auto-links it. (NFR1)
 2. **Icons** — an app icon (`purpose: "any"`) and a maskable icon are provided under `public/` and referenced by the manifest. (Production PNG raster set is a follow-up — see notes.) (NFR1)
 3. **Service worker via Serwist** — `@serwist/next` (`withSerwistInit` in `next.config.ts`) builds a service worker from `src/app/sw.ts` to `public/sw.js`; it precaches the app shell (`self.__SW_MANIFEST`), uses `defaultCache` runtime caching, `skipWaiting` + `clientsClaim`, and navigation preload. The SW is **disabled in development**. (NFR2)
 4. **Offline fallback** — a `/offline` route exists and is served by the SW as the fallback for failed document navigations. (NFR2)

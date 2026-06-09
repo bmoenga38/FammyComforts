@@ -1,4 +1,4 @@
-# SommyComfort - Architecture
+# Fammy Comforts - Architecture
 
 **Date:** 2026-06-04
 **Status:** Prototype (front-end only). Production architecture is specified in [PRD.md](../PRD.md) §10 but not yet implemented.

@@ -1,11 +1,11 @@
 /**
- * @sommycomfort/shared — the single source of truth shared by web and api.
+ * @fammycomforts/shared — the single source of truth shared by web and api.
  * Money utilities (integer minor units) + the Zod web↔api contract (AR5).
  */
 
 export * from "./contracts";
 
-export const APP_NAME = "SommyComfort" as const;
+export const APP_NAME = "Fammy Comforts" as const;
 export const DEFAULT_CURRENCY = "KES" as const;
 
 /** Convert a major-unit amount (e.g. 3500.00) to integer minor units (cents). */

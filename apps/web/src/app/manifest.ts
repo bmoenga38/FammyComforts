@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "SommyComfort",
-    short_name: "SommyComfort",
+    name: "Fammy Comforts",
+    short_name: "Fammy Comforts",
     description:
       "Accommodation & rental operations — booking, front desk, housekeeping, payments, and reporting.",
     start_url: "/",

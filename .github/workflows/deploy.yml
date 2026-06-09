@@ -59,7 +59,7 @@ jobs:
       - name: Apply migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: pnpm --filter @sommycomfort/db exec prisma migrate deploy
+        run: pnpm --filter @fammycomforts/db exec prisma migrate deploy
 
   deploy:
     name: Release

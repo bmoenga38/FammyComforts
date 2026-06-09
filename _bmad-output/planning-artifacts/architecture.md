@@ -10,7 +10,7 @@ inputDocuments:
   - docs/project-overview.md
   - docs/component-inventory.md
 workflowType: 'architecture'
-project_name: 'SommyComfort'
+project_name: 'Fammy Comforts'
 user_name: 'Brian'
 date: '2026-06-04'
 lastStep: 8
@@ -73,7 +73,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-SommyComfort is a full accommodation/rental operations platform. Functionally it spans eight role-based surfaces (`PRD.md` §4–§5): Guest PWA (public catalog, availability search, no-account booking, ID capture, split payments, confirmation, booking lookup), Admin Portal (property/room/rate/tax/policy config, staff & RBAC, payment-method config, booking-source management, audit logs), Front Desk (booking CRUD, guest profiles, calendar, check-in/out, extend/change/cancel/no-show/refund, split payments), Operations/Caretaker (mobile daily ops, room-readiness board, housekeeping assignment, maintenance/damage with photos, asset checks, escalations), Housekeeping (task queue, checklists, photo proof, offline updates), Inventory (catalog, suppliers, purchases, stock movements, stocktake, low-stock alerts), Restaurant/Room-Service (menu linked to inventory, order lanes, charges-to-room), and Reporting (revenue, occupancy, P&L, inventory, restaurant, guests, tax/VAT, assets).
+Fammy Comforts is a full accommodation/rental operations platform. Functionally it spans eight role-based surfaces (`PRD.md` §4–§5): Guest PWA (public catalog, availability search, no-account booking, ID capture, split payments, confirmation, booking lookup), Admin Portal (property/room/rate/tax/policy config, staff & RBAC, payment-method config, booking-source management, audit logs), Front Desk (booking CRUD, guest profiles, calendar, check-in/out, extend/change/cancel/no-show/refund, split payments), Operations/Caretaker (mobile daily ops, room-readiness board, housekeeping assignment, maintenance/damage with photos, asset checks, escalations), Housekeeping (task queue, checklists, photo proof, offline updates), Inventory (catalog, suppliers, purchases, stock movements, stocktake, low-stock alerts), Restaurant/Room-Service (menu linked to inventory, order lanes, charges-to-room), and Reporting (revenue, occupancy, P&L, inventory, restaurant, guests, tax/VAT, assets).
 
 **Non-Functional Requirements:**
 The NFRs (`PRD.md` §6, §9, §11) are the real architecture drivers: installable **PWA** with offline shell + offline-capable task updates + background sync + push; **near-real-time** updates for housekeeping/kitchen/calendar/dashboard; **strong auth + granular RBAC** across 12 roles × 18 permission areas; **secure handling of identity documents** (encryption in transit, access-controlled storage, retention); **audit logging** for bookings/payments/check-in-out/staff/settings; **PDF + CSV/Excel export**; **low-bandwidth mobile performance** on mid-range Android; Lighthouse PWA ≥ 90; and concrete speed targets (guest booking < 3 min, reception booking < 2 min, check-in/out < 90 s, dashboard reflects change < 5 s).
@@ -86,7 +86,7 @@ The NFRs (`PRD.md` §6, §9, §11) are the real architecture drivers: installabl
 ### Technical Constraints & Dependencies
 
 - **Kenya market context:** pricing in **KES**, **M-Pesa** is a first-class payment method (Daraja STK push + manual reference capture), plus cash and card/POS.
-- **Money correctness:** the demo review (`DEMO_REVIEW_REPORT.md` / `PRD.md` §2) flagged rough fractional-night and balance math — money must be exact and reconcilable (audit + reconciliation rules per the SommyComfort Method working rules).
+- **Money correctness:** the demo review (`DEMO_REVIEW_REPORT.md` / `PRD.md` §2) flagged rough fractional-night and balance math — money must be exact and reconcilable (audit + reconciliation rules per the Fammy Comforts Method working rules).
 - **Connectivity:** caretakers/housekeeping operate on poor mobile networks → offline queue + background sync are mandatory, not optional.
 - **Identity data:** guest ID images/numbers are sensitive → encryption, access control, and retention rules required.
 - **Existing assets:** a vanilla-JS prototype (`prototype/`) and a complete design system (`DESIGN_SYSTEM.md`) already define the visual language, tokens, and the six role views — the production front end should reproduce these, not reinvent them.
@@ -105,7 +105,7 @@ Authentication & RBAC; audit logging; real-time event propagation; offline sync 
 
 ### Starter Options Considered
 
-- **create-t3-app** — excellent single-app full-stack (Next + tRPC + Prisma), but it couples front and back into one Next deployment and leans tRPC. SommyComfort needs an independently deployable, framework-rich API (queues, websockets gateway, scheduled jobs), so a single Next app is too constraining.
+- **create-t3-app** — excellent single-app full-stack (Next + tRPC + Prisma), but it couples front and back into one Next deployment and leans tRPC. Fammy Comforts needs an independently deployable, framework-rich API (queues, websockets gateway, scheduled jobs), so a single Next app is too constraining.
 - **RedwoodJS / Blitz** — opinionated full-stack, but smaller ecosystems and less natural fit for a NestJS-style domain backend.
 - **Turborepo (`create-turbo`)** — a maintained monorepo scaffold that we extend with a Next.js app and a NestJS app plus shared packages. Maximum control, clean app boundaries, shared types. **Selected.**
 
@@ -463,4 +463,4 @@ Immediately followed by the Prisma schema for the core entities (`PRD.md` §8) a
 
 ---
 
-_Architecture workflow complete (BMAD `create-architecture`). This document is the single source of truth for SommyComfort's technical decisions._
+_Architecture workflow complete (BMAD `create-architecture`). This document is the single source of truth for Fammy Comforts's technical decisions._

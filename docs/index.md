@@ -1,4 +1,4 @@
-# SommyComfort Documentation Index
+# Fammy Comforts Documentation Index
 
 **Type:** Monolith (single part)
 **Primary Language:** JavaScript (vanilla ES6) + HTML5 + CSS3
@@ -7,7 +7,7 @@
 
 ## Project Overview
 
-SommyComfort is a planned mobile-first **accommodation / rental operations PWA** (guest booking, front desk, operations, housekeeping, inventory, restaurant, payments, reporting). The repository currently contains a **front-end prototype** plus an extensive **product/planning/method layer**. There is no backend, database, build, or tests yet — the production stack is specified in `PRD.md` but not implemented.
+Fammy Comforts is a planned mobile-first **accommodation / rental operations PWA** (guest booking, front desk, operations, housekeeping, inventory, restaurant, payments, reporting). The repository currently contains a **front-end prototype** plus an extensive **product/planning/method layer**. There is no backend, database, build, or tests yet — the production stack is specified in `PRD.md` but not implemented.
 
 ## Quick Reference
 

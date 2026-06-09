@@ -1,7 +1,7 @@
 # Implementation Readiness Assessment Report
 
 **Date:** 2026-06-04
-**Project:** SommyComfort
+**Project:** Fammy Comforts
 **Assessor:** BMAD `check-implementation-readiness` (autonomous / YOLO mode), reviewing against MVP = Epics 1–6
 
 ---

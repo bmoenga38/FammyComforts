@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { fail } from '@sommycomfort/shared';
+import { fail } from '@fammycomforts/shared';
 
 /** Map common HTTP statuses to stable string error codes (the envelope `code`). */
 const CODE_BY_STATUS: Record<number, string> = {

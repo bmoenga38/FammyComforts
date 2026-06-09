@@ -1,4 +1,4 @@
-# Testing — SommyComfort
+# Testing — Fammy Comforts
 
 The test harness foundation (Story 1.11). **Vitest** is the single runner across the workspace.
 
@@ -6,18 +6,18 @@ The test harness foundation (Story 1.11). **Vitest** is the single runner across
 
 ```bash
 pnpm test            # all packages, via Turborepo
-pnpm --filter @sommycomfort/shared test
-pnpm --filter @sommycomfort/web test
-pnpm --filter @sommycomfort/api test
+pnpm --filter @fammycomforts/shared test
+pnpm --filter @fammycomforts/web test
+pnpm --filter @fammycomforts/api test
 ```
 
 ## What runs today (unit + component)
 
 | Package | Tooling | Covers |
 |---|---|---|
-| `@sommycomfort/shared` | Vitest (node) | money utils (`toCents`/`fromCents`/`formatKes`), constants |
-| `@sommycomfort/web` | Vitest + React Testing Library + jsdom | components, e.g. `ThemeToggle` (toggle + persistence) |
-| `@sommycomfort/api` | Vitest + `unplugin-swc` (NestJS decorators + metadata) | unit specs (`*.spec.ts`) |
+| `@fammycomforts/shared` | Vitest (node) | money utils (`toCents`/`fromCents`/`formatKes`), constants |
+| `@fammycomforts/web` | Vitest + React Testing Library + jsdom | components, e.g. `ThemeToggle` (toggle + persistence) |
+| `@fammycomforts/api` | Vitest + `unplugin-swc` (NestJS decorators + metadata) | unit specs (`*.spec.ts`) |
 
 `unplugin-swc` is required for the api because esbuild (Vitest's default transform) does not emit decorator metadata, which NestJS DI needs.
 
@@ -40,7 +40,7 @@ These are **hard gates** — the listed tests must exist and pass before the nam
 ## Known gaps & follow-ups (from the 1.11 code review)
 
 - **Test files are not `tsc`-type-checked in `shared`/`web`** (they're excluded from the build tsconfig and run by Vitest, which strips types). The api's specs *are* type-checked. Deliberate trade-off for a clean `dist` + fast build; revisit with Vitest `test.typecheck` or a `tsconfig.test.json` if test type-safety becomes important.
-- **Tests resolve `@sommycomfort/shared` from source (via Vite), not the built `dist/`** that runtime uses. The `turbo test → ^build` dependency keeps builds fresh, but tests validate source, not the published artifact.
+- **Tests resolve `@fammycomforts/shared` from source (via Vite), not the built `dist/`** that runtime uses. The `turbo test → ^build` dependency keeps builds fresh, but tests validate source, not the published artifact.
 - **`@swc/core` / `esbuild` native build scripts are in `ignoredBuiltDependencies`.** They use prebuilt binaries and work here; **verify on the CI base image** (esp. musl/Alpine or non-x64) when CI lands (Story 1.9) — remove from the ignore list if the prebuilt binary is unavailable there.
 - **`unplugin-swc` (api) is configured for constructor-DI only.** Before Epic 2, add tsconfig path-alias resolution and a `class-validator` DTO smoke test to catch decorator-metadata regressions for property injection / validation.
 - **`packages/db` has no `test` script yet** — add one when it gains code in Story 1.8 so `pnpm test` covers it.
@@ -50,7 +50,7 @@ These are **hard gates** — the listed tests must exist and pass before the nam
 `.github/workflows/ci.yml` runs on every PR + push to `main` (Node 24, pnpm 10):
 
 - **verify** job: `pnpm lint` → `pnpm typecheck` → `pnpm test` (Vitest) → `pnpm build` — exactly the local scripts.
-- **e2e** job: installs chromium, builds web, runs **Playwright** (`pnpm --filter @sommycomfort/web test:e2e`).
+- **e2e** job: installs chromium, builds web, runs **Playwright** (`pnpm --filter @fammycomforts/web test:e2e`).
 
 Enable branch protection on `main` requiring both jobs so failures block merge. **E2E:** Playwright
 specs live in `apps/web/e2e/*.spec.ts` (outside the Vitest `src/**` glob); `apps/web/playwright.config.ts`

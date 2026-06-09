@@ -8,7 +8,7 @@ const STORAGE_KEY = "sommycomfort-theme";
 const CHANGE_EVENT = "sommycomfort:themechange";
 
 /**
- * Toggles the SommyComfort theme. The initial theme is applied before paint by
+ * Toggles the Fammy Comforts theme. The initial theme is applied before paint by
  * the inline script in the root layout (no-FOUC). This component reads the live
  * `<html data-theme>` value via useSyncExternalStore (hydration-safe — the server
  * snapshot is the default `dark`, the client snapshot reads the real attribute),

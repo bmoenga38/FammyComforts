@@ -2,7 +2,7 @@
 
 ## Product Name
 
-SommyComfort Accommodation Operations PWA
+Fammy Comforts Accommodation Operations PWA
 
 ## Business Goal
 

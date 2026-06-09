@@ -1,5 +1,5 @@
 {
-  "extends": "@sommycomfort/config/tsconfig.base.json",
+  "extends": "@fammycomforts/config/tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],

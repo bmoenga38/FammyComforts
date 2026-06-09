@@ -1,6 +1,6 @@
 # Deployment & CI/CD
 
-SommyComfort ships via GitHub Actions (AR8): every PR is gated by checks; every merge to
+Fammy Comforts ships via GitHub Actions (AR8): every PR is gated by checks; every merge to
 `main` builds images, applies DB migrations, then releases (migrate-then-deploy).
 
 ## Pipelines
@@ -10,7 +10,7 @@ SommyComfort ships via GitHub Actions (AR8): every PR is gated by checks; every 
 | Job | Steps |
 |-----|-------|
 | **verify** | `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm typecheck` → `pnpm test` → `pnpm build` |
-| **e2e** | install chromium → build web → `pnpm --filter @sommycomfort/web test:e2e` (Playwright) |
+| **e2e** | install chromium → build web → `pnpm --filter @fammycomforts/web test:e2e` (Playwright) |
 
 Runs on Node 24 + pnpm 10 (pinned via `packageManager`). Enable **branch protection** on
 `main` requiring both jobs so failures block merge.
@@ -27,7 +27,7 @@ Migrations are always applied **before** the release step (`deploy needs: migrat
 >
 > **`migrate deploy` is a no-op until the first migration is committed.** No
 > `packages/db/prisma/migrations/` exists yet — generating it needs a real DB
-> (`pnpm --filter @sommycomfort/db db:migrate`, which uses a shadow DB). Author + commit
+> (`pnpm --filter @fammycomforts/db db:migrate`, which uses a shadow DB). Author + commit
 > the initial `audit_logs` migration when a DB is available (tracked in deferred-work).
 
 ## Local backing services

@@ -1,5 +1,5 @@
 {
-  "extends": "@sommycomfort/config/tsconfig.node.json",
+  "extends": "@fammycomforts/config/tsconfig.node.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src"

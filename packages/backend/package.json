@@ -1,5 +1,5 @@
 {
-  "name": "@sommycomfort/backend",
+  "name": "@fammycomforts/backend",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "convex": "^1.40.0"
   },
   "devDependencies": {
-    "@sommycomfort/config": "workspace:*",
+    "@fammycomforts/config": "workspace:*",
     "typescript": "^5"
   }
 }

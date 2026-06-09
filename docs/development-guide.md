@@ -1,4 +1,4 @@
-# SommyComfort - Development Guide
+# Fammy Comforts - Development Guide
 
 **Date:** 2026-06-04
 

@@ -3,7 +3,7 @@ import { APP_NAME, DEFAULT_CURRENCY, toCents, fromCents, formatKes } from "./ind
 
 describe("constants", () => {
   it("exposes the app name and default currency", () => {
-    expect(APP_NAME).toBe("SommyComfort");
+    expect(APP_NAME).toBe("Fammy Comforts");
     expect(DEFAULT_CURRENCY).toBe("KES");
   });
 });

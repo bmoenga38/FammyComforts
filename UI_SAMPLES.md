@@ -9,9 +9,9 @@ Imported Arrowpath reference samples:
 | `ui-samples/arrowpath-reference/login.html` | Login, theme toggle, PWA prompt, form styling |
 | `ui-samples/arrowpath-reference/design-doc.html` | Full design documentation shell with light/dark tokens |
 
-Use these samples as visual references only. The SommyComfort implementation should adapt the look to accommodation operations, not copy fleet-specific content.
+Use these samples as visual references only. The Fammy Comforts implementation should adapt the look to accommodation operations, not copy fleet-specific content.
 
-## Required SommyComfort UI Sample Set
+## Required Fammy Comforts UI Sample Set
 
 Before full development, create local clickable or static samples for:
 

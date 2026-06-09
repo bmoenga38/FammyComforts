@@ -46,13 +46,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browser (chromium)
-        run: pnpm --filter @sommycomfort/web exec playwright install --with-deps chromium
+        run: pnpm --filter @fammycomforts/web exec playwright install --with-deps chromium
 
       # Build once; the Playwright webServer serves this build via `next start`.
       # Use Turbo so workspace deps (shared) build first per `^build` — a direct
-      # `pnpm --filter web build` skips them and fails to resolve `@sommycomfort/shared`.
+      # `pnpm --filter web build` skips them and fails to resolve `@fammycomforts/shared`.
       - name: Build web (+ workspace deps)
-        run: pnpm exec turbo run build --filter=@sommycomfort/web
+        run: pnpm exec turbo run build --filter=@fammycomforts/web
 
       - name: Run e2e
-        run: pnpm --filter @sommycomfort/web test:e2e
+        run: pnpm --filter @fammycomforts/web test:e2e

@@ -1,4 +1,4 @@
-# SommyComfort
+# Fammy Comforts
 
 Accommodation / rental-operations **PWA** — monorepo (pnpm + Turborepo).
 
@@ -11,9 +11,9 @@ apps/
   web/    Next.js 16 (App Router) + React 19 + Tailwind v4 — guest + staff PWA
   api/    NestJS 11 — REST API (Socket.IO + queues land in later stories)
 packages/
-  shared/ @sommycomfort/shared — shared types, Zod schemas, money/date utils
-  db/     @sommycomfort/db — Prisma schema + client (added in Story 1.8)
-  config/ @sommycomfort/config — shared tsconfig / eslint / tailwind presets
+  shared/ @fammycomforts/shared — shared types, Zod schemas, money/date utils
+  db/     @fammycomforts/db — Prisma schema + client (added in Story 1.8)
+  config/ @fammycomforts/config — shared tsconfig / eslint / tailwind presets
 ```
 
 ## Prerequisites
@@ -31,4 +31,4 @@ pnpm lint         # lint all
 pnpm typecheck    # typecheck all
 ```
 
-Run a single app: `pnpm --filter @sommycomfort/web dev` or `pnpm --filter @sommycomfort/api start:dev`.
+Run a single app: `pnpm --filter @fammycomforts/web dev` or `pnpm --filter @fammycomforts/api start:dev`.

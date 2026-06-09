@@ -13,7 +13,7 @@ sources:
   - prototype/
 ---
 
-# SommyComfort — EXPERIENCE
+# Fammy Comforts — EXPERIENCE
 
 How the two highest-risk MVP flows behave: every empty / loading / error / offline / conflict state, plus the room-status state machine both Front Desk and Housekeeping share. Visual identity is `DESIGN_SYSTEM.md`; this spine owns behavior and wins over any mock on conflict.
 

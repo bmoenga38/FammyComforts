@@ -4,7 +4,7 @@ import {
   ok,
   type ApiSuccess,
   type HealthResponse,
-} from '@sommycomfort/shared';
+} from '@fammycomforts/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
 /** `GET /api/v1/health` — liveness + a real DB ping (NFR10). */

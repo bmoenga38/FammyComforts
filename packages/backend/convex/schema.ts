@@ -2,7 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 /**
- * SommyComfort Convex schema (AR4′ — see architecture.md Backend Platform Addendum).
+ * Fammy Comforts Convex schema (AR4′ — see architecture.md Backend Platform Addendum).
  *
  * Tables are added **per-story when first needed** (the data-model.md entities are
  * the target, re-expressed as Convex tables). This scaffold defines only

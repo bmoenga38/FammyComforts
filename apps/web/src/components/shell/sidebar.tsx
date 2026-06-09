@@ -33,7 +33,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <Hotel className="size-5" />
         </span>
         <span className="flex flex-col leading-tight">
-          <strong className="font-display text-sm text-text">SommyComfort</strong>
+          <strong className="font-display text-sm text-text">Fammy Comforts</strong>
           <small className="text-xs text-text-muted">Accommodation PWA</small>
         </span>
       </Link>

@@ -1,6 +1,6 @@
-# Convex Implementation Guide — SommyComfort
+# Convex Implementation Guide — Fammy Comforts
 
-This guide consolidates the verified Convex research for SommyComfort's backend, which is built on `convex@1.40.0` (installed at `packages/backend/convex`). It supersedes the original NestJS/Redis/BullMQ/S3/Socket.IO stack per the architecture **Backend Platform Addendum** (AR3′/AR4′/AR6′/AR7′): Convex queries/mutations/actions replace REST controllers, the built-in reactive query system replaces the Socket.IO gateway, `ctx.scheduler` + crons replace Redis + BullMQ, `ctx.storage` replaces S3/MinIO, and Convex Auth replaces JWT + argon2id. All API facts below are confirmed against the installed package's type declarations unless explicitly flagged; `@convex-dev/auth` and `convex-test` are **not yet installed** and their snippets are confirmed against current docs only. Each section ends with concrete gotchas to verify against the live dev deployment.
+This guide consolidates the verified Convex research for Fammy Comforts's backend, which is built on `convex@1.40.0` (installed at `packages/backend/convex`). It supersedes the original NestJS/Redis/BullMQ/S3/Socket.IO stack per the architecture **Backend Platform Addendum** (AR3′/AR4′/AR6′/AR7′): Convex queries/mutations/actions replace REST controllers, the built-in reactive query system replaces the Socket.IO gateway, `ctx.scheduler` + crons replace Redis + BullMQ, `ctx.storage` replaces S3/MinIO, and Convex Auth replaces JWT + argon2id. All API facts below are confirmed against the installed package's type declarations unless explicitly flagged; `@convex-dev/auth` and `convex-test` are **not yet installed** and their snippets are confirmed against current docs only. Each section ends with concrete gotchas to verify against the live dev deployment.
 
 ## Conventions
 
@@ -13,7 +13,7 @@ This guide consolidates the verified Convex research for SommyComfort's backend,
 
 ## Auth & RBAC
 
-> `@convex-dev/auth` is **NOT yet installed** — add it before Epic 2 auth work: `pnpm --filter @sommycomfort/backend add @convex-dev/auth @auth/core`. This implements **AR6′**: Convex Auth replaces JWT + rotating refresh + argon2id; RBAC moves from a NestJS `PermissionsGuard`/`@RequirePermission` into an in-function `requirePermission(ctx, area, action)` helper. The permission *model* (12 roles × 18 areas × `read|write|manage`) is unchanged.
+> `@convex-dev/auth` is **NOT yet installed** — add it before Epic 2 auth work: `pnpm --filter @fammycomforts/backend add @convex-dev/auth @auth/core`. This implements **AR6′**: Convex Auth replaces JWT + rotating refresh + argon2id; RBAC moves from a NestJS `PermissionsGuard`/`@RequirePermission` into an in-function `requirePermission(ctx, area, action)` helper. The permission *model* (12 roles × 18 areas × `read|write|manage`) is unchanged.
 
 ### 1. Identity — Convex Auth password provider
 
@@ -228,7 +228,7 @@ export default http;                            // must be default export
 
 **4. Status-query fallback + reconciliation.** Spec §5: instead of a BullMQ timeout job, in the accept mutation call `scheduler.runAfter(90_000, internal.mpesa.queryStkStatus, {paymentId})`. That action calls `stkpushquery/v1/query`; cap retries (~3 over 5 min — re-schedule from within, since actions don't auto-retry) then leave `pending` + flag. A `convex/crons.ts` daily job can sweep stale `pending` payments and unreconciled manual entries (spec §6).
 
-### Maps to SommyComfort
+### Maps to Fammy Comforts
 
 - `Payment` (data-model.md §"R1 — Payments"): `provider` (`mpesa_stk`/`mpesa_manual`/`cash`/`card`), `status`, `amountCents` (`v.int64()` — never floats), `provider_checkout_request_id`, `provider_merchant_request_id`, `provider_receipt_number`, `paid_phone`, `paid_at`, `reconciled`. Add `.index("by_checkout", ["provider_checkout_request_id"])` for callback matching.
 - The `@@unique([provider, providerReceiptNumber])` dedupe (manual M-Pesa, spec §6) has **no native unique constraint in Convex** — enforce in-mutation by querying an index before insert (see gotchas).
@@ -261,7 +261,7 @@ if (tasks === undefined) return <Skeleton/>;          // loading
 // pass "skip" to disable: useQuery(api.x.get, id ? { id } : "skip")
 ```
 
-**Maps to SommyComfort:** the live surfaces from PRD §6 (housekeeping task queue, kitchen `RestaurantOrder` lanes, front-desk calendar, dashboards; data-model.md `HousekeepingTask`, `RestaurantOrder`/`OrderItem`, `Booking`) become plain `useQuery` calls — satisfies the "dashboard reflects change < 5 s" target without polling. TanStack Query is **no longer** the server-state layer for Convex data; keep it only for non-Convex fetches.
+**Maps to Fammy Comforts:** the live surfaces from PRD §6 (housekeeping task queue, kitchen `RestaurantOrder` lanes, front-desk calendar, dashboards; data-model.md `HousekeepingTask`, `RestaurantOrder`/`OrderItem`, `Booking`) become plain `useQuery` calls — satisfies the "dashboard reflects change < 5 s" target without polling. TanStack Query is **no longer** the server-state layer for Convex data; keep it only for non-Convex fetches.
 
 ### Client cache + reconnection behavior
 
@@ -328,7 +328,7 @@ export default crons;
 
 Helpers: `interval` ({seconds|minutes|hours}), `hourly`, `daily`, `weekly`, `monthly`, `cron` (raw string). **All times are UTC** — Kenya is UTC+3, so convert (e.g. midnight EAT = `hourUTC: 21` the prior day). Targets must be `mutation`/`action`, public or internal; prefer `internalMutation`/`internalAction` so clients can't invoke them directly.
 
-### SommyComfort mapping (data-model.md / AR addenda)
+### Fammy Comforts mapping (data-model.md / AR addenda)
 
 - **M-Pesa callback timeout** (AR7′; `Payment` entity, `status: pending → confirmed/failed`): when the STK push action fires, schedule `runAfter(~120s, internal.payments.expireStkPush, { paymentId })`. The HTTP-action callback (`convex/http.ts`) confirms the payment and should `cancel()` the timeout; if the callback never arrives, the timeout mutation flips `status` to `failed`. Replaces the BullMQ "payment callback" queue.
 - **Notification fan-out** (`NotificationLog` channel = email|sms|whatsapp|push): a mutation enqueues one `runAfter(0, internal.notifications.deliverOne, { logId })` per recipient/channel; each delivery is an `action` (external API call) that updates `status: queued → sent|failed`.
@@ -386,7 +386,7 @@ test("health.check is ok", async () => {
 
 **Setup steps for `packages/backend` (do after `convex/_generated` exists — i.e. after first `convex dev`/`codegen`):**
 
-1. Add dev deps: `pnpm --filter @sommycomfort/backend add -D convex-test vitest @edge-runtime/vm`.
+1. Add dev deps: `pnpm --filter @fammycomforts/backend add -D convex-test vitest @edge-runtime/vm`.
 2. Add a `test` script to `packages/backend/package.json`: `"test": "vitest run"` (and `"test:watch": "vitest"`). This makes the root `turbo run test` pick it up automatically.
 3. Create `packages/backend/vitest.config.ts`:
    ```ts
@@ -400,7 +400,7 @@ test("health.check is ok", async () => {
    });
    ```
 
-**How it maps to SommyComfort:** Tests live beside functions in `packages/backend/convex/`. The existing `auditLogs.record`/`listForEntity`/`health.check` are the first targets. The `auditLogs` table (data-model.md "Cross-cutting" / AR9) is the cross-cutting audit entity; convex-test runs the **real** `schema.ts`, so schema validators (e.g. money as `v.int64()` minor units per AR4′) are enforced in tests. As Epic 2+ tables land (Identity, Bookings, Payments), add per-function tests using `withIdentity` to cover RBAC and audit-on-mutation invariants.
+**How it maps to Fammy Comforts:** Tests live beside functions in `packages/backend/convex/`. The existing `auditLogs.record`/`listForEntity`/`health.check` are the first targets. The `auditLogs` table (data-model.md "Cross-cutting" / AR9) is the cross-cutting audit entity; convex-test runs the **real** `schema.ts`, so schema validators (e.g. money as `v.int64()` minor units per AR4′) are enforced in tests. As Epic 2+ tables land (Identity, Bookings, Payments), add per-function tests using `withIdentity` to cover RBAC and audit-on-mutation invariants.
 
 **Gotchas / what to verify:**
 

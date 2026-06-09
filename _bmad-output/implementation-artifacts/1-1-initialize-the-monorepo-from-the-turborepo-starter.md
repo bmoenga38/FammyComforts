@@ -19,7 +19,7 @@ so that all later work builds on the architecture's defined structure and shared
 1. **Monorepo exists** — a pnpm + Turborepo workspace at the repo root with `apps/web`, `apps/api`, and `packages/shared`, `packages/db`, `packages/config`. (Source: epics Story 1.1; architecture AR1)
 2. **Web app scaffolded** — `apps/web` is Next.js 16.2 (App Router, `src/` dir) + React 19 + TypeScript (strict) + Tailwind CSS v4 + ESLint, and `pnpm --filter web dev` serves a default page.
 3. **API app scaffolded** — `apps/api` is NestJS 11.1 + TypeScript (strict, `--strict`), and `pnpm --filter api start:dev` boots the default Nest app with a reachable default route.
-4. **Shared packages compile** — `packages/shared`, `packages/db`, `packages/config` each build/typecheck and are importable by the apps via the workspace (e.g. `@sommycomfort/shared`), with **no duplicated tsconfig/eslint** — apps extend `packages/config` presets.
+4. **Shared packages compile** — `packages/shared`, `packages/db`, `packages/config` each build/typecheck and are importable by the apps via the workspace (e.g. `@fammycomforts/shared`), with **no duplicated tsconfig/eslint** — apps extend `packages/config` presets.
 5. **One-command dev** — from the repo root, `pnpm install` completes cleanly and `pnpm dev` (Turborepo) starts **both** web and api together.
 6. **Pinned toolchain** — Node is pinned to 24 LTS (`.nvmrc`/`engines`), `packageManager` is set to a pinned pnpm version, and the dependency versions match the architecture (Next 16.2.x, React 19, NestJS 11.1.x, Tailwind v4). No NestJS v12 (unreleased ESM line).
 7. **Clean repo hygiene** — root `.gitignore` covers `node_modules/`, `.next/`, `dist/`, `.turbo/`, `.env*`; a root `README.md` documents `pnpm install` / `pnpm dev`.
@@ -41,9 +41,9 @@ so that all later work builds on the architecture's defined structure and shared
   - [x] Confirm `pnpm --filter api start:dev` boots and the default `GET /` route responds
 - [x] **Task 4: Create shared packages** (AC: #4)
   - [x] `packages/config` — exportable `tsconfig` base + `eslint` flat config + (placeholder) tailwind preset; both apps extend these
-  - [x] `packages/shared` — `package.json` (name `@sommycomfort/shared`), `tsconfig` extending config, a trivial exported symbol to prove import wiring
-  - [x] `packages/db` — empty package (name `@sommycomfort/db`) reserved for Prisma in Story 1.8; no schema yet
-  - [x] Import `@sommycomfort/shared` from both apps to prove the workspace link typechecks
+  - [x] `packages/shared` — `package.json` (name `@fammycomforts/shared`), `tsconfig` extending config, a trivial exported symbol to prove import wiring
+  - [x] `packages/db` — empty package (name `@fammycomforts/db`) reserved for Prisma in Story 1.8; no schema yet
+  - [x] Import `@fammycomforts/shared` from both apps to prove the workspace link typechecks
 - [x] **Task 5: Wire the Turborepo task graph** (AC: #5)
   - [x] Define `dev`, `build`, `lint`, `typecheck` tasks in `turbo.json` with correct `dependsOn`/`outputs`
   - [x] Verify `pnpm install` is clean and `pnpm dev` starts web + api together
@@ -70,8 +70,8 @@ sommycomfort/
 │   ├── web/   (Next 16, src/, Tailwind v4)
 │   └── api/   (NestJS 11, strict)
 └── packages/
-    ├── shared/  (@sommycomfort/shared — Zod/types/money later)
-    ├── db/      (@sommycomfort/db — Prisma later; empty now)
+    ├── shared/  (@fammycomforts/shared — Zod/types/money later)
+    ├── db/      (@fammycomforts/db — Prisma later; empty now)
     └── config/  (tsconfig + eslint + tailwind presets)
 ```
 
@@ -96,7 +96,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 - `pnpm install` → 896 packages, clean (3m22s). pnpm blocked postinstall scripts for `@nestjs/core`, `sharp`, `unrs-resolver` (default pnpm security) — recorded under `ignoredBuiltDependencies` in root `pnpm-workspace.yaml`; none affect build/boot.
 - `pnpm build` → 4/4 tasks pass (shared, db, web `next build`, api `nest build`).
 - `pnpm typecheck` → 5/5 pass. `pnpm lint` → pass (fixed one `no-floating-promises` warning in `apps/api/src/main.ts` via `void bootstrap()`).
-- API boot smoke: `node apps/api/dist/main.js` on PORT 3007 → `GET /` returned `Hello from SommyComfort API!` (string sourced from `@sommycomfort/shared`, proving the workspace link works at runtime).
+- API boot smoke: `node apps/api/dist/main.js` on PORT 3007 → `GET /` returned `Hello from Fammy Comforts API!` (string sourced from `@fammycomforts/shared`, proving the workspace link works at runtime).
 
 ### Completion Notes List
 
@@ -113,9 +113,9 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 **New (root):** `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `.nvmrc`, `README.md`, `pnpm-lock.yaml`
 **Modified (root):** `.gitignore`
 **New (web):** full Next.js app scaffold under `apps/web/**` (via create-next-app), plus `apps/web/src/lib/app-config.ts`
-**Modified (web):** `apps/web/package.json` (name `@sommycomfort/web`, `typecheck` script, shared dep), `apps/web/next.config.ts` (pinned Turbopack root); removed stray `apps/web/pnpm-workspace.yaml`
+**Modified (web):** `apps/web/package.json` (name `@fammycomforts/web`, `typecheck` script, shared dep), `apps/web/next.config.ts` (pinned Turbopack root); removed stray `apps/web/pnpm-workspace.yaml`
 **New (api):** full NestJS app scaffold under `apps/api/**` (via @nestjs/cli)
-**Modified (api):** `apps/api/package.json` (name `@sommycomfort/api`, `typecheck` script, shared dep), `apps/api/src/app.service.ts` (uses shared `APP_NAME`), `apps/api/src/main.ts` (`void bootstrap()`)
+**Modified (api):** `apps/api/package.json` (name `@fammycomforts/api`, `typecheck` script, shared dep), `apps/api/src/app.service.ts` (uses shared `APP_NAME`), `apps/api/src/main.ts` (`void bootstrap()`)
 **New (packages):** `packages/config/{package.json,tsconfig.base.json}`, `packages/shared/{package.json,tsconfig.json,src/index.ts}`, `packages/db/{package.json,tsconfig.json,src/index.ts}`
 **Modified (tracking):** `_bmad-output/implementation-artifacts/sprint-status.yaml`
 
@@ -126,7 +126,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 | Date | Change |
 |---|---|
 | 2026-06-05 | Story 1.1 implemented: pnpm + Turborepo monorepo scaffolded (apps/web Next 16, apps/api Nest 11, packages shared/db/config). Build, typecheck, lint, and API boot all green. Status → review. |
-| 2026-06-05 | Code review (3 adversarial layers). Resolved 4 patch findings: API `dev` script (so `pnpm dev` starts both apps), apps now extend shared `@sommycomfort/config` tsconfig + eslint presets (AC#4), turbo `globalDependencies` for cache correctness, web `@types/node` → ^24. 2 items deferred. Re-verified build/typecheck/lint/`pnpm dev`. Status → done. |
+| 2026-06-05 | Code review (3 adversarial layers). Resolved 4 patch findings: API `dev` script (so `pnpm dev` starts both apps), apps now extend shared `@fammycomforts/config` tsconfig + eslint presets (AC#4), turbo `globalDependencies` for cache correctness, web `@types/node` → ^24. 2 items deferred. Re-verified build/typecheck/lint/`pnpm dev`. Status → done. |
 
 ## Senior Developer Review (AI)
 
@@ -142,7 +142,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 - [x] [Review][Patch][Low] `apps/web` `@types/node ^20` vs Node 24 floor → bumped to `^24`.
 - [x] [Review][Defer] `sharp`/`unrs-resolver` build scripts ignored — fine now; approve via `pnpm approve-builds` before `next/image` optimization is used. (→ deferred-work.md)
 - [x] [Review][Defer] Shared package resolves via `dist` only; running `tsc` directly (outside turbo) before a build fails — mitigated by turbo's `^build` ordering. Consider TS project references later. (→ deferred-work.md)
-- [x] [Review][Dismiss] `lint`→`^build` "gratuitous" — kept intentionally: API uses type-aware lint and imports `@sommycomfort/shared`, so it needs built types.
+- [x] [Review][Dismiss] `lint`→`^build` "gratuitous" — kept intentionally: API uses type-aware lint and imports `@fammycomforts/shared`, so it needs built types.
 - [x] [Review][Dismiss] "missing imports in main.ts/app.service.ts" (Blind Hunter) — false positive from reviewing trimmed excerpts; actual files import correctly.
 - [x] [Review][Dismiss] `db` package unconsumed / `toLocaleString` ICU / `nest-cli deleteOutDir` — expected (db reserved for 1.8), Node 24 ships full ICU, cosmetic respectively.
 

@@ -87,7 +87,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 ### Completion Notes List
 
 - **All 7 ACs satisfied** for the right-scoped (no-Docker) version. Vitest is the single runner workspace-wide.
-- **Caught a latent bug:** the Nest sample spec still asserted `'Hello World!'`, but Story 1.1 changed `getHello()` to return `'Hello from SommyComfort API!'` — the old assertion would have failed the moment any test ran. Converted + corrected.
+- **Caught a latent bug:** the Nest sample spec still asserted `'Hello World!'`, but Story 1.1 changed `getHello()` to return `'Hello from Fammy Comforts API!'` — the old assertion would have failed the moment any test ran. Converted + corrected.
 - **API migrated Jest → Vitest:** removed `jest`/`ts-jest`/`@types/jest` + the jest config block + the e2e scaffold (`test/`); added `vitest` + `unplugin-swc` + `@swc/core`. Decorators/metadata handled by SWC (esbuild alone can't).
 - **Integration (DB) tests deferred to Story 1.8** — documented in `TESTING.md` with the Testcontainers/disposable-schema pattern, factory/seed layer, and clock + M-Pesa-gateway injection seams. The mandatory CI gates (idempotency/double-spend/ledger before Epic 5; concurrency before Epic 4; RBAC grid before Epic 2) are recorded there.
 - **Config hygiene:** test files excluded from the app/package `tsc` configs (build/typecheck) and run by Vitest instead — keeps `dist` clean and build fast (tests are executed, not tsc-typechecked; acceptable for the foundation). `nest build` already excludes specs; added `vitest.config.ts` to the api build exclude. Added `@swc/core`/`esbuild` to `ignoredBuiltDependencies` (prebuilt binaries work without their postinstall — tests prove it).
@@ -121,7 +121,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 - [x] [Review][Defer] `unplugin-swc` configured for constructor-DI only → before Epic 2, add tsconfig path-alias resolution + a `class-validator` DTO smoke test. (→ deferred-work / TESTING.md)
 - [x] [Review][Defer] `@swc/core`/`esbuild` in `ignoredBuiltDependencies` — verify on the CI base image (musl/non-x64) at Story 1.9. (→ TESTING.md)
 - [x] [Review][Defer] `packages/db` has no `test` script → add when it gains code in Story 1.8. (→ TESTING.md)
-- [x] [Review][Defer] Tests resolve `@sommycomfort/shared` from source, not built `dist` → noted in TESTING.md.
+- [x] [Review][Defer] Tests resolve `@fammycomforts/shared` from source, not built `dist` → noted in TESTING.md.
 - [x] [Review][Dismiss] NodeNext extensionless import in shared test (cosmetic); version pinning (clean, no peer issues).
 
 **Post-fix verification:** `pnpm test` = **11 tests / 4 tasks green** (shared 5, web 5, api 1) · `pnpm build` 4/4 · `pnpm lint` 3/3.

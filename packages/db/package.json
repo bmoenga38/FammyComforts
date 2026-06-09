@@ -1,5 +1,5 @@
 {
-  "name": "@sommycomfort/db",
+  "name": "@fammycomforts/db",
   "version": "0.0.0",
   "private": true,
   "type": "commonjs",
@@ -23,7 +23,7 @@
     "@prisma/client": "^7.8.0"
   },
   "devDependencies": {
-    "@sommycomfort/config": "workspace:*",
+    "@fammycomforts/config": "workspace:*",
     "prisma": "^7.8.0",
     "typescript": "^5",
     "vitest": "^3.0.0"

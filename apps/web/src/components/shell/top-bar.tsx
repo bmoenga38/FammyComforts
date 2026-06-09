@@ -35,7 +35,7 @@ export function TopBar({
       <div className="flex min-w-0 flex-col leading-tight">
         <p className="font-mono text-xs text-text-muted">Rental operations suite</p>
         <h1 className="truncate font-display text-lg font-semibold text-text">
-          {workspace?.title ?? "SommyComfort"}
+          {workspace?.title ?? "Fammy Comforts"}
         </h1>
       </div>
 

@@ -1,4 +1,4 @@
-# SommyComfort PWA — offline & background sync
+# Fammy Comforts PWA — offline & background sync
 
 Covers the offline behavior across Stories 1.5 (shell/SW) and 1.6 (indicator + data foundation).
 

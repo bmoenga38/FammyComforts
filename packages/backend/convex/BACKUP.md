@@ -1,4 +1,4 @@
-# Backup & Disaster Recovery — SommyComfort (Convex)
+# Backup & Disaster Recovery — Fammy Comforts (Convex)
 
 Story 1.10 baseline (NFR12). The backend is **Convex** — there is no Postgres `pg_dump`,
 no Prisma migration backup, and no S3 backup bucket (superseded: AR4′/AR7′/AR8′).

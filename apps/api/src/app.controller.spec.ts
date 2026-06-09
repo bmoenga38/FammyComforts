@@ -16,8 +16,8 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('returns the SommyComfort greeting (sourced from @sommycomfort/shared)', () => {
-      expect(appController.getHello()).toBe('Hello from SommyComfort API!');
+    it('returns the Fammy Comforts greeting (sourced from @fammycomforts/shared)', () => {
+      expect(appController.getHello()).toBe('Hello from Fammy Comforts API!');
     });
   });
 });

@@ -1,4 +1,4 @@
-# Data Model — SommyComfort
+# Data Model — Fammy Comforts
 
 **Date:** 2026-06-04
 **Source:** `PRD.md` §8 (Key Data Entities) + `architecture.md` conventions. Owner: this is the field-level schema referenced by AR4 and Epic 1 Story 1.8; tables are created **per-story when first needed** (the schema here is the target, not a "create everything up front" instruction).

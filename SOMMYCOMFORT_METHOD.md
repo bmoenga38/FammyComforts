@@ -1,6 +1,6 @@
-# SommyComfort Method
+# Fammy Comforts Method
 
-This project uses a custom planning and delivery method for building the SommyComfort rental/accommodation operations PWA from scratch to production.
+This project uses a custom planning and delivery method for building the Fammy Comforts rental/accommodation operations PWA from scratch to production.
 
 The method replaces the copied BMAD package. It keeps the useful discipline of structured planning, but every workflow is specific to accommodation, rentals, guest stays, staff operations, payments, housekeeping, assets, restaurant service, inventory, and reporting.
 

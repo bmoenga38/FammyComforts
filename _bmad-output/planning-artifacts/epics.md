@@ -12,11 +12,11 @@ revisedAt: '2026-06-04'
 revisionNote: 'Post-readiness revision: Payments resequenced before Front Desk; guest portal moved into Payments; 4 oversized stories split; backup + CI/CD stories added.'
 ---
 
-# SommyComfort - Epic Breakdown
+# Fammy Comforts - Epic Breakdown
 
 ## Overview
 
-This document provides the complete epic and story breakdown for SommyComfort, decomposing the requirements from the PRD, the design system (acting as the UX input), and the Architecture decisions into implementable stories.
+This document provides the complete epic and story breakdown for Fammy Comforts, decomposing the requirements from the PRD, the design system (acting as the UX input), and the Architecture decisions into implementable stories.
 
 > **Run mode note:** Produced via the BMAD `create-epics-and-stories` workflow in autonomous ("YOLO") mode. The PRD has no pre-numbered FRs, so they were derived from `PRD.md` §5 (Core Scope) plus cross-cutting auth/notifications. There is no standalone UX-design document, so `DESIGN_SYSTEM.md` was used as the UX input.
 >
@@ -250,7 +250,7 @@ So that all later work builds on the architecture's defined structure and shared
 ### Story 1.2: Establish design tokens, typography, and theming
 
 As a user,
-I want the app to render in the SommyComfort dark and light themes with the correct fonts and colors,
+I want the app to render in the Fammy Comforts dark and light themes with the correct fonts and colors,
 So that the product looks consistent and on-brand from the first screen.
 
 **Acceptance Criteria:**
