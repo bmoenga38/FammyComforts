@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guest Room Catalog &amp; Booking - Fammy Comforts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Space+Grotesk:wght@600;700&amp;family=Syne:wght@800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#006e2b",
+                        "tertiary-fixed-dim": "#75d4e8",
+                        "secondary-fixed": "#eddcff",
+                        "on-secondary": "#411478",
+                        "on-primary-fixed-variant": "#00531e",
+                        "secondary": "#d7baff",
+                        "on-surface-variant": "#bbcbb8",
+                        "surface": "#12131a",
+                        "surface-container-high": "#292931",
+                        "outline-variant": "#3c4a3c",
+                        "on-tertiary-fixed": "#001f25",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#31e368",
+                        "inverse-surface": "#e3e1ec",
+                        "on-tertiary-fixed-variant": "#004e5a",
+                        "primary-fixed-dim": "#31e368",
+                        "primary-container": "#50fa7b",
+                        "outline": "#859583",
+                        "on-error": "#690005",
+                        "surface-variant": "#34343c",
+                        "secondary-container": "#593090",
+                        "surface-dim": "#12131a",
+                        "surface-container-highest": "#34343c",
+                        "on-primary-fixed": "#002108",
+                        "tertiary-container": "#8ceafe",
+                        "on-tertiary": "#00363e",
+                        "on-primary-container": "#00702c",
+                        "surface-container-low": "#1a1b22",
+                        "surface-container": "#1e1f27",
+                        "on-background": "#e3e1ec",
+                        "tertiary": "#edfbff",
+                        "on-surface": "#e3e1ec",
+                        "tertiary-fixed": "#a3eeff",
+                        "primary-fixed": "#69ff88",
+                        "surface-container-lowest": "#0d0e15",
+                        "inverse-on-surface": "#2f3038",
+                        "surface-bright": "#383941",
+                        "on-secondary-container": "#caa4ff",
+                        "on-error-container": "#ffdad6",
+                        "background": "#12131a",
+                        "on-secondary-fixed-variant": "#593090",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#006a79",
+                        "on-secondary-fixed": "#290055",
+                        "primary": "#e8ffe4",
+                        "on-primary": "#003912",
+                        "secondary-fixed-dim": "#d7baff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "sidebar-width": "280px",
+                        "bottom-nav-height": "64px",
+                        "xs": "0.5rem",
+                        "sm": "1rem",
+                        "md": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "data-mono": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Space Grotesk"],
+                        "hero-display": ["Syne"],
+                        "headline-lg": ["Space Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Space Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Space Grotesk"]
+                    },
+                    "fontSize": {
+                        "data-mono": ["14px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "hero-display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glow-primary {
+            box-shadow: 0 0 20px rgba(80, 250, 123, 0.2);
+        }
+        .glow-hover:hover {
+            box-shadow: 0 0 25px rgba(80, 250, 123, 0.3);
+        }
+        .glass-panel {
+            background: rgba(45, 47, 61, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid #44475a;
+        }
+        /* Custom scrollbar for horizontal lists */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col md:flex-row pb-[64px] md:pb-0 overflow-x-hidden">
+<!-- TopAppBar (Web) -->
+<header class="hidden md:flex justify-between items-center w-full px-sm md:px-md max-w-[1440px] mx-auto h-16 bg-surface dark:bg-surface text-primary-container dark:text-primary-container font-headline-md text-headline-md docked full-width top-0 sticky bg-surface/80 backdrop-blur-xl flat no shadows z-50 fixed w-[calc(100%-280px)] right-0">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined hover:bg-surface-container-high transition-colors p-2 rounded-full cursor-pointer">menu</span>
+<span class="font-hero-display text-headline-lg text-primary-container dark:text-primary-container">Fammy Comforts</span>
+</div>
+<span class="material-symbols-outlined hover:bg-surface-container-high transition-colors p-2 rounded-full cursor-pointer">notifications</span>
+</header>
+<!-- TopAppBar (Mobile) -->
+<header class="md:hidden flex justify-between items-center w-full px-sm h-16 bg-surface dark:bg-surface text-primary-container dark:text-primary-container font-headline-md text-headline-md top-0 sticky bg-surface/80 backdrop-blur-xl z-50">
+<span class="material-symbols-outlined p-2 rounded-full cursor-pointer">menu</span>
+<span class="font-hero-display text-headline-lg-mobile text-primary-container dark:text-primary-container">Fammy Comforts</span>
+<span class="material-symbols-outlined p-2 rounded-full cursor-pointer">notifications</span>
+</header>
+<!-- NavigationDrawer (Desktop Sidebar) -->
+<nav class="hidden md:flex flex-col p-md gap-sm fixed left-0 top-0 h-full w-[280px] z-40 bg-surface-container-low dark:bg-surface-container-low text-primary-container dark:text-primary-container font-body-md text-body-md border-r border-outline-variant flat">
+<div class="flex items-center gap-sm mb-lg">
+<div class="w-12 h-12 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img alt="Staff User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnQX11kUYQdNuQFxhd4OmaaeTxGoAPRWovytV3f2tfW4oy-Cw8dGYwpFTik9vIbag3vqWLZAjUH3OgXxZS7cRuUdlv6Hsro_kgfPPQL9qcrpjdNKDsPksAcGLnfRT2c42rI7cDNwrtMDx9f4l01-kkCxBugrGtfx0m5vRSqfhYOYA7ESqrhy5zuWC04OS8q3AvBL36dyHRfmy9X9A7_Y5ESJBQvrfuuWFLVITYfcXWiK7UhJCB0R8U45cJ9RPp-FdCz-bPIS3EaOj1"/>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Fammy Comforts</span>
+<span class="text-on-surface-variant text-sm">Property Manager</span>
+<span class="text-xs text-outline font-data-mono">Staff ID: 001</span>
+</div>
+</div>
+<a class="flex items-center gap-sm p-sm bg-primary-container/10 text-primary-container rounded-lg font-bold Active: translate-x-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+            Bookings
+        </a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">shield_person</span>
+            Admin Panel
+        </a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">concierge</span>
+            Front Desk
+        </a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">cleaning_services</span>
+            Housekeeping
+        </a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+            Kitchen Ops
+        </a>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[280px] w-full max-w-[1440px] mx-auto md:mt-16">
+<!-- Cinematic Hero -->
+<section class="relative h-[530px] min-h-[400px] w-full overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover object-center brightness-50" data-alt="A luxurious, modern high-end apartment living room with floor-to-ceiling windows overlooking a city skyline at twilight. The room features minimalist contemporary furniture, warm ambient lighting, and rich textures. The color palette incorporates deep charcoal tones, warm woods, and sophisticated neutral fabrics, perfectly aligning with a premium hospitality aesthetic. The mood is calm, exclusive, and refined." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-K9VyTl_L9-HDzBIJoIxAyoSp5Ere91-hkiZlcODagsrgAev04AEBPTHbyCZhShCF4GrbyhBlTyq23QNZq0Rz2nCUbFV6GgpYOHyOgS-BRQEG1B2A1SJybj6mcaQo7vPY4hNwkvpyN98jpL1Csra2mfpvrLfasDRi8JlvYFl9qREaGGM7pNegvDJpgsAnTSeZ9AzKHLpcoA3FNwP60s8fa6SPWhZB1QJwQ6MgOgeeHc-XGIMrhcWadyEI519f37ow7VOuQkOZCUQh"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-sm md:p-xl flex flex-col justify-end">
+<h1 class="font-hero-display text-hero-display text-on-surface mb-xs drop-shadow-lg">Curated Stays.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Discover unparalleled comfort and operational excellence in our premium guest rooms. Designed for both relaxation and productivity.</p>
+</div>
+</section>
+<!-- Catalog & Booking Bento Grid -->
+<section class="p-sm md:p-xl grid grid-cols-1 lg:grid-cols-12 gap-sm md:gap-lg">
+<!-- Left Column: Room Catalog (Bento Style) -->
+<div class="lg:col-span-7 flex flex-col gap-sm md:gap-md">
+<div class="flex justify-between items-end mb-xs">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Available Suites</h2>
+<div class="flex gap-2">
+<button class="p-2 glass-panel rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">filter_list</span></button>
+</div>
+</div>
+<!-- Room Card 1 (Featured) -->
+<article class="bg-[#2d2f3d] rounded-xl border border-[#44475a] overflow-hidden flex flex-col md:flex-row relative group cursor-pointer hover:border-primary-container transition-colors">
+<div class="w-full md:w-2/5 h-48 md:h-auto relative shrink-0">
+<img class="w-full h-full object-cover" data-alt="A meticulously designed premium hotel bedroom featuring a plush king-size bed with crisp white linens. Soft, indirect architectural lighting creates a warm glow against dark, textured accent walls. The space includes a sleek, modern workstation in the corner. The overall atmosphere is sophisticated, modern corporate, and deeply relaxing, fitting for a luxury hospitality brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2Gtd0dy7VxYRqEdnqgqDOZuNLcZP9LiMeM8ina1Gr1si91IKy7Fa1Vc5H7AniiiDU6N47slcRC9dOhFFib9zrmJWt4CQNAOaNzB3AmJUiSMcBrXQTZEUEIkSJrbUAAxbhqb5HAwKkgTgsdCHbLIlL2gk6D3u3JZgvyB_uqxjUBzB9AK3ChXGCjKbw_1kSVll9hryGQlUjjatO7pCQlL7Es69kTmya8vgq7PrUmuWp9rFi5CCC2T7wk4WAnYu-lP2fbtIX8Li3Xycj"/>
+<div class="absolute top-sm right-sm bg-[#e8ffe4] text-[#003912] font-label-caps text-label-caps px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-[#16a34a] animate-pulse"></span> Available
+                        </div>
+<div class="absolute top-sm left-sm bg-surface-container/80 backdrop-blur-sm text-primary-container font-data-mono text-data-mono px-2 py-1 rounded">RM-402</div>
+</div>
+<div class="p-md flex flex-col justify-between flex-1">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Executive Panorama Suite</h3>
+<div class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">king_bed</span> King</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">wifi</span> Fiber</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">coffee_maker</span> Espresso</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">Expansive city views with a dedicated ergonomic workspace, perfect for extended operational stays.</p>
+</div>
+<div class="flex justify-between items-end mt-auto">
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-caps text-label-caps">PER NIGHT</span>
+<span class="font-data-mono text-headline-sm text-primary-container">KES 18,500</span>
+</div>
+<button class="bg-surface-container-high hover:bg-primary-container hover:text-on-primary-container text-primary-container border border-primary-container/30 px-4 py-2 rounded-lg font-label-caps text-label-caps transition-all flex items-center gap-2 glow-hover">
+                                Select <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Room Card 2 -->
+<article class="bg-[#2d2f3d] rounded-xl border border-[#44475a] overflow-hidden flex flex-col md:flex-row relative group cursor-pointer hover:border-primary-container transition-colors">
+<div class="w-full md:w-2/5 h-48 md:h-auto relative shrink-0">
+<img class="w-full h-full object-cover" data-alt="A stylish, modern corporate style hotel room with twin beds. The room features a deep dark color palette with strategic warm spotlighting to reduce eye strain. A clean, minimalist design approach is evident in the streamlined furniture and lack of clutter. The aesthetic balances high-end hospitality with practical, operational precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeGP82WPlHR91D9NzdU2hs-SFBJ1J-8lkloaIB0Rhs13xZgBXhx_LDbvOwpCwa35G89is1Il6Km8jsuw_MtJwq1EO0zGEn0TSqT4rG6YItvvEjKTFHG0EcfDDg0EwP1CYRvFZYLBTvWY8_75gF2bm2KweUEqeRPZZ2Wby5sNGqwvDSsq9fDhpWjSVmzgllW3OqEe3zTXOyEyqrme18wnO8n3Scr2N-hnmCIB7AyWC4ssEhrojeVc2CBGXe0oxkCnrU7M2xDbLilpHL"/>
+<div class="absolute top-sm right-sm bg-[#e8ffe4] text-[#003912] font-label-caps text-label-caps px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-[#16a34a] animate-pulse"></span> Available
+                        </div>
+<div class="absolute top-sm left-sm bg-surface-container/80 backdrop-blur-sm text-primary-container font-data-mono text-data-mono px-2 py-1 rounded">RM-315</div>
+</div>
+<div class="p-md flex flex-col justify-between flex-1">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Standard Corporate Twin</h3>
+<div class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">bed</span> 2 Twin</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">desk</span> Workstation</span>
+</div>
+</div>
+<div class="flex justify-between items-end mt-4">
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-caps text-label-caps">PER NIGHT</span>
+<span class="font-data-mono text-headline-sm text-primary-container">KES 12,000</span>
+</div>
+<button class="bg-surface-container-high hover:bg-primary-container hover:text-on-primary-container text-primary-container border border-primary-container/30 px-4 py-2 rounded-lg font-label-caps text-label-caps transition-all flex items-center gap-2 glow-hover">
+                                Select <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+<!-- Right Column: Premium Booking Form -->
+<div class="lg:col-span-5 relative">
+<div class="sticky top-24 glass-panel rounded-xl p-md flex flex-col gap-md shadow-2xl">
+<div class="border-b border-outline-variant pb-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">edit_calendar</span> Reservation Details
+                        </h3>
+</div>
+<form class="flex flex-col gap-sm">
+<!-- Dates -->
+<div class="grid grid-cols-2 gap-sm">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">CHECK-IN</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">login</span>
+<input class="w-full bg-[#353849] border border-[#44475a] rounded-lg py-2 pl-10 pr-3 text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none transition-colors" type="date" value="2023-11-15"/>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">CHECK-OUT</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">logout</span>
+<input class="w-full bg-[#353849] border border-[#44475a] rounded-lg py-2 pl-10 pr-3 text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none transition-colors" type="date" value="2023-11-18"/>
+</div>
+</div>
+</div>
+<!-- Guest Info -->
+<div class="flex flex-col gap-1 mt-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">GUEST NAME</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">person</span>
+<input class="w-full bg-[#353849] border border-[#44475a] rounded-lg py-2 pl-10 pr-3 text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none transition-colors" placeholder="Enter guest name" type="text"/>
+</div>
+</div>
+<!-- Selected Room Summary -->
+<div class="bg-surface-container-high rounded-lg p-sm border border-outline-variant mt-2 flex justify-between items-center">
+<div>
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-1">SELECTED ROOM</div>
+<div class="font-body-md text-body-md text-on-surface font-medium">Executive Panorama Suite (RM-402)</div>
+</div>
+<button class="text-outline hover:text-error transition-colors" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Payment Method -->
+<div class="flex flex-col gap-1 mt-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">PAYMENT METHOD</label>
+<div class="grid grid-cols-3 gap-2">
+<label class="cursor-pointer">
+<input checked="" class="peer sr-only" name="payment" type="radio"/>
+<div class="bg-[#353849] border border-[#44475a] rounded-lg py-2 text-center peer-checked:border-primary-container peer-checked:bg-primary-container/10 transition-colors">
+<span class="font-body-md text-body-md font-medium text-[#50fa7b]">M-Pesa</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="payment" type="radio"/>
+<div class="bg-[#353849] border border-[#44475a] rounded-lg py-2 text-center peer-checked:border-primary-container peer-checked:bg-primary-container/10 transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">credit_card</span>
+<span class="font-body-md text-body-md">Card</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="payment" type="radio"/>
+<div class="bg-[#353849] border border-[#44475a] rounded-lg py-2 text-center peer-checked:border-primary-container peer-checked:bg-primary-container/10 transition-colors">
+<span class="font-body-md text-body-md">Invoice</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Price Summary -->
+<div class="mt-4 pt-4 border-t border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
+<span>3 Nights x KES 18,500</span>
+<span class="font-data-mono text-data-mono">KES 55,500</span>
+</div>
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
+<span>Taxes &amp; Fees (16%)</span>
+<span class="font-data-mono text-data-mono">KES 8,880</span>
+</div>
+<div class="flex justify-between items-end mt-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Total Due</span>
+<span class="font-data-mono text-headline-md text-primary-container glow-primary rounded px-1">KES 64,380</span>
+</div>
+</div>
+<button class="w-full mt-4 bg-primary-container text-on-primary-container font-headline-sm text-headline-sm py-3 rounded-lg flex items-center justify-center gap-2 glow-primary hover:bg-[#69ff88] transition-colors" type="button">
+<span class="material-symbols-outlined">check_circle</span> Confirm Booking
+                        </button>
+</form>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-surface-container dark:bg-surface-container border-t border-outline-variant shadow-[0_-4px_20px_rgba(80,250,123,0.1)] docked full-width bottom-0 fixed z-50 h-[64px] pb-safe fixed bottom-0 w-full flex justify-around items-center px-xs">
+<a class="flex flex-col items-center justify-center text-primary-container font-bold Active: scale-90 transition-transform h-full w-full" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="font-label-caps text-label-caps">Book</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest/50 h-full w-full rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">shield_person</span>
+<span class="font-label-caps text-label-caps">Admin</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest/50 h-full w-full rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">concierge</span>
+<span class="font-label-caps text-label-caps">Desk</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest/50 h-full w-full rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">cleaning_services</span>
+<span class="font-label-caps text-label-caps">Clean</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest/50 h-full w-full rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">restaurant</span>
+<span class="font-label-caps text-label-caps">Kitchen</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for radio buttons to add a slight pop
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                this.parentElement.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.parentElement.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+    </script>
+</body></html>

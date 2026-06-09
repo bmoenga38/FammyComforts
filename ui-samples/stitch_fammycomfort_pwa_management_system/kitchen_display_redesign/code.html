@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kitchen Display Board - Fammy Comforts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@500&amp;family=Space+Grotesk:wght@600;700&amp;family=Syne:wght@800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#006e2b",
+                        "tertiary-fixed-dim": "#75d4e8",
+                        "secondary-fixed": "#eddcff",
+                        "on-secondary": "#411478",
+                        "on-primary-fixed-variant": "#00531e",
+                        "secondary": "#d7baff",
+                        "on-surface-variant": "#bbcbb8",
+                        "surface": "#12131a",
+                        "surface-container-high": "#292931",
+                        "outline-variant": "#3c4a3c",
+                        "on-tertiary-fixed": "#001f25",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#31e368",
+                        "inverse-surface": "#e3e1ec",
+                        "on-tertiary-fixed-variant": "#004e5a",
+                        "primary-fixed-dim": "#31e368",
+                        "primary-container": "#50fa7b",
+                        "outline": "#859583",
+                        "on-error": "#690005",
+                        "surface-variant": "#34343c",
+                        "secondary-container": "#593090",
+                        "surface-dim": "#12131a",
+                        "surface-container-highest": "#34343c",
+                        "on-primary-fixed": "#002108",
+                        "tertiary-container": "#8ceafe",
+                        "on-tertiary": "#00363e",
+                        "on-primary-container": "#00702c",
+                        "surface-container-low": "#1a1b22",
+                        "surface-container": "#1e1f27",
+                        "on-background": "#e3e1ec",
+                        "tertiary": "#edfbff",
+                        "on-surface": "#e3e1ec",
+                        "tertiary-fixed": "#a3eeff",
+                        "primary-fixed": "#69ff88",
+                        "surface-container-lowest": "#0d0e15",
+                        "inverse-on-surface": "#2f3038",
+                        "surface-bright": "#383941",
+                        "on-secondary-container": "#caa4ff",
+                        "on-error-container": "#ffdad6",
+                        "background": "#12131a",
+                        "on-secondary-fixed-variant": "#593090",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#006a79",
+                        "on-secondary-fixed": "#290055",
+                        "primary": "#e8ffe4",
+                        "on-primary": "#003912",
+                        "secondary-fixed-dim": "#d7baff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "sidebar-width": "280px",
+                        "bottom-nav-height": "64px",
+                        "xs": "0.5rem",
+                        "sm": "1rem",
+                        "md": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "data-mono": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Space Grotesk"],
+                        "hero-display": ["Syne"],
+                        "headline-lg": ["Space Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Space Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Space Grotesk"]
+                    },
+                    "fontSize": {
+                        "data-mono": ["14px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "hero-display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom scrollbar for Kanban */
+        .kanban-scroll::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .kanban-scroll::-webkit-scrollbar-track {
+            background: #12131a; 
+            border-radius: 4px;
+        }
+        .kanban-scroll::-webkit-scrollbar-thumb {
+            background: #34343c; 
+            border-radius: 4px;
+        }
+        .kanban-scroll::-webkit-scrollbar-thumb:hover {
+            background: #50fa7b; 
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md text-body-md min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-surface/90 backdrop-blur-md dark:bg-surface/90 docked full-width top-0 sticky z-50 border-b border-outline-variant/20 flex justify-between items-center h-16 px-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant flex items-center justify-center border border-outline-variant/50">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary-container dark:text-primary tracking-tight">Fammy Comforts</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-variant/50 transition-colors hover:text-primary tap:opacity-80">
+<span class="material-symbols-outlined icon-fill">notifications</span>
+</button>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Desktop Sidebar Nav (Reflowed from BottomNav logic) -->
+<aside class="hidden md:flex flex-col w-[280px] bg-surface-container-low border-r border-outline-variant/30 py-6 px-4 gap-2 z-40">
+<div class="mb-8 px-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Kitchen Ops</span>
+</div>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">calendar_month</span>
+<span class="font-headline-sm text-headline-sm">Book</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">admin_panel_settings</span>
+<span class="font-headline-sm text-headline-sm">Admin</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">desk</span>
+<span class="font-headline-sm text-headline-sm">Desk</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">cleaning_services</span>
+<span class="font-headline-sm text-headline-sm">Clean</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-surface-variant/80 text-primary-container dark:text-primary-container drop-shadow-[0_0_8px_rgba(80,250,123,0.2)] border border-primary-container/20" href="#">
+<span class="material-symbols-outlined text-[24px] icon-fill">restaurant</span>
+<span class="font-headline-sm text-headline-sm">Kitchen</span>
+</a>
+</aside>
+<!-- Main Content - Kanban Board -->
+<main class="flex-1 overflow-hidden flex flex-col bg-background pb-[80px] md:pb-0">
+<!-- Dashboard Header Actions -->
+<div class="px-4 py-4 md:px-8 md:py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 border-b border-outline-variant/10">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Kitchen Display</h1>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Live Order Tracking</p>
+</div>
+<div class="flex gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+<span class="font-label-caps text-label-caps">Filter</span>
+</button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant/50">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="font-label-caps text-label-caps">History</span>
+</button>
+</div>
+</div>
+<!-- Kanban Columns Container -->
+<div class="flex-1 overflow-x-auto overflow-y-hidden kanban-scroll p-4 md:p-8 flex gap-6 snap-x snap-mandatory">
+<!-- COLUMN: PENDING -->
+<div class="flex flex-col min-w-[320px] max-w-[400px] w-full shrink-0 snap-center h-full">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-error drop-shadow-[0_0_8px_rgba(255,180,171,0.6)]"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Pending</h2>
+</div>
+<span class="bg-surface-container-high px-3 py-1 rounded-full font-data-mono text-data-mono text-on-surface">3</span>
+</div>
+<div class="flex-1 overflow-y-auto kanban-scroll flex flex-col gap-4 pr-2 pb-4">
+<!-- Order Card 1 (High Priority) -->
+<div class="bg-surface-container rounded-[14px] p-5 border border-error/30 shadow-[0_4px_20px_rgba(0,0,0,0.2)] flex flex-col gap-5 relative overflow-hidden group">
+<!-- Top Row -->
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-caps text-label-caps mb-1 tracking-widest">TABLE</span>
+<span class="font-hero-display text-hero-display text-on-surface leading-none">12</span>
+</div>
+<div class="flex flex-col items-end text-right">
+<span class="font-data-mono text-data-mono text-on-surface opacity-80">#ORD-992A</span>
+<span class="font-label-caps text-label-caps text-error mt-2 flex items-center gap-1 bg-error/10 px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-[14px]">timer</span> 14m waiting
+                                    </span>
+</div>
+</div>
+<!-- Items List -->
+<div class="bg-surface-container-highest/50 rounded-lg p-3">
+<ul class="flex flex-col gap-3">
+<li class="flex justify-between items-start text-on-surface border-b border-outline-variant/20 pb-2">
+<div class="flex gap-3">
+<span class="font-data-mono text-data-mono text-primary-container">2x</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm">Wagyu Burger</span>
+<span class="text-error font-data-mono text-[12px] mt-1">- No Onion</span>
+<span class="text-on-surface-variant font-data-mono text-[12px]">- Medium Rare</span>
+</div>
+</div>
+</li>
+<li class="flex justify-between items-start text-on-surface">
+<div class="flex gap-3">
+<span class="font-data-mono text-data-mono text-primary-container">1x</span>
+<span class="font-headline-sm text-headline-sm">Truffle Fries</span>
+</div>
+</li>
+</ul>
+</div>
+<!-- Action -->
+<button class="mt-2 w-full bg-primary-container text-on-primary-container font-headline-sm text-headline-sm py-3 rounded-lg flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(80,250,123,0.15)] hover:bg-primary transition-all active:scale-95 border border-primary/20">
+<span class="material-symbols-outlined icon-fill">play_arrow</span> Start Prep
+                            </button>
+</div>
+<!-- Order Card 2 -->
+<div class="bg-surface-container rounded-[14px] p-5 border border-outline-variant/50 shadow-lg flex flex-col gap-5 relative overflow-hidden">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-caps text-label-caps mb-1 tracking-widest">TABLE</span>
+<span class="font-hero-display text-hero-display text-on-surface leading-none">04</span>
+</div>
+<div class="flex flex-col items-end text-right">
+<span class="font-data-mono text-data-mono text-on-surface opacity-80">#ORD-993B</span>
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim mt-2 flex items-center gap-1 bg-surface-variant px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 2m waiting
+                                    </span>
+</div>
+</div>
+<div class="bg-surface-container-highest/50 rounded-lg p-3">
+<ul class="flex flex-col gap-3">
+<li class="flex justify-between items-start text-on-surface">
+<div class="flex gap-3">
+<span class="font-data-mono text-data-mono text-primary-container">1x</span>
+<span class="font-headline-sm text-headline-sm">Caesar Salad</span>
+</div>
+</li>
+</ul>
+</div>
+<button class="mt-2 w-full bg-primary-container text-on-primary-container font-headline-sm text-headline-sm py-3 rounded-lg flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(80,250,123,0.15)] hover:bg-primary transition-all active:scale-95 border border-primary/20">
+<span class="material-symbols-outlined icon-fill">play_arrow</span> Start Prep
+                            </button>
+</div>
+</div>
+</div>
+<!-- COLUMN: PREPARING -->
+<div class="flex flex-col min-w-[320px] max-w-[400px] w-full shrink-0 snap-center h-full">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-tertiary-fixed-dim drop-shadow-[0_0_8px_rgba(117,212,232,0.6)] animate-pulse"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Preparing</h2>
+</div>
+<span class="bg-surface-container-high px-3 py-1 rounded-full font-data-mono text-data-mono text-on-surface">2</span>
+</div>
+<div class="flex-1 overflow-y-auto kanban-scroll flex flex-col gap-4 pr-2 pb-4">
+<!-- Preparing Card 1 -->
+<div class="bg-surface-container-high rounded-[14px] p-5 border border-tertiary-fixed-dim/30 shadow-lg flex flex-col gap-5 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-tertiary-fixed-dim to-transparent opacity-50"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-caps text-label-caps mb-1 tracking-widest">TABLE</span>
+<span class="font-hero-display text-hero-display text-tertiary-fixed-dim leading-none">08</span>
+</div>
+<div class="flex flex-col items-end text-right">
+<span class="font-data-mono text-data-mono text-on-surface opacity-80">#ORD-988C</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-2 flex items-center gap-1 bg-surface-variant px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-[14px]">skillet</span> Cooking
+                                    </span>
+</div>
+</div>
+<div class="bg-surface-container/50 rounded-lg p-3">
+<ul class="flex flex-col gap-3">
+<li class="flex justify-between items-start text-on-surface border-b border-outline-variant/20 pb-2">
+<div class="flex gap-3 opacity-50 line-through">
+<span class="font-data-mono text-data-mono text-primary-container">1x</span>
+<span class="font-headline-sm text-headline-sm">Tomato Soup</span>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[18px]">check_circle</span>
+</li>
+<li class="flex justify-between items-start text-on-surface">
+<div class="flex gap-3">
+<span class="font-data-mono text-data-mono text-primary-container">1x</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm">Ribeye Steak</span>
+<span class="text-on-surface-variant font-data-mono text-[12px] mt-1">- Well Done</span>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<button class="mt-2 w-full bg-surface-variant text-on-surface font-headline-sm text-headline-sm py-3 rounded-lg flex justify-center items-center gap-2 hover:bg-surface-bright transition-all active:scale-95 border border-outline-variant">
+<span class="material-symbols-outlined text-tertiary-fixed-dim icon-fill">done_all</span> Mark Ready
+                            </button>
+</div>
+</div>
+</div>
+<!-- COLUMN: READY -->
+<div class="flex flex-col min-w-[320px] max-w-[400px] w-full shrink-0 snap-center h-full">
+<div class="flex items-center justify-between mb-4 px-2">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary-container drop-shadow-[0_0_8px_rgba(80,250,123,0.6)]"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Ready</h2>
+</div>
+<span class="bg-surface-container-high px-3 py-1 rounded-full font-data-mono text-data-mono text-on-surface">1</span>
+</div>
+<div class="flex-1 overflow-y-auto kanban-scroll flex flex-col gap-4 pr-2 pb-4">
+<!-- Ready Card 1 -->
+<div class="bg-surface-container rounded-[14px] p-5 border border-primary-container/40 shadow-[0_4px_20px_rgba(80,250,123,0.05)] flex flex-col gap-5 relative overflow-hidden">
+<div class="absolute inset-0 bg-primary-container/5 pointer-events-none"></div>
+<div class="flex justify-between items-start relative z-10">
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-caps text-label-caps mb-1 tracking-widest">TABLE</span>
+<span class="font-hero-display text-hero-display text-primary-container leading-none">22</span>
+</div>
+<div class="flex flex-col items-end text-right">
+<span class="font-data-mono text-data-mono text-on-surface opacity-80">#ORD-980X</span>
+<span class="font-label-caps text-label-caps text-surface-dim bg-primary-container mt-2 flex items-center gap-1 px-2 py-1 rounded-md font-bold">
+<span class="material-symbols-outlined text-[14px]">notifications_active</span> Pick Up
+                                    </span>
+</div>
+</div>
+<div class="bg-surface-container-highest/30 rounded-lg p-3 relative z-10">
+<ul class="flex flex-col gap-2">
+<li class="text-on-surface-variant text-sm italic text-center py-2">
+                                        Order Complete. Waiting for runner.
+                                    </li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 h-[64px] bg-surface-container/80 backdrop-blur-xl dark:bg-surface-container/80 border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(80,250,123,0.1)] flex justify-around items-center px-4 md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors w-16 h-full gap-1 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px]">calendar_month</span>
+<span class="font-label-caps text-label-caps">Book</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors w-16 h-full gap-1 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px]">admin_panel_settings</span>
+<span class="font-label-caps text-label-caps">Admin</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors w-16 h-full gap-1 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px]">desk</span>
+<span class="font-label-caps text-label-caps">Desk</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors w-16 h-full gap-1 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px]">cleaning_services</span>
+<span class="font-label-caps text-label-caps">Clean</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary-container dark:text-primary-container drop-shadow-[0_0_8px_rgba(80,250,123,0.5)] hover:bg-surface-variant/50 transition-colors active:scale-95 transition-transform duration-200 w-16 h-full gap-1 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px] icon-fill">restaurant</span>
+<span class="font-label-caps text-label-caps">Kitchen</span>
+</a>
+</nav>
+</body></html>

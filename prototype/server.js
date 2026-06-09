@@ -39,5 +39,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  console.log(`SommyComfort prototype running on http://127.0.0.1:${port}`);
+  console.log(`Fammy Comforts prototype running on http://127.0.0.1:${port}`);
 });

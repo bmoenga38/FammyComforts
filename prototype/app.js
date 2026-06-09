@@ -51,20 +51,31 @@ document.getElementById("themeToggle").addEventListener("click", () => {
   showToast(`${nextTheme === "dark" ? "Dark" : "Light"} mode enabled`);
 });
 
-document.querySelectorAll(".nav-item").forEach((button) => {
-  button.addEventListener("click", () => {
-    const view = button.dataset.view;
-    document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
-    document.querySelectorAll(".view").forEach((section) => section.classList.remove("active"));
-    button.classList.add("active");
-    document.getElementById(view).classList.add("active");
-    document.getElementById("pageTitle").textContent = titleByView[view];
-    document.body.classList.remove("menu-open");
+function switchView(view) {
+  if (!view || !document.getElementById(view)) return;
+  document.querySelectorAll(".view").forEach((section) => section.classList.remove("active"));
+  document.getElementById(view).classList.add("active");
+  document.getElementById("pageTitle").textContent = titleByView[view];
+
+  // Sync active state across sidebar and mobile bottom nav by data-view.
+  document.querySelectorAll(".nav-item, .bottom-item").forEach((item) => {
+    item.classList.toggle("active", item.dataset.view === view);
   });
+
+  document.body.classList.remove("menu-open");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll(".nav-item, .bottom-item").forEach((button) => {
+  button.addEventListener("click", () => switchView(button.dataset.view));
 });
 
 document.getElementById("mobileMenu").addEventListener("click", () => {
   document.body.classList.toggle("menu-open");
+});
+
+document.getElementById("scrim").addEventListener("click", () => {
+  document.body.classList.remove("menu-open");
 });
 
 document.querySelectorAll(".payment-option").forEach((button) => {

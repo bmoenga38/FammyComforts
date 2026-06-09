@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guest Feedback - Fammy Comforts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;family=Syne:wght@800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Space+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(45, 47, 61, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid #44475a;
+        }
+        .soft-glow-primary {
+            box-shadow: 0 0 20px 0 rgba(80, 250, 123, 0.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #12131a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #34343c;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#12131a",
+                      "on-background": "#e3e1ec",
+                      "on-surface-variant": "#bbcbb8",
+                      "inverse-primary": "#006e2b",
+                      "outline-variant": "#3c4a3c",
+                      "tertiary-container": "#8ceafe",
+                      "inverse-surface": "#e3e1ec",
+                      "surface-bright": "#383941",
+                      "on-error": "#690005",
+                      "surface-tint": "#31e368",
+                      "secondary-fixed-dim": "#d7baff",
+                      "surface-container": "#1e1f27",
+                      "secondary": "#d7baff",
+                      "on-surface": "#e3e1ec",
+                      "surface-container-lowest": "#0d0e15",
+                      "error": "#ffb4ab",
+                      "on-primary-fixed-variant": "#00531e",
+                      "surface": "#12131a",
+                      "outline": "#859583",
+                      "surface-container-highest": "#34343c",
+                      "primary": "#e8ffe4",
+                      "on-tertiary": "#00363e",
+                      "on-tertiary-container": "#006a79",
+                      "primary-container": "#50fa7b",
+                      "tertiary": "#edfbff",
+                      "primary-fixed-dim": "#31e368",
+                      "primary-fixed": "#69ff88",
+                      "tertiary-fixed-dim": "#75d4e8",
+                      "surface-variant": "#34343c",
+                      "on-secondary": "#411478",
+                      "on-primary": "#003912",
+                      "error-container": "#93000a",
+                      "secondary-fixed": "#eddcff",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-low": "#1a1b22",
+                      "tertiary-fixed": "#a3eeff",
+                      "secondary-container": "#593090",
+                      "on-primary-container": "#00702c",
+                      "on-primary-fixed": "#002108",
+                      "on-secondary-container": "#caa4ff",
+                      "inverse-on-surface": "#2f3038",
+                      "surface-container-high": "#292931",
+                      "background": "#12131a",
+                      "on-tertiary-fixed-variant": "#004e5a",
+                      "on-tertiary-fixed": "#001f25",
+                      "on-secondary-fixed-variant": "#593090",
+                      "on-secondary-fixed": "#290055"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "1rem",
+                      "bottom-nav-height": "64px",
+                      "xs": "0.5rem",
+                      "md": "1.5rem",
+                      "xl": "3rem",
+                      "sidebar-width": "280px",
+                      "lg": "2rem",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "label-caps": ["Inter"],
+                      "headline-lg-mobile": ["Space Grotesk"],
+                      "data-mono": ["JetBrains Mono"],
+                      "body-lg": ["Inter"],
+                      "hero-display": ["Syne"],
+                      "headline-lg": ["Space Grotesk"],
+                      "headline-sm": ["Space Grotesk"],
+                      "headline-md": ["Space Grotesk"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "data-mono": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                      "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "hero-display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-dim text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-dim flex justify-between items-center px-sm h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed hover:bg-surface-variant/50 transition-colors p-2 rounded-full active:scale-95 transition-transform">
+                menu
+            </button>
+<h1 class="font-headline-sm text-headline-sm-mobile md:font-headline-sm md:text-headline-sm text-primary dark:text-primary-fixed">Guest Feedback</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-outline-variant overflow-hidden">
+<img alt="Staff Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a hospitality manager with a warm, confident smile. She is wearing a modern corporate blazer against a softly blurred, high-end hotel lobby background. The lighting is bright and professional, emphasizing a reliable and welcoming persona. The overall aesthetic is clean, sharp, and perfectly aligned with a premium operational atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRUSLzwtJnA55xkY3sTwFa5TGW5twXDKhZhtPblNt0TlpDH22ubL5cvTUki1J6M2UTqmd7UGG9ijedt8djeebX9c5nHGhvP4NSmmf_4mhoJgBCOBiJ6fjWVtw6PN9p3XVsG1ACIK_TgKlxiDJHp5pQQjgdnMCXUINaUcZBE6pICQ8FrxdPHD70_moRknR9sdkdki51Zg_IhohSizrrTdfzVo0UvPHjUMZJc2n_PNvSc8QJkuwwmdbQp1PX-tREC3jOSVmMUE56Kejq"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-20 pb-24 px-sm max-w-lg mx-auto">
+<!-- Overall Satisfaction Card -->
+<section class="mb-lg">
+<div class="glass-card rounded-xl p-md soft-glow-primary overflow-hidden relative">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary-container/10 rounded-full blur-3xl"></div>
+<h2 class="font-label-caps text-label-caps text-on-surface-variant mb-xs">OVERALL SATISFACTION</h2>
+<div class="flex items-end gap-2 mb-sm">
+<span class="font-hero-display text-headline-lg text-primary-container leading-none">4.8</span>
+<span class="font-data-mono text-on-surface-variant mb-1">/ 5.0</span>
+</div>
+<div class="flex gap-1 text-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+<p class="mt-md font-body-md text-on-surface-variant">Based on 124 reviews this month. <span class="text-primary-container font-semibold">+0.2 from last month</span></p>
+</div>
+</section>
+<!-- Category Breakdown Grid -->
+<section class="mb-lg">
+<h3 class="font-headline-sm text-headline-sm mb-md px-1">Performance by Category</h3>
+<div class="grid grid-cols-1 gap-sm">
+<!-- Cleanliness -->
+<div class="bg-surface-container rounded-xl p-sm border border-outline-variant">
+<div class="flex justify-between items-center mb-xs">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">brush</span>
+<span class="font-body-lg font-semibold">Room Cleanliness</span>
+</div>
+<span class="font-data-mono text-primary-container text-headline-sm">4.9</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 98%"></div>
+</div>
+</div>
+<!-- Staff -->
+<div class="bg-surface-container rounded-xl p-sm border border-outline-variant">
+<div class="flex justify-between items-center mb-xs">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">group</span>
+<span class="font-body-lg font-semibold">Staff Friendliness</span>
+</div>
+<span class="font-data-mono text-primary-container text-headline-sm">4.7</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 94%"></div>
+</div>
+</div>
+<!-- Food -->
+<div class="bg-surface-container rounded-xl p-sm border border-outline-variant">
+<div class="flex justify-between items-center mb-xs">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">restaurant</span>
+<span class="font-body-lg font-semibold">Food Quality</span>
+</div>
+<span class="font-data-mono text-primary-container text-headline-sm">4.5</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 90%"></div>
+</div>
+</div>
+<!-- Amenities -->
+<div class="bg-surface-container rounded-xl p-sm border border-outline-variant">
+<div class="flex justify-between items-center mb-xs">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">pool</span>
+<span class="font-body-lg font-semibold">Amenities</span>
+</div>
+<span class="font-data-mono text-primary-container text-headline-sm">4.2</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 84%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Sentiment Trends -->
+<section class="space-y-lg">
+<!-- Trending Praise -->
+<div>
+<div class="flex items-center gap-2 mb-md px-1">
+<span class="material-symbols-outlined text-primary-container">trending_up</span>
+<h3 class="font-headline-sm text-headline-sm">Trending Praise</h3>
+</div>
+<div class="space-y-sm">
+<div class="bg-primary-container/10 border-l-4 border-primary-container p-sm rounded-r-lg">
+<p class="italic text-on-surface mb-xs">"The breakfast spread was absolutely amazing, best in Nairobi!"</p>
+<span class="font-label-caps text-[10px] text-primary-container uppercase tracking-widest">Guest RM 402 • 2h ago</span>
+</div>
+<div class="bg-primary-container/10 border-l-4 border-primary-container p-sm rounded-r-lg">
+<p class="italic text-on-surface mb-xs">"Super clean rooms and extremely comfortable beds."</p>
+<span class="font-label-caps text-[10px] text-primary-container uppercase tracking-widest">Guest RM 105 • 5h ago</span>
+</div>
+</div>
+</div>
+<!-- Trending Issues -->
+<div>
+<div class="flex items-center gap-2 mb-md px-1">
+<span class="material-symbols-outlined text-error">trending_down</span>
+<h3 class="font-headline-sm text-headline-sm">Trending Issues</h3>
+</div>
+<div class="space-y-sm">
+<div class="bg-error-container/20 border-l-4 border-error p-sm rounded-r-lg">
+<p class="italic text-on-surface mb-xs">"Wi-Fi was a bit slow during the evening hours."</p>
+<span class="font-label-caps text-[10px] text-error uppercase tracking-widest">Guest RM 312 • 1d ago</span>
+</div>
+<div class="bg-error-container/20 border-l-4 border-error p-sm rounded-r-lg">
+<p class="italic text-on-surface mb-xs">"Occasional elevator noise heard from the room corridor."</p>
+<span class="font-label-caps text-[10px] text-error uppercase tracking-widest">Guest RM 224 • 2d ago</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full h-bottom-nav-height z-50 bg-surface-container dark:bg-surface-container border-t border-outline-variant shadow-sm flex justify-around items-center px-xs">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-bright/10 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-caps text-label-caps mt-1">Book</span>
+</a>
+<!-- Active Tab: Desk (Feedback usually falls under Desk operations) -->
+<a class="flex flex-col items-center justify-center text-primary-container dark:text-primary-fixed hover:bg-surface-bright/10 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">desk</span>
+<span class="font-label-caps text-label-caps mt-1">Desk</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-bright/10 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-label-caps text-label-caps mt-1">Admin</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-bright/10 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined">cleaning_services</span>
+<span class="font-label-caps text-label-caps mt-1">Clean</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-bright/10 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-caps text-label-caps mt-1">Kitchen</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for bars animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const bars = document.querySelectorAll('.bg-primary-container');
+            bars.forEach(bar => {
+                const targetWidth = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.transition = 'width 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                    bar.style.width = targetWidth;
+                }, 300);
+            });
+        });
+    </script>
+</body></html>

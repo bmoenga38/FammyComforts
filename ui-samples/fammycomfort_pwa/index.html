@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1326" />
+  <meta name="description" content="Fammy Comforts Lounge Management System — a premium multi-role hospitality PWA for the Kenyan market." />
+  <title>Fammy Comforts · Lounge Management System</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1326'/%3E%3Ctext x='16' y='23' font-family='Syne,sans-serif' font-size='20' font-weight='800' fill='%232dd4bf' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E" />
+
+  <!-- Fonts: Syne · Space Grotesk · Inter · JetBrains Mono (per DESIGN.md) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind (utility layer) with Fammy Comforts design tokens from DESIGN.md -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#0b1326', surface: '#0b1326',
+            'surface-low': '#131b2e', 'surface-container': '#171f33',
+            'surface-high': '#222a3d', 'surface-card': '#1c2438',
+            'on-surface': '#dae2fd', 'on-surface-variant': '#9aa8c4',
+            outline: '#2d3449', 'outline-variant': '#3d4947',
+            primary: '#14b8a6', 'on-primary': '#ffffff',
+            'primary-dim': '#0d9488', 'primary-light': '#0c8378',
+            accent: '#eab308', 'on-accent': '#251a00',
+            info: '#38bdf8', 'on-info': '#04293a',
+            warning: '#F59E0B', 'on-warning': '#3a2600',
+            danger: '#f43f5e', 'on-danger': '#ffffff'
+          },
+          fontFamily: {
+            hero: ['Syne', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          fontSize: {
+            'hero-display': ['48px', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '800' }],
+            'headline-lg': ['32px', { lineHeight: '1.2', fontWeight: '700' }],
+            'headline-md': ['24px', { lineHeight: '1.3', fontWeight: '600' }],
+            'headline-sm': ['18px', { lineHeight: '1.4', fontWeight: '600' }],
+            'body-lg': ['16px', { lineHeight: '1.6' }],
+            'body-md': ['14px', { lineHeight: '1.5' }],
+            'label-caps': ['12px', { lineHeight: '1', letterSpacing: '0.05em', fontWeight: '600' }],
+            'data-mono': ['14px', { lineHeight: '1.4', fontWeight: '500' }]
+          },
+          borderRadius: { DEFAULT: '10px', card: '14px', xl: '1.5rem', full: '9999px' },
+          spacing: { 'sidebar': '280px', 'bottomnav': '64px' }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="font-body bg-background text-on-surface min-h-[100dvh]">
+  <!-- ===== Desktop sidebar ===== -->
+  <aside id="sidebar" class="sidebar glass-bar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">F</div>
+      <div>
+        <p class="font-hero text-[20px] leading-none text-on-surface">Fammy Comforts</p>
+        <p class="text-label-caps uppercase text-on-surface-variant mt-1">Lounge OS</p>
+      </div>
+    </div>
+
+    <div class="role-pill-wrap">
+      <span class="text-label-caps uppercase text-on-surface-variant px-1">Role</span>
+      <button id="role-switch" class="role-switch">
+        <span class="material-symbols-outlined" data-role-icon>person</span>
+        <span data-role-label>Customer</span>
+        <span class="material-symbols-outlined ml-auto text-[18px]">unfold_more</span>
+      </button>
+    </div>
+
+    <nav id="side-nav" class="side-nav"></nav>
+
+    <div class="sidebar-foot">
+      <div class="net-chip" data-net-status="online">
+        <span class="net-dot is-online" data-net-dot></span>
+        <span data-net-label>Online</span>
+      </div>
+      <button data-install-prompt class="install-chip hide" onclick="SC_install()">
+        <span class="material-symbols-outlined text-[18px]">install_mobile</span> Install app
+      </button>
+      <button id="logout-btn" class="nav-link" style="color:var(--danger)">
+        <span class="material-symbols-outlined">logout</span><span>Sign out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== Topbar ===== -->
+  <header id="topbar" class="topbar glass-bar">
+    <button id="menu-btn" class="icon-btn lg:hidden" aria-label="Menu">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="topbar-title">
+      <h1 id="page-title" class="font-display text-headline-sm text-on-surface">Home</h1>
+      <p id="page-sub" class="text-body-md text-on-surface-variant hidden sm:block">Welcome back</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="search-btn" class="icon-btn" aria-label="Search">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+      <button id="notif-btn" class="icon-btn relative" aria-label="Notifications">
+        <span class="material-symbols-outlined">notifications</span>
+        <span id="notif-badge" class="dot-badge">2</span>
+      </button>
+      <button id="theme-btn" class="icon-btn" aria-label="Toggle theme">
+        <span class="material-symbols-outlined" data-theme-icon>light_mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Main app surface ===== -->
+  <main id="app" class="app-main"></main>
+
+  <!-- ===== Mobile bottom nav (Book · Admin · Desk · Clean · Kitchen) ===== -->
+  <nav id="bottom-nav" class="bottom-nav glass-bar"></nav>
+
+  <!-- ===== Drawer (mobile) ===== -->
+  <div id="drawer-overlay" class="overlay hidden opacity-0">
+    <aside id="drawer" class="drawer glass-panel -translate-x-full">
+      <div class="sidebar-brand">
+        <div class="brand-mark">F</div>
+        <div>
+          <p class="font-hero text-[18px] leading-none">Fammy Comforts</p>
+          <p class="text-label-caps uppercase text-on-surface-variant mt-1" data-role-label>Customer</p>
+        </div>
+        <button id="drawer-close" class="icon-btn ml-auto"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <button id="role-switch-m" class="role-switch mt-2">
+        <span class="material-symbols-outlined" data-role-icon>person</span>
+        <span data-role-label>Customer</span>
+        <span class="material-symbols-outlined ml-auto text-[18px]">unfold_more</span>
+      </button>
+      <nav id="drawer-nav" class="side-nav mt-4"></nav>
+      <div class="sidebar-foot">
+        <div class="net-chip" data-net-status="online">
+          <span class="net-dot is-online" data-net-dot></span><span data-net-label>Online</span>
+        </div>
+        <button id="logout-btn-m" class="nav-link" style="color:var(--danger)">
+          <span class="material-symbols-outlined">logout</span><span>Sign out</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ===== Generic modal mount ===== -->
+  <div id="modal" class="overlay center hidden opacity-0"></div>
+
+  <!-- ===== Role picker / search mounts ===== -->
+  <div id="sheet" class="overlay center hidden opacity-0"></div>
+
+  <!-- ===== Right-docked panel (AI assistant, room/guest detail) ===== -->
+  <div id="rpanel-overlay" class="overlay hidden opacity-0">
+    <aside id="rpanel" class="rpanel glass-panel"></aside>
+  </div>
+
+  <!-- ===== Floating AI assistant (bottom-right) ===== -->
+  <button id="ai-fab" class="ai-fab" aria-label="AI Assistant" title="Fammy Comforts AI">
+    <span class="material-symbols-outlined">auto_awesome</span>
+  </button>
+
+  <!-- ===== Login gate ===== -->
+  <div id="login" class="login-screen hidden"></div>
+
+  <!-- ===== Toasts ===== -->
+  <div id="toast-wrap" class="toast-wrap"></div>
+
+  <!-- Scripts -->
+  <script src="js/theme.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/pwa.js"></script>
+</body>
+</html>

@@ -2,14 +2,17 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SommyComfort PWA Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0c0d14">
+  <title>Fammy Comforts PWA Prototype</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="scrim" id="scrim" aria-hidden="true"></div>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Main navigation">
       <a class="brand" href="#guest">
@@ -17,9 +20,9 @@
           <svg viewBox="0 0 24 24"><path d="M4 20V9.5L12 4l8 5.5V20"/><path d="M8 20v-7h8v7"/><path d="M9 10h6"/></svg>
         </span>
         <span>
-          <strong>SommyComfort</strong>
+          <strong>Fammy Comforts</strong>
           <small>Accommodation PWA</small>
-        </span> 
+        </span>
       </a>
 
       <nav class="nav-list">
@@ -67,7 +70,7 @@
         <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">
           <span data-icon="menu"></span>
         </button>
-        <div>
+        <div class="topbar-title">
           <p class="eyebrow">Rental operations suite</p>
           <h1 id="pageTitle">Guest Booking</h1>
         </div>
@@ -99,19 +102,20 @@
                 Install PWA
               </button>
             </div>
+            <ul class="trust-row">
+              <li><span data-icon="shield"></span> ID-verified check-in</li>
+              <li><span data-icon="smartphone"></span> Pay via M-Pesa</li>
+              <li><span data-icon="bed"></span> Free cancellation 24h</li>
+            </ul>
           </div>
           <article class="booking-card">
-            <div class="card-head">
-              <span class="status success">Available</span>
-              <span class="price">KES 3,500 <small>/ night</small></span>
-            </div>
-            <div class="room-visual">
-              <div class="room-window"></div>
-              <div class="room-bed"></div>
-              <div class="room-lamp"></div>
-            </div>
+            <figure class="room-photo">
+              <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=70" alt="Executive Studio interior" loading="lazy">
+              <span class="status success on-photo">Available</span>
+              <span class="price on-photo">KES&nbsp;3,500 <small>/ night</small></span>
+            </figure>
             <h3>Executive Studio 6A</h3>
-            <p>Westlands - Sarit Centre. 4 guests, 2 beds, WiFi, kitchenette, secure parking.</p>
+            <p>Westlands &middot; Sarit Centre. 4 guests, 2 beds, WiFi, kitchenette, secure parking.</p>
             <div class="chip-row">
               <span>WiFi</span>
               <span>2 beds</span>
@@ -134,25 +138,37 @@
 
         <div class="room-grid">
           <article class="room-card">
-            <span class="status success">Available</span>
-            <div class="mini-room green"></div>
-            <h3>Executive Studio 6A</h3>
-            <p>4 guests - 2 beds - Westlands</p>
-            <strong>KES 3,500/night</strong>
+            <figure class="room-photo">
+              <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=700&q=70" alt="Executive studio room" loading="lazy">
+              <span class="status success on-photo">Available</span>
+            </figure>
+            <div class="room-card-body">
+              <h3>Executive Studio 6A</h3>
+              <p>4 guests &middot; 2 beds &middot; Westlands</p>
+              <strong class="amount">KES 3,500<small>/night</small></strong>
+            </div>
           </article>
           <article class="room-card">
-            <span class="status warning">Cleaning</span>
-            <div class="mini-room orange"></div>
-            <h3>Standard Room 103</h3>
-            <p>2 guests - 1 bed - Floor 2</p>
-            <strong>KES 1,000/night</strong>
+            <figure class="room-photo">
+              <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=700&q=70" alt="Standard room" loading="lazy">
+              <span class="status warning on-photo">Cleaning</span>
+            </figure>
+            <div class="room-card-body">
+              <h3>Standard Room 103</h3>
+              <p>2 guests &middot; 1 bed &middot; Floor 2</p>
+              <strong class="amount">KES 1,000<small>/night</small></strong>
+            </div>
           </article>
           <article class="room-card">
-            <span class="status info">Confirmed</span>
-            <div class="mini-room cyan"></div>
-            <h3>Room ENZI Heights</h3>
-            <p>3 guests - Mombasa Road</p>
-            <strong>KES 1,000/night</strong>
+            <figure class="room-photo">
+              <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=700&q=70" alt="ENZI Heights room" loading="lazy">
+              <span class="status info on-photo">Confirmed</span>
+            </figure>
+            <div class="room-card-body">
+              <h3>Room ENZI Heights</h3>
+              <p>3 guests &middot; Mombasa Road</p>
+              <strong class="amount">KES 1,000<small>/night</small></strong>
+            </div>
           </article>
         </div>
 
@@ -169,12 +185,17 @@
             <label>Email <input type="email" placeholder="guest@example.com"></label>
             <label>ID number <input type="text" placeholder="National ID or passport"></label>
           </div>
+          <div class="pay-summary">
+            <span>2 nights &middot; Executive Studio 6A</span>
+            <strong class="amount">KES 7,000</strong>
+          </div>
+          <p class="field-label">Payment method</p>
           <div class="payment-strip">
             <button type="button" class="payment-option active">Cash</button>
             <button type="button" class="payment-option">M-Pesa</button>
             <button type="button" class="payment-option">Card</button>
           </div>
-          <button class="btn primary" type="button" id="confirmBooking">
+          <button class="btn primary full" type="button" id="confirmBooking">
             <span data-icon="shield"></span>
             Confirm Booking
           </button>
@@ -184,8 +205,8 @@
       <section class="view" id="admin">
         <div class="metric-grid">
           <article class="metric"><span data-icon="bed"></span><small>Occupancy</small><strong>80%</strong><p>4 of 5 rooms occupied</p></article>
-          <article class="metric"><span data-icon="credit"></span><small>Revenue</small><strong>KES 7,006</strong><p>This month</p></article>
-          <article class="metric"><span data-icon="warning"></span><small>Outstanding</small><strong>KES 46,958</strong><p>Unpaid balances</p></article>
+          <article class="metric"><span data-icon="credit"></span><small>Revenue</small><strong class="amount">KES 87,006</strong><p>This month</p></article>
+          <article class="metric"><span data-icon="warning"></span><small>Outstanding</small><strong class="amount">KES 46,958</strong><p>Unpaid balances</p></article>
           <article class="metric"><span data-icon="brush"></span><small>Housekeeping</small><strong>2</strong><p>Open tasks</p></article>
         </div>
         <div class="dashboard-layout">
@@ -198,7 +219,7 @@
               <table>
                 <thead><tr><th>Ref</th><th>Guest</th><th>Room</th><th>Status</th><th>Balance</th></tr></thead>
                 <tbody>
-                  <tr><td>BK-0005</td><td>Kemet Tech</td><td>ENZI Heights</td><td><span class="status info">Checked in</span></td><td>KES 6,000</td></tr>
+                  <tr><td>BK-0005</td><td>Kemet Tech</td><td>ENZI Heights</td><td><span class="status info">Checked in</span></td><td class="amount">KES 6,000</td></tr>
                   <tr><td>BK-0004</td><td>Kemet Admin</td><td>Room 103</td><td><span class="status warning">Confirmed</span></td><td>Paid</td></tr>
                   <tr><td>BK-0003</td><td>Guest Walk-in</td><td>Studio 6A</td><td><span class="status success">Checked out</span></td><td>Paid</td></tr>
                 </tbody>
@@ -210,9 +231,9 @@
               <h2>Payment breakdown</h2>
             </div>
             <div class="breakdown">
-              <div><span>Cash</span><strong>KES 6,000</strong><i style="--w:86%"></i></div>
-              <div><span>M-Pesa</span><strong>KES 1,006</strong><i style="--w:32%"></i></div>
-              <div><span>Card</span><strong>KES 0</strong><i style="--w:4%"></i></div>
+              <div><span>Cash</span><strong class="amount">KES 6,000</strong><i style="--w:86%"></i></div>
+              <div><span>M-Pesa</span><strong class="amount">KES 1,006</strong><i style="--w:32%"></i></div>
+              <div><span>Card</span><strong class="amount">KES 0</strong><i style="--w:4%"></i></div>
             </div>
           </article>
         </div>
@@ -267,13 +288,13 @@
               <label><input type="checkbox"> Bathroom cleaned</label>
               <label><input type="checkbox"> Assets verified</label>
             </div>
-            <button class="btn primary complete-task">Mark complete</button>
+            <button class="btn primary full complete-task">Mark complete</button>
           </article>
           <article class="task-card">
             <span class="status danger">Urgent</span>
             <h3>ENZI Heights damage check</h3>
             <p>Missing glass cup reported. Capture photo and manager note.</p>
-            <button class="btn ghost">Upload evidence</button>
+            <button class="btn ghost full">Upload evidence</button>
           </article>
         </div>
       </section>
@@ -282,11 +303,11 @@
         <div class="kanban">
           <article>
             <h3>Pending</h3>
-            <div class="order-card"><strong>ORD-811D6E</strong><p>Room service - ENZI Heights</p><span>KES 1,000</span></div>
+            <div class="order-card"><strong>ORD-811D6E</strong><p>Room service &middot; ENZI Heights</p><span class="amount">KES 1,000</span></div>
           </article>
           <article>
             <h3>Preparing</h3>
-            <div class="order-card"><strong>ORD-812A10</strong><p>2 sodas, breakfast tray</p><span>KES 850</span></div>
+            <div class="order-card"><strong>ORD-812A10</strong><p>2 sodas, breakfast tray</p><span class="amount">KES 850</span></div>
           </article>
           <article>
             <h3>Ready</h3>
@@ -300,6 +321,14 @@
       </section>
     </main>
   </div>
+
+  <nav class="bottom-nav" aria-label="Quick navigation">
+    <button class="bottom-item active" data-view="guest"><span data-icon="bed"></span><small>Book</small></button>
+    <button class="bottom-item" data-view="admin"><span data-icon="dashboard"></span><small>Admin</small></button>
+    <button class="bottom-item" data-view="frontdesk"><span data-icon="calendar"></span><small>Desk</small></button>
+    <button class="bottom-item" data-view="housekeeping"><span data-icon="brush"></span><small>Clean</small></button>
+    <button class="bottom-item" data-view="kitchen"><span data-icon="chef"></span><small>Kitchen</small></button>
+  </nav>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>

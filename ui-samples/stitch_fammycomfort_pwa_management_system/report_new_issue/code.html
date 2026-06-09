@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Report Issue - Fammy Comforts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;family=Syne:wght@800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .severity-radio:checked + label {
+            border-color: var(--active-border);
+            background-color: var(--active-bg);
+            box-shadow: 0 0 15px -3px var(--active-glow);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #12131a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #34343c;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#31e368",
+                        "inverse-surface": "#e3e1ec",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#004e5a",
+                        "tertiary-fixed-dim": "#75d4e8",
+                        "inverse-primary": "#006e2b",
+                        "surface": "#12131a",
+                        "surface-container-high": "#292931",
+                        "outline-variant": "#3c4a3c",
+                        "on-tertiary-fixed": "#001f25",
+                        "secondary-fixed": "#eddcff",
+                        "on-secondary": "#411478",
+                        "on-primary-fixed-variant": "#00531e",
+                        "secondary": "#d7baff",
+                        "on-surface-variant": "#bbcbb8",
+                        "on-error": "#690005",
+                        "surface-variant": "#34343c",
+                        "secondary-container": "#593090",
+                        "surface-dim": "#12131a",
+                        "outline": "#859583",
+                        "primary-fixed-dim": "#31e368",
+                        "primary-container": "#50fa7b",
+                        "tertiary": "#edfbff",
+                        "tertiary-fixed": "#a3eeff",
+                        "primary-fixed": "#69ff88",
+                        "on-surface": "#e3e1ec",
+                        "surface-container-highest": "#34343c",
+                        "on-primary-fixed": "#002108",
+                        "surface-container-low": "#1a1b22",
+                        "surface-container": "#1e1f27",
+                        "on-background": "#e3e1ec",
+                        "tertiary-container": "#8ceafe",
+                        "on-tertiary": "#00363e",
+                        "on-primary-container": "#00702c",
+                        "primary": "#e8ffe4",
+                        "secondary-fixed-dim": "#d7baff",
+                        "on-primary": "#003912",
+                        "surface-container-lowest": "#0d0e15",
+                        "inverse-on-surface": "#2f3038",
+                        "surface-bright": "#383941",
+                        "on-secondary-container": "#caa4ff",
+                        "on-secondary-fixed-variant": "#593090",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#006a79",
+                        "on-secondary-fixed": "#290055",
+                        "on-error-container": "#ffdad6",
+                        "background": "#12131a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "2rem",
+                        "base": "4px",
+                        "xs": "0.5rem",
+                        "sm": "1rem",
+                        "md": "1.5rem",
+                        "xl": "3rem",
+                        "sidebar-width": "280px",
+                        "bottom-nav-height": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Space Grotesk"],
+                        "headline-sm": ["Space Grotesk"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "hero-display": ["Syne"],
+                        "headline-lg": ["Space Grotesk"],
+                        "headline-md": ["Space Grotesk"],
+                        "label-caps": ["Inter"],
+                        "data-mono": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "hero-display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "data-mono": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md text-body-md overflow-x-hidden pb-24">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-surface w-full top-0 sticky border-b border-outline-variant dark:border-outline-variant z-40">
+<div class="flex justify-between items-center px-4 h-16 w-full max-w-screen-xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-full transition-colors active:scale-95" onclick="history.back()">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary dark:text-primary-fixed-dim">Report New Issue</h1>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline">
+<img alt="Staff Member Profile" class="w-full h-full object-cover" data-alt="A professional property management staff portrait in high-end hospitality uniform. The person has a friendly, focused expression, captured in soft studio lighting that emphasizes a clean and modern corporate aesthetic. The background is a blurred luxurious hotel lobby with warm ambient light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrJsbsH7YS1jjg6fwZTIpBShVwVeVq7UGSpNdBrW3g8Km5QfMcNxIXftqJNve0QIU5ESbXy_mjXB48ovKAbZn2TkGQk5X1zub2EMnYsuSKfyvv3yps7cjuCeCYH-z3Tb1mYG6QLu7MZHyQ7I2okFrnvbjtQPqMEntreCVoqluZ0_7noYGXEh8WZDY2nLwoUy8Mvt-7KDkFLmkzvi0iu1BZPY9tdsAt4a27oGom6auvr-39TL91dXgYLhkLpIFzEA2udm0D28_PgWec"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-xl mx-auto px-4 py-6 flex flex-col gap-8">
+<!-- Form Section: Location & Category -->
+<section class="grid grid-cols-1 gap-6">
+<!-- Room Selection -->
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Location / Room Number</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-surface-tint transition-colors">meeting_room</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-surface-tint focus:border-transparent outline-none transition-all placeholder:text-on-surface-variant/40" placeholder="e.g., Room 105 or Suite A" type="text"/>
+</div>
+</div>
+<!-- Category Selection -->
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Issue Category</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-surface-tint transition-colors">category</span>
+<select class="w-full bg-surface-container border border-outline-variant rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-surface-tint focus:border-transparent outline-none transition-all appearance-none cursor-pointer">
+<option disabled="" selected="" value="">Select category...</option>
+<option value="plumbing">Plumbing</option>
+<option value="electrical">Electrical</option>
+<option value="furniture">Furniture</option>
+<option value="ac">AC / HVAC</option>
+<option value="internet">Internet / Wi-Fi</option>
+<option value="other">Other</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+</section>
+<!-- Form Section: Description -->
+<section class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Detailed Description</label>
+<textarea class="w-full bg-surface-container border border-outline-variant rounded-xl p-4 focus:ring-2 focus:ring-surface-tint focus:border-transparent outline-none transition-all placeholder:text-on-surface-variant/40 resize-none" placeholder="Describe the problem in detail to help maintenance prepare..." rows="4"></textarea>
+</section>
+<!-- Form Section: Severity -->
+<section class="flex flex-col gap-4">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Severity Level</label>
+<div class="grid grid-cols-3 gap-3">
+<div class="relative">
+<input checked="" class="hidden severity-radio" id="sev-low" name="severity" type="radio"/>
+<label class="flex flex-col items-center justify-center p-4 border border-outline-variant rounded-xl cursor-pointer hover:bg-surface-variant/30 transition-all text-center gap-2 h-full" for="sev-low" style="--active-border: #31e368; --active-bg: rgba(49, 227, 104, 0.1); --active-glow: rgba(49, 227, 104, 0.4);">
+<span class="material-symbols-outlined text-surface-tint">info</span>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] uppercase">Low</span>
+<span class="text-[10px] text-on-surface-variant leading-tight">Routine Fix</span>
+</div>
+</label>
+</div>
+<div class="relative">
+<input class="hidden severity-radio" id="sev-med" name="severity" type="radio"/>
+<label class="flex flex-col items-center justify-center p-4 border border-outline-variant rounded-xl cursor-pointer hover:bg-surface-variant/30 transition-all text-center gap-2 h-full" for="sev-med" style="--active-border: #f9d949; --active-bg: rgba(249, 217, 73, 0.1); --active-glow: rgba(249, 217, 73, 0.4);">
+<span class="material-symbols-outlined text-[#f9d949]">warning</span>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] uppercase">Medium</span>
+<span class="text-[10px] text-on-surface-variant leading-tight">Same Day</span>
+</div>
+</label>
+</div>
+<div class="relative">
+<input class="hidden severity-radio" id="sev-high" name="severity" type="radio"/>
+<label class="flex flex-col items-center justify-center p-4 border border-outline-variant rounded-xl cursor-pointer hover:bg-surface-variant/30 transition-all text-center gap-2 h-full" for="sev-high" style="--active-border: #ffb4ab; --active-bg: rgba(255, 180, 171, 0.1); --active-glow: rgba(255, 180, 171, 0.4);">
+<span class="material-symbols-outlined text-error">priority_high</span>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] uppercase">High</span>
+<span class="text-[10px] text-on-surface-variant leading-tight">Urgent Fix</span>
+</div>
+</label>
+</div>
+</div>
+</section>
+<!-- Form Section: Photo Upload -->
+<section class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Photo Evidence</label>
+<div class="w-full h-40 border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center gap-3 bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group" onclick="document.getElementById('file-upload').click()">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-on-surface-variant">add_a_photo</span>
+</div>
+<div class="text-center">
+<p class="font-body-md text-on-surface">Tap to capture or upload</p>
+<p class="text-[12px] text-on-surface-variant">JPG, PNG up to 10MB</p>
+</div>
+<input accept="image/*" class="hidden" id="file-upload" type="file"/>
+</div>
+</section>
+<!-- Submit Button -->
+<section class="mt-4">
+<button class="w-full py-4 bg-error-container text-on-error-container rounded-xl font-headline-sm flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-[0_4px_20px_-4px_rgba(147,0,10,0.4)]">
+<span class="material-symbols-outlined">report_gmailerrorred</span>
+                Submit Report
+            </button>
+</section>
+</main>
+<!-- Navigation Drawer (Desktop) -->
+<aside class="hidden md:flex flex-col gap-2 py-6 h-full w-sidebar-width fixed left-0 top-0 z-50 bg-surface dark:bg-surface-dim shadow-xl border-r border-outline-variant">
+<div class="px-6 mb-8">
+<h2 class="font-hero-display text-headline-md text-primary">Fammy Comforts</h2>
+<div class="flex items-center gap-3 mt-6 p-2 rounded-lg bg-surface-container-low">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline">
+<img class="w-full h-full object-cover" data-alt="Close up of a property manager's workspace, showing a sleek modern tablet displaying property analytics. Soft sunlight falls across a minimalist desk made of dark wood. The aesthetic is professional, clean, and highlights high-end operational hospitality management." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIxP00Krs-ZxxVT1fFd7MSXFyk8rmxbOD33ONGeLdPMHhKtc__MNTZGcDlYBkvpADYr4VU8-lxP4LNkqHiDkO3crcvrz8Mw5XTZkLS9YIWrWTEYLgS8Zb9WlFc0YmtorYyWhPtq7jq2AFDkJfb0O1HfWS3IfIgHfvGlAksnz4g1e80N5XrklqXh9_DOG0JOTT8dYYOMFO7I2H3SbKJBlDhryfzuAgo-qWuC7HB3s91tRgNoyRQoL-pjr5gFv6035NL5G1SfB4KXV_l"/>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-body-md font-bold truncate">Fammy Comforts Admin</span>
+<span class="text-[11px] text-on-surface-variant">Property Manager</span>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 flex items-center gap-3 cursor-pointer transition-all">
+<span class="material-symbols-outlined">inventory_2</span> Inventory
+            </div>
+<div class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 flex items-center gap-3 cursor-pointer transition-all">
+<span class="material-symbols-outlined">history_edu</span> Staff Logs
+            </div>
+<div class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 flex items-center gap-3 cursor-pointer transition-all">
+<span class="material-symbols-outlined">group</span> Guest History
+            </div>
+<div class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 flex items-center gap-3 cursor-pointer transition-all">
+<span class="material-symbols-outlined">settings</span> Settings
+            </div>
+</nav>
+<div class="mt-auto px-6 py-4 border-t border-outline-variant">
+<span class="text-on-surface-variant text-[11px]">V1.0.2</span>
+</div>
+</aside>
+<!-- Bottom Nav Bar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 h-[64px] bg-surface-container dark:bg-surface-container border-t border-outline-variant shadow-lg flex justify-around items-center px-2 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-label-caps text-label-caps">Book</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">shield_person</span>
+<span class="font-label-caps text-label-caps">Admin</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">countertops</span>
+<span class="font-label-caps text-label-caps">Desk</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary-container dark:text-primary-fixed-dim font-bold active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">cleaning_services</span>
+<span class="font-label-caps text-label-caps">Clean</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-70 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-caps text-label-caps">Kitchen</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for photo upload feedback
+        const fileInput = document.getElementById('file-upload');
+        const uploadBox = fileInput?.parentElement;
+
+        if (fileInput && uploadBox) {
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    const fileName = e.target.files[0].name;
+                    uploadBox.querySelector('p.font-body-md').innerText = 'Image Selected';
+                    uploadBox.querySelector('p.text-[12px]').innerText = fileName;
+                    uploadBox.classList.add('border-primary-container');
+                    uploadBox.querySelector('.material-symbols-outlined').innerText = 'check_circle';
+                    uploadBox.querySelector('.material-symbols-outlined').classList.add('text-primary-container');
+                }
+            });
+        }
+
+        // Logic for "Submit Report" feedback
+        document.querySelector('button.bg-error-container').addEventListener('click', function() {
+            const btn = this;
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Processing...';
+            
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined">check</span> Report Submitted';
+                btn.classList.replace('bg-error-container', 'bg-primary-container');
+                btn.classList.replace('text-on-error-container', 'text-on-primary-container');
+                
+                setTimeout(() => {
+                    // Reset or Redirect logic
+                    btn.disabled = false;
+                }, 2000);
+            }, 1500);
+        });
+    </script>
+</body></html>

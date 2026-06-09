@@ -1,0 +1,41 @@
+// ============================================================
+// Themes — dark default, light override via :root / html:not(.dark)
+// Bound to CSS custom properties so JS toggling is instant.
+// ============================================================
+@use 'tokens' as *;
+
+:root {
+  --bg: #{$bg};
+  --surface-low: #{$surface-low};
+  --surface-container: #{$surface-container};
+  --surface-high: #{$surface-high};
+  --surface-card: #{$surface-card};
+  --on-surface: #{$on-surface};
+  --on-variant: #{$on-variant};
+  --outline: #{$outline};
+  --primary: #{$primary};
+  --on-primary: #{$on-primary};
+  --accent: #{$accent};
+  --info: #{$info};
+  --warning: #{$warning};
+  --danger: #{$danger};
+  --r-card: #{$r-card};
+  --r-ctrl: #{$r-ctrl};
+  --t: #{$transition};
+  --glow-primary: #{$glow-primary};
+}
+
+// Light theme — airy boutique ivory
+html:not(.dark) {
+  --bg: #{$light-bg};
+  --surface-low: #{$light-surface};
+  --surface-container: #{$light-surface};
+  --surface-high: #{$light-high};
+  --surface-card: #{$light-surface};
+  --on-surface: #{$light-on};
+  --on-variant: #{$light-variant};
+  --outline: #{$light-outline};
+  --primary: #{$light-primary};
+  --on-primary: #ffffff;
+  --glow-primary: 0 6px 18px rgba(22, 163, 74, 0.18);
+}

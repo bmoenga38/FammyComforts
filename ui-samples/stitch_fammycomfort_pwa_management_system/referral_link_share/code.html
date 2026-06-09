@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Share &amp; Refer - Fammy Comforts</title>
+<!-- Font Imports -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;family=Syne:wght@800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#75d4e8",
+                    "surface": "#12131a",
+                    "on-primary-container": "#00702c",
+                    "on-error": "#690005",
+                    "inverse-primary": "#006e2b",
+                    "secondary": "#d7baff",
+                    "inverse-surface": "#e3e1ec",
+                    "surface-tint": "#31e368",
+                    "on-primary-fixed": "#002108",
+                    "background": "#12131a",
+                    "on-tertiary-fixed-variant": "#004e5a",
+                    "surface-container-low": "#1a1b22",
+                    "on-tertiary": "#00363e",
+                    "on-surface-variant": "#bbcbb8",
+                    "primary": "#e8ffe4",
+                    "error-container": "#93000a",
+                    "primary-fixed": "#69ff88",
+                    "primary-fixed-dim": "#31e368",
+                    "surface-container-high": "#292931",
+                    "on-tertiary-container": "#006a79",
+                    "outline-variant": "#3c4a3c",
+                    "surface-container": "#1e1f27",
+                    "outline": "#859583",
+                    "error": "#ffb4ab",
+                    "surface-container-lowest": "#0d0e15",
+                    "on-error-container": "#ffdad6",
+                    "primary-container": "#50fa7b",
+                    "secondary-fixed": "#eddcff",
+                    "tertiary-fixed": "#a3eeff",
+                    "on-surface": "#e3e1ec",
+                    "on-primary-fixed-variant": "#00531e",
+                    "surface-bright": "#383941",
+                    "on-secondary": "#411478",
+                    "surface-dim": "#12131a",
+                    "on-secondary-fixed": "#290055",
+                    "on-primary": "#003912",
+                    "tertiary-container": "#8ceafe",
+                    "secondary-container": "#593090",
+                    "inverse-on-surface": "#2f3038",
+                    "secondary-fixed-dim": "#d7baff",
+                    "on-background": "#e3e1ec",
+                    "surface-variant": "#34343c",
+                    "on-secondary-fixed-variant": "#593090",
+                    "surface-container-highest": "#34343c",
+                    "on-secondary-container": "#caa4ff",
+                    "on-tertiary-fixed": "#001f25",
+                    "tertiary": "#edfbff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "0.5rem",
+                    "xl": "3rem",
+                    "bottom-nav-height": "64px",
+                    "sm": "1rem",
+                    "sidebar-width": "280px",
+                    "lg": "2rem",
+                    "md": "1.5rem",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Space Grotesk"],
+                    "data-mono": ["JetBrains Mono"],
+                    "label-caps": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Space Grotesk"],
+                    "hero-display": ["Syne"],
+                    "headline-sm": ["Space Grotesk"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Space Grotesk"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "data-mono": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "hero-display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(45, 47, 61, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(68, 71, 90, 0.5);
+        }
+        .soft-glow {
+            box-shadow: 0 0 20px 0 rgba(80, 250, 123, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #3c4a3c; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar (From Shared Components) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-sm h-16 w-full bg-surface dark:bg-surface-dim transition-all">
+<div class="flex items-center gap-xs">
+<button class="p-xs rounded-full hover:bg-surface-variant/50 transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">menu</span>
+</button>
+<h1 class="font-hero-display text-headline-md text-primary dark:text-primary-fixed">Sommy</h1>
+</div>
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden active:scale-95 transition-transform cursor-pointer">
+<img alt="Staff Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_an4Jf9UgUZPeHy38L34GIROFasWksQHRbTxFzoR3qjZO84kgbiLJH6PT3VMCLQil93G-H8hzSFC1ww47oDNue8TyuRBFvdABSdyRQBSPsQj_QZg5ozkIBh6i4uPsSOq3xThYJH4F4YU3Gw6bkAVFu2T1PtoXpuqPOm-L-GYRhWeBqfqmt1fL2z65wNWhlbN4QaGxDN3zSkU9-vGGZ659HU7nyOm3Cyck9NnaQQuMbMKgRTsRHTScLQMNZ5-AFsoOEjn71Q6KHXva"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-16 pb-32 min-h-screen">
+<!-- Hero Header -->
+<div class="relative w-full h-[40vh] md:h-[50vh] overflow-hidden">
+<img alt="Luxury hospitality referral banner" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzP8NmcSGsLdG1Z3q61WjbzGX1pqWdpIYZz0sVaIDP7TpmJ2NkBEV7xVREdLqti_0AfZRDUxkkPQEeYIUB0oA2MkPvGvBhoen6jGzCZwOMb-dLUpSmmZ8ODSJJh_RezLDZyzESoBLnJ2pucpuEwFRlN2KDUrqenQNZyq0KMKLAY20jFV31TM9mP7aROMWi049G-bikC1e3tLV35HufLWWxywxxapDioDFYDQw2UhQUK17-shZd4K_9orfW5UkcKDW61yP6INRxqLpn"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-md md:p-xl w-full">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary-fixed mb-xs drop-shadow-lg">Share the Comfort</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">Refer a friend to Fammy Comforts and you both get <span class="text-primary-container font-bold">KES 500</span> off your next stay.</p>
+</div>
+</div>
+<div class="px-sm md:px-xl -mt-6 relative z-10 space-y-md">
+<!-- Referral Link Card -->
+<div class="glass-card rounded-[14px] p-md flex flex-col md:flex-row items-center gap-md">
+<div class="flex-1 w-full">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-xs block">YOUR UNIQUE LINK</span>
+<div class="bg-surface-container-highest rounded-lg p-sm border border-outline-variant flex items-center justify-between">
+<code class="font-data-mono text-data-mono text-primary truncate">sommycomfort.com/ref/GUEST123</code>
+<button class="ml-sm text-primary-container hover:text-primary-fixed transition-colors" onclick="copyLink()">
+<span class="material-symbols-outlined">content_copy</span>
+</button>
+</div>
+</div>
+<button class="w-full md:w-auto bg-primary-container text-on-primary-container font-bold px-lg py-sm rounded-lg active:scale-95 transition-all soft-glow flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined">share</span>
+                    Copy Link
+                </button>
+</div>
+<!-- Bento Grid of Actions -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Progress Tracker -->
+<div class="glass-card rounded-[14px] p-md flex flex-col justify-between h-48 md:h-auto">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-sm">YOUR STATS</span>
+<div class="flex items-center gap-xs mb-xs">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-headline-md text-headline-md">0 Referrals</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-fixed" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-headline-md text-headline-md">KES 0 Earned</span>
+</div>
+</div>
+<div class="h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed w-[0%] transition-all duration-1000"></div>
+</div>
+</div>
+<!-- Social Sharing -->
+<div class="md:col-span-2 glass-card rounded-[14px] p-md flex flex-col justify-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-md">QUICK SHARE</span>
+<div class="flex justify-between items-center gap-sm md:gap-lg">
+<!-- WhatsApp -->
+<button class="flex flex-col items-center gap-xs group flex-1">
+<div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-container group-hover:text-on-primary-container transition-all active:scale-90">
+<span class="material-symbols-outlined text-headline-lg">chat</span>
+</div>
+<span class="font-label-caps text-label-caps">WhatsApp</span>
+</button>
+<!-- SMS -->
+<button class="flex flex-col items-center gap-xs group flex-1">
+<div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-tertiary-container group-hover:text-on-tertiary-container transition-all active:scale-90">
+<span class="material-symbols-outlined text-headline-lg">sms</span>
+</div>
+<span class="font-label-caps text-label-caps">SMS</span>
+</button>
+<!-- Email -->
+<button class="flex flex-col items-center gap-xs group flex-1">
+<div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-all active:scale-90">
+<span class="material-symbols-outlined text-headline-lg">alternate_email</span>
+</div>
+<span class="font-label-caps text-label-caps">Email</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Descriptive Section -->
+<div class="py-lg text-center opacity-70">
+<p class="font-body-md text-on-surface-variant max-w-lg mx-auto">
+                    Spread the joy of a perfect stay. Once your friend completes their first booking using your link, we'll automatically credit KES 500 to your wallet.
+                </p>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-xl py-lg text-center border-t border-outline-variant/30">
+<p class="font-label-caps text-label-caps text-on-surface-variant/50">Powered by ByteBazaar Tech Labs</p>
+</footer>
+</main>
+<!-- Bottom Navigation Bar (From Shared Components) -->
+<!-- Destination Check: Admin is set as active because 'Referral/Share' usually falls under Admin/Account/Rewards logic -->
+<nav class="fixed bottom-0 w-full h-bottom-nav-height z-50 bg-surface-container dark:bg-surface-container flex justify-around items-center px-xs shadow-sm border-t border-outline-variant dark:border-outline-variant md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright/10 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-caps text-label-caps">Book</span>
+</a>
+<!-- ACTIVE TAB: Admin -->
+<a class="flex flex-col items-center justify-center text-primary-container dark:text-primary-fixed hover:bg-surface-bright/10 active:scale-90 transition-all duration-200 font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<span class="font-label-caps text-label-caps">Admin</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright/10 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">desk</span>
+<span class="font-label-caps text-label-caps">Desk</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright/10 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">cleaning_services</span>
+<span class="font-label-caps text-label-caps">Clean</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright/10 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-caps text-label-caps">Kitchen</span>
+</a>
+</nav>
+<!-- Micro-interactions Script -->
+<script>
+        function copyLink() {
+            const link = 'sommycomfort.com/ref/GUEST123';
+            navigator.clipboard.writeText(link).then(() => {
+                const btn = event.currentTarget;
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = '<span class="material-symbols-outlined text-primary-fixed">check_circle</span>';
+                setTimeout(() => {
+                    btn.innerHTML = originalIcon;
+                }, 2000);
+            });
+        }
+
+        // Atmosphere Effect: Subtle pulse on the main button
+        setInterval(() => {
+            const btn = document.querySelector('.soft-glow');
+            if (btn) {
+                btn.classList.add('scale-[1.02]');
+                setTimeout(() => btn.classList.remove('scale-[1.02]'), 400);
+            }
+        }, 5000);
+    </script>
+</body></html>

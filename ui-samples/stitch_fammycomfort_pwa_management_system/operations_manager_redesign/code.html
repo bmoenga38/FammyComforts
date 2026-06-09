@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Operations Manager - Fammy Comforts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Syne:wght@700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#006e2b",
+                    "tertiary-fixed-dim": "#75d4e8",
+                    "secondary-fixed": "#eddcff",
+                    "on-secondary": "#411478",
+                    "on-primary-fixed-variant": "#00531e",
+                    "secondary": "#d7baff",
+                    "on-surface-variant": "#bbcbb8",
+                    "surface": "#12131a",
+                    "surface-container-high": "#292931",
+                    "outline-variant": "#3c4a3c",
+                    "on-tertiary-fixed": "#001f25",
+                    "error": "#ffb4ab",
+                    "surface-tint": "#31e368",
+                    "inverse-surface": "#e3e1ec",
+                    "on-tertiary-fixed-variant": "#004e5a",
+                    "primary-fixed-dim": "#31e368",
+                    "primary-container": "#50fa7b",
+                    "outline": "#859583",
+                    "on-error": "#690005",
+                    "surface-variant": "#34343c",
+                    "secondary-container": "#593090",
+                    "surface-dim": "#12131a",
+                    "surface-container-highest": "#34343c",
+                    "on-primary-fixed": "#002108",
+                    "tertiary-container": "#8ceafe",
+                    "on-tertiary": "#00363e",
+                    "on-primary-container": "#00702c",
+                    "surface-container-low": "#1a1b22",
+                    "surface-container": "#1e1f27",
+                    "on-background": "#e3e1ec",
+                    "tertiary": "#edfbff",
+                    "on-surface": "#e3e1ec",
+                    "tertiary-fixed": "#a3eeff",
+                    "primary-fixed": "#69ff88",
+                    "surface-container-lowest": "#0d0e15",
+                    "inverse-on-surface": "#2f3038",
+                    "surface-bright": "#383941",
+                    "on-secondary-container": "#caa4ff",
+                    "on-error-container": "#ffdad6",
+                    "background": "#12131a",
+                    "on-secondary-fixed-variant": "#593090",
+                    "error-container": "#93000a",
+                    "on-tertiary-container": "#006a79",
+                    "on-secondary-fixed": "#290055",
+                    "primary": "#e8ffe4",
+                    "on-primary": "#003912",
+                    "secondary-fixed-dim": "#d7baff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "sidebar-width": "280px",
+                    "bottom-nav-height": "64px",
+                    "xs": "0.5rem",
+                    "sm": "1rem",
+                    "md": "1.5rem"
+            },
+            "fontFamily": {
+                    "data-mono": ["JetBrains Mono"],
+                    "label-caps": ["Inter"],
+                    "headline-md": ["Space Grotesk"],
+                    "hero-display": ["Syne"],
+                    "headline-lg": ["Space Grotesk"],
+                    "body-lg": ["Inter"],
+                    "headline-sm": ["Space Grotesk"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Space Grotesk"]
+            },
+            "fontSize": {
+                    "data-mono": ["14px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                    "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                    "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                    "hero-display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                    "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                    "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                    "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                    "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                    "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .glow-primary {
+            box-shadow: 0 0 20px 0px rgba(80, 250, 123, 0.2);
+        }
+        .glow-error {
+            box-shadow: 0 0 20px 0px rgba(255, 180, 171, 0.2);
+        }
+        .pulse-alert {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .7; transform: scale(1.02); }
+        }
+        .glass-card {
+            background: rgba(45, 47, 61, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid #44475a;
+        }
+        
+        /* Hide scrollbar for clean horizontal scroll */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex antialiased">
+<!-- DESKTOP NAVIGATION DRAWER -->
+<nav class="hidden md:flex flex-col bg-surface-container-low text-primary-container font-body-md text-body-md fixed left-0 top-0 h-full w-[280px] z-40 border-r border-outline-variant p-md gap-sm">
+<div class="flex items-center gap-sm mb-lg left_align">
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-primary-container">
+<img alt="Staff User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a confident operations manager. Dark, moody lighting with a subtle green neon rim light highlighting her profile against a deep charcoal background. Modern corporate hospitality aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVa4YngjJ_Kf_6T-aZx0rWcYc5W4jLPUwzteb0EbeZ8nnyZZVGOGV3rM2eSxFvTYb6W3ozao2kHQSEC19b5JOkhlhxIKekI_UVC6hoF1Mg6g2B7BFOgYMH_INMLJn1nMBwKlGanKkQiqmfCYVIeGxV5ihQpoGtfWKTLC56eFIpnRuJ5TY0sdMChagKpjA-uzCDcrf15ZQSEe41e7f1SvOslhi6CCaoIiakvuPyxLZvSpq0zhozQoggYhMMIBWfsgGIXtvWpD65oqx_"/>
+</div>
+<div>
+<h2 class="font-hero-display text-headline-sm text-primary-container m-0">Fammy Comforts</h2>
+<p class="text-on-surface-variant font-label-caps text-label-caps">Property Manager</p>
+<p class="text-outline text-xs mt-1">Staff ID: 001</p>
+</div>
+</div>
+<ul class="flex flex-col gap-xs flex-1">
+<li>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+                    Bookings
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm bg-primary-container/10 text-primary-container rounded-lg font-bold Active: translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="shield_person" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+                    Admin Panel
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="concierge">concierge</span>
+                    Front Desk
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="cleaning_services">cleaning_services</span>
+                    Housekeeping
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+                    Kitchen Ops
+                </a>
+</li>
+</ul>
+</nav>
+<!-- MAIN CONTENT AREA -->
+<main class="flex-1 md:ml-[280px] pb-[80px] md:pb-0 flex flex-col min-h-screen">
+<!-- TOP APP BAR -->
+<header class="bg-surface text-primary-container font-headline-md text-headline-md docked full-width top-0 sticky bg-surface/80 backdrop-blur-xl z-30">
+<div class="flex justify-between items-center w-full px-sm md:px-md max-w-[1440px] mx-auto h-16">
+<div class="flex items-center gap-sm">
+<button class="md:hidden text-primary-container hover:bg-surface-container-high transition-colors p-2 rounded-full Active: scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-hero-display text-headline-lg text-primary-container hidden md:block m-0">Fammy Comforts</h1>
+<h1 class="font-hero-display text-headline-lg-mobile text-primary-container md:hidden m-0">Fammy Comforts</h1>
+</div>
+<div class="flex items-center gap-sm">
+<h2 class="text-headline-sm font-headline-sm text-on-surface mr-4 hidden md:block">Operations Overview</h2>
+<button class="text-primary-container hover:bg-surface-container-high transition-colors p-2 rounded-full Active: scale-95 duration-100 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full glow-error"></span>
+</button>
+</div>
+</div>
+</header>
+<!-- DASHBOARD CANVAS -->
+<div class="flex-1 p-sm md:p-lg max-w-[1440px] w-full mx-auto flex flex-col gap-md">
+<!-- PRIORITY ALERT CARD -->
+<section class="w-full">
+<div class="glass-card rounded-xl p-md border-l-4 border-l-error pulse-alert relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-sm">
+<div class="absolute -right-10 -top-10 w-32 h-32 bg-error/10 rounded-full blur-2xl"></div>
+<div class="flex gap-sm items-start relative z-10">
+<div class="bg-error/20 p-2 rounded-lg text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-error m-0 mb-1">Priority Cleaning Request</h3>
+<p class="text-on-surface-variant font-body-md text-body-md">Room 402 - VIP Arrival in 45 mins. Status: Unassigned.</p>
+</div>
+</div>
+<div class="flex gap-2 w-full md:w-auto relative z-10">
+<button class="flex-1 md:flex-none bg-surface-container border border-outline px-4 py-2 rounded-lg text-on-surface font-label-caps text-label-caps hover:bg-surface-container-highest transition-colors">Dismiss</button>
+<button class="flex-1 md:flex-none bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-caps text-label-caps glow-primary hover:bg-primary-fixed transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+                            Assign Staff
+                        </button>
+</div>
+</div>
+</section>
+<!-- STATS BENTO GRID -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-sm md:gap-md">
+<!-- Stat 1 -->
+<div class="glass-card rounded-xl p-sm md:p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-outline">hotel</span>
+<span class="bg-primary-container/20 text-primary-container px-2 py-1 rounded-full font-data-mono text-[10px]">LIVE</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Occupancy</p>
+<p class="font-hero-display text-headline-lg text-on-surface">84%</p>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="glass-card rounded-xl p-sm md:p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-outline">concierge</span>
+<span class="bg-tertiary-fixed-dim/20 text-tertiary-fixed-dim px-2 py-1 rounded-full font-data-mono text-[10px]">PENDING</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Check-ins</p>
+<p class="font-hero-display text-headline-lg text-on-surface">12<span class="text-headline-sm text-outline font-data-mono ml-1">/45</span></p>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="glass-card rounded-xl p-sm md:p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-outline">cleaning_services</span>
+<span class="bg-error/20 text-error px-2 py-1 rounded-full font-data-mono text-[10px]">ACTION</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Rooms to Clean</p>
+<p class="font-hero-display text-headline-lg text-error">8</p>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="glass-card rounded-xl p-sm md:p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-outline">build</span>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full font-data-mono text-[10px]">LOGGED</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Maintenance</p>
+<p class="font-hero-display text-headline-lg text-on-surface">3</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- MOBILE BOTTOM APP BAR -->
+<nav class="md:hidden bg-surface-container text-primary-container font-label-caps text-label-caps docked full-width bottom-0 fixed z-50 h-[64px] pb-safe border-t border-outline-variant shadow-[0_-4px_20px_rgba(80,250,123,0.1)]">
+<ul class="fixed bottom-0 w-full flex justify-around items-center px-xs h-[64px]">
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant w-16 h-16 hover:bg-surface-container-highest/50 transition-colors Active: scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="calendar_month">calendar_month</span>
+<span>Book</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center text-primary-container font-bold w-16 h-16 hover:bg-surface-container-highest/50 transition-colors Active: scale-90 transition-transform relative" href="#">
+<span class="absolute top-1 right-3 w-1.5 h-1.5 bg-primary-container rounded-full glow-primary"></span>
+<span class="material-symbols-outlined mb-1" data-icon="shield_person" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+<span>Admin</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant w-16 h-16 hover:bg-surface-container-highest/50 transition-colors Active: scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="concierge">concierge</span>
+<span>Desk</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant w-16 h-16 hover:bg-surface-container-highest/50 transition-colors Active: scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="cleaning_services">cleaning_services</span>
+<span>Clean</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant w-16 h-16 hover:bg-surface-container-highest/50 transition-colors Active: scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="restaurant">restaurant</span>
+<span>Kitchen</span>
+</a>
+</li>
+</ul>
+</nav>
+</body></html>

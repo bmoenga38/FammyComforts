@@ -1,0 +1,46 @@
+// ============================================================
+// Layout — mobile-first; 280px sidebar + 12-col fluid grid on desktop
+// Bottom nav (64px) on mobile: Book · Admin · Desk · Clean · Kitchen
+// ============================================================
+@use 'tokens' as *;
+
+.sidebar { display: none; }
+
+.app-main {
+  padding: 78px space(sm) calc(#{$bottomnav-height} + #{space(md)});
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: 100dvh;
+}
+
+.topbar {
+  position: fixed; inset: 0 0 auto 0; z-index: 40; height: 62px;
+  display: flex; align-items: center; gap: space(xs); padding: 0 space(sm);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bottom-nav {
+  position: fixed; inset: auto 0 0 0; z-index: 40; height: $bottomnav-height;
+  display: flex; justify-content: space-around;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex; flex-direction: column;
+    position: fixed; inset: 0 auto 0 0; width: $sidebar-width; z-index: 50;
+    border-right: 1px solid rgba(255, 255, 255, 0.06); padding: space(md) space(sm);
+  }
+  .topbar   { left: $sidebar-width; }
+  .app-main { margin-left: $sidebar-width; padding: 84px space(lg) space(xl); max-width: none; }
+  .bottom-nav, #menu-btn { display: none; }
+}
+
+.grid { display: grid; gap: space(sm); }
+.grid-kpi { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 640px)  { .grid-2, .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) {
+  .grid-kpi { grid-template-columns: repeat(4, 1fr); }
+  .grid-3   { grid-template-columns: repeat(3, 1fr); }
+}

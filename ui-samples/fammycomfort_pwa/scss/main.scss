@@ -1,0 +1,13 @@
+// ============================================================
+// Fammy Comforts — SCSS entry point
+// Compile:  sass scss/main.scss css/styles.css --style=compressed
+//
+// NOTE: css/styles.css ships pre-compiled & hand-tuned so the app runs
+// with zero build step. These partials are the documented source of the
+// design system (tokens, type scale, themes, layout, components).
+// ============================================================
+@use 'tokens';
+@use 'typography';
+@use 'themes';
+@use 'layout';
+@use 'components';
