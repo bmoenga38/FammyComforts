@@ -16,15 +16,17 @@ vi.mock("convex/browser", () => ({
 import { resolveHandoff } from "./sso";
 
 const VERIFIED = {
+  valid: true as const,
   orgId: "platform_org_id",
   userId: "bb_user_1",
   productSlug: "rental",
   org: { _id: "bb_org_1", name: "Acme Stays", slug: "acme" },
   user: {
+    _id: "bb_user_1",
     name: "Ada",
     phone: "+254700000000",
     email: "ada@acme.test",
-    role: "admin",
+    role: "org_admin",
   },
 };
 
@@ -44,9 +46,9 @@ describe("resolveHandoff", () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it("throws SSO_INVALID and never upserts/consumes when verifyHandoff returns null", async () => {
+  it("throws SSO_INVALID and never upserts/consumes when the handoff is invalid", async () => {
     process.env.BYTEBAZAAR_CONVEX_URL = "https://platform.convex.cloud";
-    query.mockResolvedValue(null);
+    query.mockResolvedValue({ valid: false, reason: "expired" }); // truthy but invalid
     const ctx = { runMutation: vi.fn() };
     await expect(resolveHandoff(ctx as never, "bys_bad")).rejects.toThrow(
       /SSO_INVALID/,
@@ -55,7 +57,7 @@ describe("resolveHandoff", () => {
     expect(mutation).not.toHaveBeenCalled();
   });
 
-  it("maps the verified payload onto the cache keys, consumes the token, and returns the ids", async () => {
+  it("maps the verified payload, bootstraps RBAC, consumes the token, and returns the ids", async () => {
     process.env.BYTEBAZAAR_CONVEX_URL = "https://platform.convex.cloud";
     query.mockResolvedValue(VERIFIED);
     const ids = { userId: "u1", orgId: "o1" };
@@ -63,8 +65,9 @@ describe("resolveHandoff", () => {
 
     const result = await resolveHandoff({ runMutation } as never, "bys_good");
 
+    // Two mutations: identity upsert, then RBAC bootstrap.
+    expect(runMutation).toHaveBeenCalledTimes(2);
     // org._id → bytebazaarOrgId, top-level userId → bytebazaarUserId
-    expect(runMutation).toHaveBeenCalledTimes(1);
     const upsertArgs = runMutation.mock.calls[0][1];
     expect(upsertArgs.org).toEqual({
       bytebazaarOrgId: "bb_org_1",
@@ -76,12 +79,29 @@ describe("resolveHandoff", () => {
       name: "Ada",
       phone: "+254700000000",
       email: "ada@acme.test",
-      role: "admin",
+      role: "org_admin",
+    });
+    // RBAC bootstrap gets the resolved ids + the SSO role.
+    expect(runMutation.mock.calls[1][1]).toEqual({
+      orgId: "o1",
+      userId: "u1",
+      ssoRole: "org_admin",
     });
     // The one-time token is consumed.
     expect(mutation).toHaveBeenCalledWith(expect.anything(), {
       token: "bys_good",
     });
     expect(result).toEqual(ids);
+  });
+
+  it("coalesces a null upstream name to the email", async () => {
+    process.env.BYTEBAZAAR_CONVEX_URL = "https://platform.convex.cloud";
+    query.mockResolvedValue({
+      ...VERIFIED,
+      user: { ...VERIFIED.user, name: null },
+    });
+    const runMutation = vi.fn().mockResolvedValue({ userId: "u1", orgId: "o1" });
+    await resolveHandoff({ runMutation } as never, "bys_good");
+    expect(runMutation.mock.calls[0][1].user.name).toBe("ada@acme.test");
   });
 });

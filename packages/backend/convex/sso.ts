@@ -28,14 +28,27 @@ declare const process: { env: Record<string, string | undefined> };
 const verifyHandoffRef = makeFunctionReference<"query">("sso:verifyHandoff");
 const consumeHandoffRef = makeFunctionReference<"mutation">("sso:consumeHandoff");
 
-/** The integration contract = Bytebazaar `verifyHandoff`'s return value. */
-type VerifyResult = {
-  orgId: string;
-  userId: string;
-  productSlug: string;
-  org: { _id: string; name: string; slug: string };
-  user: { name: string; phone?: string; email?: string; role: string };
-};
+/**
+ * The integration contract = Bytebazaar `verifyHandoff`'s return value. It's a
+ * discriminated result, NOT nullable: `{ valid: false, reason }` for a bad token
+ * or `{ valid: true, ... }` on success. `user.name`/`user.email` can be null.
+ */
+type VerifyResult =
+  | { valid: false; reason: string }
+  | {
+      valid: true;
+      orgId: string;
+      userId: string;
+      productSlug: string;
+      org: { _id: string; name: string; slug: string };
+      user: {
+        _id: string;
+        name: string | null;
+        phone?: string;
+        email: string | null;
+        role: string;
+      };
+    };
 
 /**
  * Verify a Bytebazaar handoff token, mirror the identity into the local cache,
@@ -61,19 +74,22 @@ export async function resolveHandoff(
   const platform = new ConvexHttpClient(bytebazaarUrl);
 
   // 1. Verify against Bytebazaar — rejects expired / used / forged tokens and
-  //    confirms the org owns the active `rental` product.
+  //    confirms the org owns the active `rental` product. The result is a
+  //    discriminated `{ valid }` object, so check the flag (it is never null).
   const verified = (await platform.query(verifyHandoffRef, {
     token,
-  })) as VerifyResult | null;
-  if (!verified) {
+  })) as VerifyResult;
+  if (!verified || !verified.valid) {
     throw new ConvexError({
       code: "SSO_INVALID",
       message: "Handoff token is invalid, expired, or already used.",
+      reason: verified?.valid === false ? verified.reason : "unknown",
     });
   }
 
   // 2. Upsert org + user into the local identity cache (maps Bytebazaar ids
   //    onto the cache keys: org._id → bytebazaarOrgId, userId → bytebazaarUserId).
+  //    `name` is required locally but nullable upstream — coalesce sensibly.
   const ids = await ctx.runMutation(internal.identity.upsertFromHandoff, {
     org: {
       bytebazaarOrgId: verified.org._id,
@@ -82,14 +98,22 @@ export async function resolveHandoff(
     },
     user: {
       bytebazaarUserId: verified.userId,
-      name: verified.user.name,
+      name: verified.user.name ?? verified.user.email ?? "Unknown",
       phone: verified.user.phone,
-      email: verified.user.email,
+      email: verified.user.email ?? undefined,
       role: verified.user.role,
     },
   });
 
-  // 3. Consume the handoff so the one-time token can't be replayed.
+  // 3. Bootstrap RBAC: ensure the org's roles are seeded and map the SSO role
+  //    onto a base role (idempotent; no-op on subsequent sign-ins).
+  await ctx.runMutation(internal.rbac.bootstrapForUser, {
+    orgId: ids.orgId,
+    userId: ids.userId,
+    ssoRole: verified.user.role,
+  });
+
+  // 4. Consume the handoff so the one-time token can't be replayed.
   await platform.mutation(consumeHandoffRef, { token });
 
   return ids;

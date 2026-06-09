@@ -66,6 +66,55 @@ describe("rbac", () => {
     ).rejects.toThrow(/Roles:manage|FORBIDDEN/);
   });
 
+  it("bootstrapForUser seeds the org + maps the SSO role (idempotent); unmapped → no role", async () => {
+    const t = convexTest(schema, import.meta.glob("./**/*.ts"));
+    // org_admin maps to "Property Admin"; seed happens inside bootstrap.
+    const admin = await t.mutation(internal.identity.upsertFromHandoff, {
+      org: { bytebazaarOrgId: "bb_org_X", name: "Org X", slug: "x" },
+      user: { bytebazaarUserId: "bb_admin", name: "Owner", role: "org_admin" },
+    });
+    await t.mutation(internal.rbac.bootstrapForUser, {
+      orgId: admin.orgId,
+      userId: admin.userId,
+      ssoRole: "org_admin",
+    });
+    await t.mutation(internal.rbac.bootstrapForUser, {
+      orgId: admin.orgId,
+      userId: admin.userId,
+      ssoRole: "org_admin",
+    }); // idempotent
+
+    const adminRoles = await t.run((ctx) =>
+      ctx.db
+        .query("userRoles")
+        .withIndex("by_user", (q) => q.eq("userId", admin.userId))
+        .collect(),
+    );
+    expect(adminRoles).toHaveLength(1);
+    const perms = await t
+      .withIdentity({ subject: admin.userId })
+      .query(api.roles.myPermissions, {});
+    expect(perms).toContain("Roles:manage"); // Property Admin has full control
+
+    // An unmapped SSO role (driver) gets no auto-assigned role.
+    const worker = await t.mutation(internal.identity.upsertFromHandoff, {
+      org: { bytebazaarOrgId: "bb_org_X", name: "Org X", slug: "x" },
+      user: { bytebazaarUserId: "bb_worker", name: "Wendy", role: "driver" },
+    });
+    await t.mutation(internal.rbac.bootstrapForUser, {
+      orgId: worker.orgId,
+      userId: worker.userId,
+      ssoRole: "driver",
+    });
+    const workerRoles = await t.run((ctx) =>
+      ctx.db
+        .query("userRoles")
+        .withIndex("by_user", (q) => q.eq("userId", worker.userId))
+        .collect(),
+    );
+    expect(workerRoles).toHaveLength(0);
+  });
+
   it("denies an unauthenticated caller", async () => {
     const t = convexTest(schema, import.meta.glob("./**/*.ts"));
     await expect(t.query(api.roles.myPermissions, {})).rejects.toThrow();

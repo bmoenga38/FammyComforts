@@ -87,6 +87,61 @@ export const seedOrg = internalMutation({
 });
 
 /**
+ * Map a Bytebazaar SSO role onto a FammyComfort base-role name. Bytebazaar's
+ * roles are generic/fleet-oriented, so only the clear ones auto-assign; the rest
+ * (driver/worker/client/…) get no role and a Property Admin assigns the right one
+ * via Staff Management (Story 2.4). The org owner arrives as `org_admin`, so the
+ * first user can always self-administer.
+ */
+const SSO_ROLE_TO_BASE_ROLE: Record<string, string> = {
+  super_admin: "Super Admin",
+  org_admin: "Property Admin",
+  manager: "Operations Manager",
+  ops_manager: "Operations Manager",
+  finance: "Accountant",
+};
+
+/**
+ * Called from the SSO completion (`resolveHandoff`): ensure the org's roles are
+ * seeded (only if missing — cheap on repeat sign-ins) and assign the mapped base
+ * role to the user (idempotent). Unmapped SSO roles assign nothing.
+ */
+export const bootstrapForUser = internalMutation({
+  args: {
+    orgId: v.id("organizations"),
+    userId: v.id("users"),
+    ssoRole: v.string(),
+  },
+  handler: async (ctx, { orgId, userId, ssoRole }): Promise<void> => {
+    // Seed only when the org has no roles yet (idempotent + avoids the full
+    // catalog walk on every sign-in).
+    const anyRole = await ctx.db
+      .query("roles")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .first();
+    if (!anyRole) await ensureOrgRoles(ctx, orgId);
+
+    const roleName = SSO_ROLE_TO_BASE_ROLE[ssoRole];
+    if (!roleName) return; // unmapped → admin assigns via Story 2.4
+
+    const role = await ctx.db
+      .query("roles")
+      .withIndex("by_org_name", (q) =>
+        q.eq("orgId", orgId).eq("name", roleName),
+      )
+      .unique();
+    if (!role) return;
+
+    const existing = await ctx.db
+      .query("userRoles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    if (existing.some((ur) => ur.roleId === role._id)) return;
+    await ctx.db.insert("userRoles", { orgId, userId, roleId: role._id });
+  },
+});
+
+/**
  * Assign an org's base role to a user by name (idempotent). Used to map the SSO
  * `role` string onto the RBAC model on first sign-in. Returns the roleId, or
  * `null` if no role of that name exists in the org.
