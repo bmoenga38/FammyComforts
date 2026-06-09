@@ -12,6 +12,9 @@ import type * as auditLogs from "../auditLogs.js";
 import type * as backups from "../backups.js";
 import type * as crons from "../crons.js";
 import type * as health from "../health.js";
+import type * as identity from "../identity.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as sso from "../sso.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +27,9 @@ declare const fullApi: ApiFromModules<{
   backups: typeof backups;
   crons: typeof crons;
   health: typeof health;
+  identity: typeof identity;
+  "lib/auth": typeof lib_auth;
+  sso: typeof sso;
 }>;
 
 /**

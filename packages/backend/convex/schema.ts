@@ -15,8 +15,47 @@ import { v } from "convex/values";
  * - Foreign keys are `v.id("otherTable")` + an `.index(...)` (no implicit FK indexes).
  * - Money: integer minor units via `v.int64()`; never floats.
  * - Enums: `v.union(v.literal(...), ...)` or a shared TS union in `packages/shared`.
+ *
+ * ⛔ MULTI-TENANCY NON-NEGOTIABLE (Epic 2 integration spec §2, from Story 2.1 on):
+ *   Every tenant-scoped table carries `orgId: v.id("organizations")` and a
+ *   `by_org*` index, and EVERY query/mutation filters by the SSO-resolved
+ *   `orgId` (see `lib/auth.ts` → `requireOrgUser`). The only table exempt is
+ *   `organizations` itself (it *is* the tenant root). Cross-cutting infra tables
+ *   that are not per-tenant (`backupRuns`) are also exempt; `auditLogs` will gain
+ *   `orgId` when auth wiring lands (kept optional now for the Story-1 scaffold).
+ *   No new tenant table ships without `orgId` — backfilling it later is painful.
  */
 export default defineSchema({
+  // ===== Identity & Access (Epic 2, Story 2.1) — SSO identity cache =====
+  // FammyComfort does NOT own credentials; staff authenticate via the
+  // Bytebazaar (ByteAuth) SSO handoff. These two tables are a local cache of
+  // the org + user resolved from `verifyHandoff`, populated on first SSO and
+  // refreshed on each subsequent one. `organizations` is the tenant root.
+
+  organizations: defineTable({
+    // The Bytebazaar org `_id` (string form) — the stable cross-platform key
+    // we upsert against. Unique per org.
+    bytebazaarOrgId: v.string(),
+    name: v.string(),
+    slug: v.string(),
+  }).index("by_bytebazaar_org", ["bytebazaarOrgId"]),
+
+  users: defineTable({
+    // Tenant scope (the non-negotiable). Every user belongs to exactly one org.
+    orgId: v.id("organizations"),
+    // The Bytebazaar user `_id` (string form) — the SSO upsert key, unique.
+    bytebazaarUserId: v.string(),
+    name: v.string(),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+    // Raw role string from the SSO payload. Granular RBAC (roles/permissions
+    // tables + `requirePermission`) is Story 2.3 — this is the seed it refines.
+    role: v.string(),
+    // Server-authoritative active gate (Story 2.4 deactivate builds on this).
+    isActive: v.boolean(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_bytebazaar_user", ["bytebazaarUserId"]),
   auditLogs: defineTable({
     // → v.id("users") once the users table lands (Epic 2 / Convex Auth).
     actorId: v.optional(v.string()),

@@ -64,7 +64,7 @@ development_status:
 
   # ===== Epic 2: Identity, Access & Staff Management (R1) =====
   epic-2: in-progress
-  2-1-staff-authentication-with-jwt: ready-for-dev
+  2-1-staff-authentication-with-jwt: in-progress
   2-2-password-reset: ready-for-dev
   2-3-roles-and-granular-permissions-rbac: ready-for-dev
   2-4-staff-management: ready-for-dev
