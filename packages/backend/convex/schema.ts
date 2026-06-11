@@ -108,6 +108,28 @@ export default defineSchema({
     .index("by_org", ["orgId"])
     .index("by_user", ["userId"])
     .index("by_role", ["roleId"]),
+
+  // ===== Property & inventory (Epic 3) — per-org, gated by the "Settings" area =====
+  // Story 3.1: property/branch settings. Room types, rooms, rates land with their
+  // own stories (3.2–3.4) per the per-story-tables principle.
+  properties: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    checkInTime: v.string(), // "HH:MM" (24h)
+    checkOutTime: v.string(), // "HH:MM" (24h)
+    cancellationNote: v.optional(v.string()),
+    idRequired: v.boolean(),
+  }).index("by_org", ["orgId"]),
+
+  branches: defineTable({
+    orgId: v.id("organizations"),
+    propertyId: v.id("properties"),
+    name: v.string(),
+    location: v.optional(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_property", ["propertyId"]),
+
   auditLogs: defineTable({
     // Tenant scope (Story 2.3). Optional: Story-1 infra rows (backups) have no org.
     orgId: v.optional(v.id("organizations")),

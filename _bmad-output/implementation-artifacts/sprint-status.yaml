@@ -72,8 +72,8 @@ development_status:
   epic-2-retrospective: optional
 
   # ===== Epic 3: Property, Rooms, Rates & Amenities Setup (R1) =====
-  epic-3: backlog
-  3-1-property-and-branch-settings: backlog
+  epic-3: in-progress
+  3-1-property-and-branch-settings: in-progress # backend + tests done; web settings form deferred to web batch
   3-2-room-types-and-amenities: backlog
   3-3-rooms-management: backlog
   3-4-rate-plans-and-tax: backlog
