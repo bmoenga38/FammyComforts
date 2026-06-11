@@ -64,7 +64,7 @@ development_status:
 
   # ===== Epic 2: Identity, Access & Staff Management (R1) =====
   epic-2: in-progress
-  2-1-staff-authentication-with-jwt: in-progress # code complete + tested; needs 3 cross-repo env values + live round-trip verify
+  2-1-staff-authentication-with-jwt: in-progress # done + env set + cross-deploy smoke-tested (DEV); only manual browser tile→session round-trip pending
   2-2-password-reset: done # superseded → ByteAuth recovery + thin redirect (built+tested)
   2-3-roles-and-granular-permissions-rbac: done # backend + web (roles grid) + SSO-role wiring, tested
   2-4-staff-management: done # backend + web (staff list/activate/roles), tested

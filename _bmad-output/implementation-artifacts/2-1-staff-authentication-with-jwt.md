@@ -114,12 +114,22 @@ separate password — and can only ever see my own organization's data.
         env added. Web lint+typecheck+tests (37) green; **production build OK**
         (`/sso` prerenders). *(Client-side auth only — SSR/proxy route-guarding
         is Story 2.3; Next 16 renames middleware→proxy.)*
-- [ ] **Task 7: env + cross-repo prerequisites — DEFERRED (the only remaining gate)**
-  - [ ] Generate the shared secret; set `BYTEBAZAAR_SERVICE_TOKEN` +
-        `BYTEBAZAAR_CONVEX_URL` on FammyComfort (and the `_BYTESTAY` twins on
-        Bytebazaar). (spec §5)
-  - [ ] Land **BB-1..BB-3** in the Bytebazaar repo so the ByteStay tile issues a
-        real handoff to test AC #2/#3 end-to-end. (spec §3)
+- [x] **Task 7: env + live wiring (two-layer model — no shared secret)**
+  - [x] Set `BYTEBAZAAR_CONVEX_URL` on DEV (`quixotic-boar-465`) →
+        `https://amiable-crow-468.convex.cloud` (Bytebazaar dev) + web
+        `NEXT_PUBLIC_BYTEPLANE_URL=http://localhost:3000`. **No
+        `BYTEBAZAAR_SERVICE_TOKEN`** — the two-layer model dropped the bridge;
+        `verifyHandoff` is public, the handoff token is the bearer. (spec §1/§4)
+  - [x] Deployed `sso`/`identity`/`auth`/`rbac`/… to `quixotic-boar-465`
+        (`convex dev --once`).
+  - [x] **Live smoke test:** `convex run sso:completeHandoff '{"token":"bogus"}'`
+        → `SSO_INVALID (reason: not_found)` — confirms the cross-deployment call
+        reaches Bytebazaar dev, `verifyHandoff` is public, and the `{ valid }`
+        contract matches. (BB-1..BB-3 done Bytebazaar-side; pairing rule: dev↔dev.)
+  - [ ] **Full browser round-trip (pending a manual run):** start BytePlane dev
+        (:3000) + the FammyComfort web app (non-3000 port) with Bytebazaar's
+        `NEXT_PUBLIC_BYTESTAY_URL` pointing at it, click the tile, confirm a real
+        token mints a session. (PROD: set the prod env row + `convex deploy`.)
 
 ## Dev Notes
 
