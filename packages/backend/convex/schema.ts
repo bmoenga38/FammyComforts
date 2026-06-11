@@ -45,8 +45,12 @@ export default defineSchema({
     // we upsert against. Unique per org.
     bytebazaarOrgId: v.string(),
     name: v.string(),
+    // Bytebazaar slugs are unique platform-wide; `by_slug` is the PUBLIC
+    // tenant-resolution key for guest-facing routes (`/book/[orgSlug]`, Epic 4).
     slug: v.string(),
-  }).index("by_bytebazaar_org", ["bytebazaarOrgId"]),
+  })
+    .index("by_bytebazaar_org", ["bytebazaarOrgId"])
+    .index("by_slug", ["slug"]),
 
   users: defineTable({
     // Tenant scope (the non-negotiable). Every user belongs to exactly one org.
@@ -195,6 +199,108 @@ export default defineSchema({
     rate: v.number(), // fraction, e.g. 0.16
     active: v.boolean(),
   }).index("by_org", ["orgId"]),
+
+  // ===== Guests & Bookings (Epic 4) — guest-facing, PUBLIC entry points =====
+  // Public functions resolve the tenant via `organizations.by_slug` (no session)
+  // and then filter by that orgId — tenant isolation is preserved (spec §2).
+  // Payment PROCESSING is Epic 5; bookings here record method/split INTENT only.
+
+  guests: defineTable({
+    orgId: v.id("organizations"),
+    fullName: v.string(),
+    // Phone is required — it is the lookup credential (reference + phone/email).
+    phone: v.string(),
+    email: v.optional(v.string()),
+    dob: v.optional(v.string()), // "YYYY-MM-DD"
+    nationality: v.optional(v.string()),
+    idType: v.optional(v.string()),
+    // Sensitive (NFR13): never returned by public queries, never audited.
+    // Convex encrypts at rest; column-level crypto revisited with Epic 6 check-in.
+    idNumber: v.optional(v.string()),
+    consentAt: v.number(), // ms epoch — consent is required to create
+  }).index("by_org", ["orgId"]),
+
+  guestDocuments: defineTable({
+    orgId: v.id("organizations"),
+    guestId: v.id("guests"),
+    bookingId: v.id("bookings"),
+    kind: v.union(v.literal("id_front"), v.literal("id_back")),
+    storageId: v.id("_storage"), // served via signed URLs only (Epic 6 check-in)
+  })
+    .index("by_org", ["orgId"])
+    .index("by_booking", ["bookingId"]),
+
+  bookings: defineTable({
+    orgId: v.id("organizations"),
+    reference: v.string(), // BK-XXXXXX, globally unique
+    guestId: v.id("guests"),
+    roomId: v.id("rooms"),
+    ratePlanId: v.optional(v.id("ratePlans")),
+    checkInDate: v.string(), // "YYYY-MM-DD"; [checkIn, checkOut) half-open
+    checkOutDate: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("confirmed"),
+      v.literal("checked_in"),
+      v.literal("checked_out"),
+      v.literal("cancelled"),
+      v.literal("no_show"),
+    ),
+    source: v.union(
+      v.literal("website"),
+      v.literal("direct"),
+      v.literal("walk_in"),
+      v.literal("ota"),
+      v.literal("agent"),
+      v.literal("phone"),
+      v.literal("whatsapp"),
+    ),
+    notes: v.optional(v.string()),
+    expectedTotalCents: v.int64(),
+    currency: v.string(),
+    // Payment INTENT (Story 4.6) — processing lands in Epic 5.
+    paymentMethod: v.union(
+      v.literal("mpesa_stk"),
+      v.literal("mpesa_manual"),
+      v.literal("cash"),
+      v.literal("card"),
+    ),
+    paymentSplits: v.optional(
+      v.array(
+        v.object({
+          method: v.union(
+            v.literal("mpesa_stk"),
+            v.literal("mpesa_manual"),
+            v.literal("cash"),
+            v.literal("card"),
+          ),
+          amountCents: v.int64(),
+        }),
+      ),
+    ),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_reference", ["reference"])
+    .index("by_room", ["roomId"])
+    .index("by_guest", ["guestId"]),
+
+  // Queued outbound notifications (Story 4.7 "confirmation queued"). The send
+  // engine (own SenderID SMS — Epic 5/10) consumes rows with status "queued",
+  // honoring notificationSettings.
+  outboundNotifications: defineTable({
+    orgId: v.id("organizations"),
+    type: v.string(), // e.g. "booking_confirmation"
+    channel: v.union(
+      v.literal("email"),
+      v.literal("sms"),
+      v.literal("whatsapp"),
+      v.literal("push"),
+    ),
+    bookingId: v.optional(v.id("bookings")),
+    status: v.union(v.literal("queued"), v.literal("sent"), v.literal("failed")),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_status", ["status"]),
 
   // Notification settings (Story 3.5) — "Notifications" area. One row per
   // (type, channel); the notification engine respects `enabled`.

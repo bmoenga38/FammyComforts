@@ -81,15 +81,15 @@ development_status:
   epic-3-retrospective: optional
 
   # ===== Epic 4: Guest Booking Experience (R1) =====
-  epic-4: backlog
-  4-1-public-room-catalog: backlog
-  4-2-room-detail-view: backlog
-  4-3-date-availability-search: backlog
-  4-4-no-account-booking-with-guest-details: backlog
-  4-5-optional-id-document-upload: backlog
-  4-6-payment-method-selection-and-split-capture-intent: backlog
-  4-7-booking-confirmation-with-reference: backlog
-  4-8-guest-booking-lookup: backlog
+  epic-4: done
+  4-1-public-room-catalog: done # catalog.rooms + /book/[orgSlug]
+  4-2-room-detail-view: done # catalog.roomDetail + /book/[orgSlug]/[roomId] (gallery deferred — no photos yet)
+  4-3-date-availability-search: done # half-open overlap + integer-cents multi-night pricing
+  4-4-no-account-booking-with-guest-details: done # guestBookings.create w/ consent + transactional re-check
+  4-5-optional-id-document-upload: done # signed upload URLs -> guestDocuments
+  4-6-payment-method-selection-and-split-capture-intent: done # intent only; processing = Epic 5
+  4-7-booking-confirmation-with-reference: done # BK-XXXXXX + outboundNotifications queue
+  4-8-guest-booking-lookup: done # reference + phone/email, anti-enumeration
   epic-4-retrospective: optional
 
   # ===== Epic 5: Payments, Invoicing & Reconciliation (R1) =====

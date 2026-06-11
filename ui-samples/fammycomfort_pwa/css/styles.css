@@ -677,3 +677,20 @@ html:not(.dark) .cal-day, html:not(.dark) .cal-cell { border-color: rgba(0, 0, 0
 @media (min-width: 640px) { .qa-grid { grid-template-columns: repeat(4, 1fr); } }
 .qa { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 1rem; cursor: pointer; }
 .qa .qa-ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; }
+
+/* ============================================================
+   ACCESSIBILITY — keyboard focus & button-as-card resets
+   ============================================================ */
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.input:focus-visible { outline: none; } /* inputs keep their own focus ring */
+/* Cards rendered as <button> keep card typography & alignment */
+button.card { text-align: left; font: inherit; color: inherit; width: 100%; }
+button.cal-cell { font: inherit; color: inherit; background-color: transparent; border-top: 0; border-left: 0; padding: 0; border-radius: 0; }
+
+/* Calendar — today column marker */
+.cal-day.is-today { background: rgba(20, 184, 166, 0.16); }
+.cal-day.is-today span, .cal-day.is-today small { color: var(--primary); }
+.cal-cell.is-today { box-shadow: inset 2px 0 0 rgba(20, 184, 166, 0.4), inset -2px 0 0 rgba(20, 184, 166, 0.4); }

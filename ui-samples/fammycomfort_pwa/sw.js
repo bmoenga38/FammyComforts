@@ -2,7 +2,7 @@
    Fammy Comforts PWA — Service Worker
    Cache-first shell with network fallback. Prototype-grade.
    ============================================================ */
-const CACHE = 'sommycomfort-v23';
+const CACHE = 'fammycomforts-v24';
 const ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const ASSETS = [
   './js/app.js',
   './js/pwa.js',
   './manifest.json',
-  './QR_sommycomfort.co.ke.png'
+  './QR_fammycomforts.co.ke.png'
 ];
 
 self.addEventListener('install', (e) => {

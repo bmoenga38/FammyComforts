@@ -191,11 +191,14 @@
     $('#side-nav').innerHTML = sideHtml;
     $('#drawer-nav').innerHTML = sideHtml;
 
-    // bottom nav = up to 5 destinations
-    $('#bottom-nav').innerHTML = items
-      .slice(0, 5)
+    // bottom nav = up to 5 destinations; roles with more get 4 + "More" (opens drawer)
+    const bnav = items.length > 5 ? items.slice(0, 4) : items;
+    $('#bottom-nav').innerHTML = bnav
       .map((n) => `<button class="bnav-item" data-route="${n.route}">${icon(n.icon)}<span>${n.label}</span></button>`)
-      .join('');
+      .join('') +
+      (items.length > 5 ? `<button class="bnav-item" id="bnav-more" aria-label="More destinations">${icon('menu')}<span>More</span></button>` : '');
+    const more = $('#bnav-more');
+    if (more) more.onclick = openDrawer;
 
     const cur = ROLES.find((r) => r.id === state.role);
     $$('[data-role-icon]').forEach((e) => (e.textContent = cur.icon));
@@ -379,6 +382,57 @@
       </div>`);
     const bk = $('#rd-book');
     if (bk) bk.onclick = () => { close(); setTimeout(() => openBooking(id), 320); };
+  }
+
+  /* ---------------- Room status panel (room board) ----------------
+     One-tap status changes for reception; full editing lives behind "Edit details". */
+  function openRoomStatus(id) {
+    const r = D.ROOMS.find((x) => x.id === id);
+    if (!r) return;
+    const bk = D.BOOKINGS.find((b) => b.room === id && ['checked-in', 'checkout-due'].includes(b.status));
+    const g = bk ? D.GUESTS.find((x) => x.id === bk.guest) : null;
+    const statuses = [['available', 'check_circle'], ['occupied', 'hotel'], ['cleaning', 'cleaning_services'], ['reserved', 'event'], ['maintenance', 'build']];
+    C.panel(`
+      <div class="detail-hero">
+        <img src="${r.image}" alt="${esc(r.name)}" onerror="this.style.opacity=.2"/>
+        <div class="scrim"></div>
+        <button data-close class="icon-btn close-x" aria-label="Close">${icon('close')}</button>
+        <div style="position:absolute;bottom:1rem;left:1.3rem;right:1.3rem">
+          <div style="display:flex;gap:.4rem;margin-bottom:.5rem">${r.vip ? badge('vip', 'VIP') : ''}${badge(r.status)}</div>
+          <h3 class="font-display text-headline-md" style="color:#fff;margin:0">${esc(r.name)}</h3>
+          <p class="mono" style="color:#cdd6e8;margin:.2rem 0 0">${r.id} · ${r.type} · ${money(r.price)}/night</p>
+        </div>
+      </div>
+      <div class="rpanel-body">
+        ${g ? `<div class="list-row" style="padding:0;margin-bottom:1.2rem">${avatar(g.avatar, g.vip ? 'avatar-accent' : 'avatar-primary')}
+          <div style="flex:1;min-width:0"><p class="text-on-surface" style="font-weight:600">${esc(g.name)} ${g.vip ? badge('vip', 'VIP') : ''}</p>
+          <p class="text-body-md text-on-surface-variant mono">${bk.code} · until ${bk.checkOut}</p></div>
+          ${badge(bk.status)}</div>` : ''}
+        <p class="text-label-caps uppercase text-on-surface-variant mb-2">Set status</p>
+        <div class="grid grid-2" style="gap:.5rem">
+          ${statuses.map(([s, ic]) => `<button class="btn ${s === r.status ? 'btn-primary' : 'btn-ghost'} rs-status" data-status="${s}" ${s === r.status ? 'disabled' : ''} style="justify-content:flex-start">${icon(ic)} ${C.titleCase(s)}</button>`).join('')}
+        </div>
+        <p class="text-body-md text-on-surface-variant mt-3">${icon('cleaning_services', 'align-middle text-[16px]')} Marking <b class="text-on-surface">Cleaning</b> creates a housekeeping task automatically.</p>
+      </div>
+      <div class="rpanel-foot" style="display:flex;gap:.6rem">
+        <button class="btn btn-ghost" id="rs-edit" style="flex:1">${icon('edit')} Edit details</button>
+        ${r.status === 'available' ? `<button class="btn btn-primary" id="rs-book" style="flex:1">${icon('event_available')} Book</button>` : ''}
+      </div>`);
+    $$('.rs-status').forEach((b) => (b.onclick = () => {
+      r.status = b.dataset.status;
+      if (r.status === 'cleaning') {
+        const tid = 'TK-' + (10 + state.tasks.length + 1);
+        state.tasks.unshift({ id: tid, room: r.id, type: 'Cleaning', priority: 'medium', status: 'pending', assignee: 'ST-02', due: nowTime(), note: 'Requested from room board' });
+        persist();
+      }
+      logActivity('meeting_room', 'info', `${r.id} marked ${C.titleCase(r.status)}`);
+      C.closePanel();
+      C.toast(r.id + ' → ' + C.titleCase(r.status), 'success', 'meeting_room');
+      render();
+    }));
+    $('#rs-edit').onclick = () => { C.closePanel(); setTimeout(() => openRoomEdit(id), 320); };
+    const bkBtn = $('#rs-book');
+    if (bkBtn) bkBtn.onclick = () => { C.closePanel(); setTimeout(() => quickBooking(id, isoDate(new Date())), 320); };
   }
 
   /* ---------------- Guest & booking detail — editable popup (Front Desk) ---------------- */
@@ -700,11 +754,25 @@
     const vip = $('#re-vip');
     vip.onclick = () => vip.classList.toggle('on');
     if (editing) $('#re-del').onclick = () => {
-      const i = D.ROOMS.findIndex((x) => x.id === r.id);
-      if (i > -1) D.ROOMS.splice(i, 1);
-      C.closeModal();
-      C.toast('Room ' + r.id + ' removed', 'info', 'delete');
-      render();
+      const linked = D.BOOKINGS.filter((b) => b.room === r.id && !['cancelled', 'checked-out'].includes(b.status)).length;
+      C.modal(`
+        <div class="modal-head"><span class="badge b-danger">${icon('delete')} Delete room</span><h3 class="font-display text-headline-sm mono">${r.id}</h3><button data-close class="icon-btn ml-auto">${icon('close')}</button></div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem">
+          <p class="text-on-surface">Remove <b>${esc(r.name)}</b> from the room board? This cannot be undone.</p>
+          ${linked ? `<div class="card card-pad-sm" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.35)"><p class="text-body-md text-on-surface">${icon('warning', 'align-middle')} ${linked} active booking${linked > 1 ? 's' : ''} still reference${linked > 1 ? '' : 's'} this room.</p></div>` : ''}
+        </div>
+        <div class="rpanel-foot" style="display:flex;gap:.6rem">
+          <button class="btn btn-ghost" id="del-keep" style="flex:1">Keep room</button>
+          <button class="btn" id="del-confirm" style="flex:1;background:var(--danger);color:#fff">${icon('delete')} Delete room</button>
+        </div>`);
+      $('#del-keep').onclick = () => { C.closeModal(); setTimeout(() => openRoomEdit(r.id), 320); };
+      $('#del-confirm').onclick = () => {
+        const i = D.ROOMS.findIndex((x) => x.id === r.id);
+        if (i > -1) D.ROOMS.splice(i, 1);
+        C.closeModal();
+        C.toast('Room ' + r.id + ' removed', 'info', 'delete');
+        render();
+      };
     };
     $('#re-save').onclick = () => {
       const name = ($('#re-name').value || '').trim();
@@ -792,7 +860,7 @@
       ${D.ACTIVITY.slice(0, limit).map((a) => `<div class="feed-item"><div class="feed-dot" style="${FEED_TONE[a.tone] || FEED_TONE.info}">${icon(a.icon)}</div><div style="flex:1;min-width:0"><p class="text-body-md text-on-surface">${esc(a.text)}</p><p class="text-body-md text-on-surface-variant mono">${a.time}</p></div></div>`).join('')}
     </div>`;
   const quickActions = (items) => `
-    <div class="qa-grid">${items.map((a) => `<div class="card card-hover qa" onclick="${a.onclick}"><div class="qa-ic" style="${FEED_TONE[a.tone] || FEED_TONE.info}">${icon(a.icon)}</div><span class="text-on-surface" style="font-weight:600;font-size:14px">${a.label}</span></div>`).join('')}</div>`;
+    <div class="qa-grid">${items.map((a) => `<button class="card card-hover qa" onclick="${a.onclick}"><div class="qa-ic" style="${FEED_TONE[a.tone] || FEED_TONE.info}">${icon(a.icon)}</div><span class="text-on-surface" style="font-weight:600;font-size:14px">${a.label}</span></button>`).join('')}</div>`;
 
   /* ============================================================
      VIEWS
@@ -804,15 +872,9 @@
     const me = D.GUESTS[0];
     const featured = D.ROOMS.filter((r) => r.status === 'available').slice(0, 6);
     const active = D.BOOKINGS.find((b) => b.guest === me.id && b.status === 'confirmed');
-    const room = D.ROOMS.find((r) => r.id === active.room);
-    return `
-    <section class="fade-in">
-      ${pageHero('Karibu · ' + me.tier + ' member', 'Good afternoon, ' + me.name.split(' ')[0] + '.', 'Find a lounge that feels like home.')}
-      <button id="home-search" class="card card-hover" style="display:flex;align-items:center;gap:.8rem;width:100%;text-align:left;cursor:pointer;padding:1rem 1.2rem;margin-bottom:1.5rem">
-        ${icon('search', 'text-on-surface-variant')}<span class="text-on-surface-variant">Search lounges, dates, guests…</span>
-      </button>
-
-      <div class="card" style="background:linear-gradient(120deg,#0d9488,#0b1326 70%);border-color:rgba(20,184,166,.25);margin-bottom:1.5rem;position:relative;overflow:hidden">
+    const room = active ? D.ROOMS.find((r) => r.id === active.room) : null;
+    const stayCard = active && room
+      ? `<div class="card" style="background:linear-gradient(120deg,#0d9488,#0b1326 70%);border-color:rgba(20,184,166,.25);margin-bottom:1.5rem;position:relative;overflow:hidden">
         <div style="position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(20,184,166,.25),transparent 70%)"></div>
         <span class="badge b-confirmed">${icon('bolt')} Active reservation</span>
         <h3 class="font-display text-headline-md text-on-surface mt-3">${esc(room.name)}</h3>
@@ -821,7 +883,21 @@
           <button class="btn btn-primary" onclick="location.hash='#/checkin'">${icon('qr_code_2')} View QR</button>
           <button class="btn btn-ghost" onclick="location.hash='#/reservations'">Manage</button>
         </div>
-      </div>
+      </div>`
+      : `<div class="card" style="background:linear-gradient(120deg,rgba(20,184,166,.12),transparent 70%);border-color:rgba(20,184,166,.25);margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem">
+        <div class="avatar avatar-primary">${icon('event_available')}</div>
+        <div style="flex:1"><p class="text-on-surface" style="font-weight:600">No upcoming stay</p>
+        <p class="text-body-md text-on-surface-variant">Plan your next visit — your ${esc(me.tier)} rates are waiting.</p></div>
+        <button class="btn btn-primary" onclick="location.hash='#/search'">${icon('search')} Book now</button>
+      </div>`;
+    return `
+    <section class="fade-in">
+      ${pageHero('Karibu · ' + me.tier + ' member', 'Good afternoon, ' + me.name.split(' ')[0] + '.', 'Find a lounge that feels like home.')}
+      <button id="home-search" class="card card-hover" style="display:flex;align-items:center;gap:.8rem;width:100%;text-align:left;cursor:pointer;padding:1rem 1.2rem;margin-bottom:1.5rem">
+        ${icon('search', 'text-on-surface-variant')}<span class="text-on-surface-variant">Search lounges, dates, guests…</span>
+      </button>
+
+      ${stayCard}
 
       ${sectionHead('Featured lounges', 'Handpicked for you', `<button class="btn btn-ghost" onclick="location.hash='#/search'" style="padding:.4rem .8rem">View all</button>`)}
       <div class="grid grid-3 stagger">${featured.map((r) => roomCard(r, `<button class="btn btn-primary book-room" data-room="${r.id}" style="padding:.5rem .9rem">Book</button>`)).join('')}</div>
@@ -837,7 +913,7 @@
   V.home.wire = () => {
     $('#home-search').onclick = openSearch;
     $$('.book-room').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); openBooking(b.dataset.room); }));
-    $$('[data-room]').forEach((c) => (c.onclick = () => openRoomDetail(c.dataset.room)));
+    $$('.room-card[data-room]').forEach((c) => (c.onclick = () => openRoomDetail(c.dataset.room)));
   };
 
   V.search = () => {
@@ -863,7 +939,7 @@
       const list = type === 'All' ? D.ROOMS : D.ROOMS.filter((r) => r.type === type);
       $('#room-grid').innerHTML = list.map((r) => roomCard(r, `<button class="btn btn-primary book-room" data-room="${r.id}" style="padding:.5rem .9rem">Book</button>`)).join('');
       $$('.book-room').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); openBooking(b.dataset.room); }));
-      $$('[data-room]').forEach((c) => (c.onclick = () => openRoomDetail(c.dataset.room)));
+      $$('.room-card[data-room]').forEach((c) => (c.onclick = () => openRoomDetail(c.dataset.room)));
     };
     $$('.type-chip').forEach((c) => (c.onclick = () => {
       type = c.dataset.type;
@@ -998,7 +1074,7 @@
       D.BOOKINGS.push(created);
       body.innerHTML = `
         <div style="text-align:center;padding:.5rem 0 0">
-          <img src="QR_sommycomfort.co.ke.png" alt="Fammy Comforts booking QR code" class="qr-img"/>
+          <img src="QR_fammycomforts.co.ke.png" alt="Fammy Comforts booking QR code" class="qr-img"/>
           <h3 class="font-display text-headline-md text-on-surface mt-4">Booking confirmed!</h3>
           <p class="text-body-md text-on-surface-variant">${esc(form.name)} · ${r.id} · ${money(total)} paid</p>
           <p class="text-body-md text-primary mt-1">+120 reward points earned</p>
@@ -1057,7 +1133,7 @@
     <section class="fade-in" style="max-width:520px;margin:0 auto">
       ${pageHero('Check-in', esc(r.name), b.code + ' · ' + b.checkIn)}
       <div class="card" style="text-align:center">
-        <img src="QR_sommycomfort.co.ke.png" alt="Fammy Comforts booking QR code" class="qr-img"/>
+        <img src="QR_fammycomforts.co.ke.png" alt="Fammy Comforts booking QR code" class="qr-img"/>
         <p class="text-body-md text-on-surface-variant mt-4">Show this code at the front desk</p>
         <p class="mono text-headline-sm text-on-surface mt-1">${b.code}</p>
       </div>
@@ -1222,29 +1298,29 @@
       </div>
       <div class="card card-pad-sm" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center">
         ${[['available', 'Available'], ['occupied', 'Occupied'], ['cleaning', 'Cleaning'], ['reserved', 'Reserved'], ['maintenance', 'Maintenance']].map((s) => `<span class="badge b-${s[0]}">${s[1]}</span>`).join('')}
-        <span class="badge" style="background:var(--surface-high);color:var(--on-surface-variant)">${icon('edit', 'text-[14px]')} Tap a room to edit</span>
+        <span class="badge" style="background:var(--surface-high);color:var(--on-surface-variant)">${icon('touch_app', 'text-[14px]')} Tap a room to update status</span>
       </div>
       ${floors.map((f) => `<div style="margin-bottom:1.5rem">
         <p class="text-label-caps uppercase text-on-surface-variant mb-2">Floor ${f}</p>
         <div class="grid grid-3 stagger">
-          ${D.ROOMS.filter((r) => r.floor === f).map((r) => `<div class="card card-hover room-tile" data-room="${r.id}" style="cursor:pointer;overflow:hidden;padding:0">
+          ${D.ROOMS.filter((r) => r.floor === f).map((r) => `<button class="card card-hover room-tile" data-room="${r.id}" style="cursor:pointer;overflow:hidden;padding:0" aria-label="${esc(r.name)} — ${C.titleCase(r.status)}">
             <div style="height:96px;overflow:hidden;background:var(--surface-high);position:relative">
-              <img src="${r.image}" alt="${esc(r.name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.opacity=.2"/>
+              <img src="${r.image}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.opacity=.2"/>
               <div style="position:absolute;top:.5rem;right:.5rem">${badge(r.status)}</div>
               ${r.vip ? `<div style="position:absolute;top:.5rem;left:.5rem">${badge('vip', 'VIP')}</div>` : ''}
             </div>
             <div style="padding:.9rem 1rem">
-              <div class="flex items-center justify-between"><span class="mono text-on-surface" style="font-weight:600">${r.id}</span><span class="text-on-surface-variant">${icon('edit', 'text-[16px]')}</span></div>
+              <div class="flex items-center justify-between"><span class="mono text-on-surface" style="font-weight:600">${r.id}</span><span class="text-on-surface-variant">${icon('chevron_right', 'text-[16px]')}</span></div>
               <p class="text-body-md text-on-surface mt-1">${esc(r.name)}</p>
               <p class="text-body-md text-on-surface-variant">${r.type} · <span class="mono">${money(r.price)}</span></p>
             </div>
-          </div>`).join('')}
+          </button>`).join('')}
         </div></div>`).join('')}
     </section>`;
   };
   V.occupancy.wire = () => {
     $('#add-room').onclick = () => openRoomEdit(null);
-    $$('[data-room]').forEach((c) => (c.onclick = () => openRoomEdit(c.dataset.room)));
+    $$('[data-room]').forEach((c) => (c.onclick = () => openRoomStatus(c.dataset.room)));
   };
 
   V.lookup = () => `
@@ -1272,6 +1348,7 @@
 
   V.calendar = () => {
     const dates = calDates(14);
+    const today = isoDate(new Date());
     const wk = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const CAL_BG = { confirmed: 'rgba(56,189,248,.30)', 'checked-in': 'rgba(20,184,166,.34)', pending: 'rgba(245,158,11,.30)', 'checkout-due': 'rgba(245,158,11,.42)', reserved: 'rgba(245,158,11,.22)' };
     return `
@@ -1285,7 +1362,7 @@
         <div class="cal hide-scroll">
           <div class="cal-row cal-head">
             <div class="cal-room cal-corner"><span class="text-label-caps uppercase text-on-surface-variant">Room</span></div>
-            ${dates.map((d) => `<div class="cal-day"><span>${d.getDate()}</span><small>${wk[d.getDay()]}</small></div>`).join('')}
+            ${dates.map((d) => `<div class="cal-day${isoDate(d) === today ? ' is-today' : ''}"><span>${d.getDate()}</span><small>${isoDate(d) === today ? 'Today' : wk[d.getDay()]}</small></div>`).join('')}
           </div>
           ${D.ROOMS.map((r) => `<div class="cal-row">
             <div class="cal-room"><span class="mono" style="font-weight:600">${r.id}</span><small>${esc(r.type)}</small></div>
@@ -1295,9 +1372,9 @@
               if (bk) {
                 const g = D.GUESTS.find((x) => x.id === bk.guest);
                 const start = ds === bk.checkIn;
-                return `<div class="cal-cell busy" data-book="${bk.code}" title="${g ? esc(g.name) : ''} · ${bk.code} (${bk.status})" style="background:${CAL_BG[bk.status] || 'rgba(56,189,248,.3)'}">${start ? `<span class="cal-tag">${g ? g.avatar : '•'}</span>` : ''}</div>`;
+                return `<button class="cal-cell busy${ds === today ? ' is-today' : ''}" data-book="${bk.code}" title="${g ? esc(g.name) : ''} · ${bk.code} (${bk.status})" aria-label="${g ? esc(g.name) : ''} · ${bk.code} (${bk.status})" style="background:${CAL_BG[bk.status] || 'rgba(56,189,248,.3)'}">${start ? `<span class="cal-tag">${g ? g.avatar : '•'}</span>` : ''}</button>`;
               }
-              return `<div class="cal-cell free" data-new="${r.id}|${ds}" title="${r.id} available ${ds}"></div>`;
+              return `<button class="cal-cell free${ds === today ? ' is-today' : ''}" data-new="${r.id}|${ds}" title="${r.id} available ${ds}" aria-label="Book ${r.id} for ${ds}"></button>`;
             }).join('')}
           </div>`).join('')}
         </div>
@@ -1406,26 +1483,52 @@
   /* ---------- LOUNGE ASSISTANT ---------- */
   V.tasks = () => {
     const order = { urgent: 0, high: 1, medium: 2, low: 3 };
-    const list = [...state.tasks].sort((a, b) => order[a.priority] - order[b.priority]);
+    const open = state.tasks.filter((t) => t.status !== 'done').sort((a, b) => order[a.priority] - order[b.priority]);
+    const done = state.tasks.filter((t) => t.status === 'done');
+    const pct = state.tasks.length ? Math.round((done.length / state.tasks.length) * 100) : 0;
+    const urgent = open.find((t) => t.priority === 'urgent');
+    const taskIcon = (t) => icon(t.type === 'Maintenance' ? 'build' : t.type === 'Cleaning' ? 'cleaning_services' : t.type === 'Incident' ? 'report' : t.type === 'Inspection' ? 'fact_check' : 'bed');
+    const actBtn = (t) => t.status === 'pending'
+      ? `<button class="btn btn-ghost task-act" data-id="${t.id}" data-next="in-progress" style="padding:.4rem .8rem">${icon('play_arrow')} Start</button>`
+      : t.status === 'in-progress'
+        ? `<button class="btn btn-primary task-act" data-id="${t.id}" data-next="done" style="padding:.4rem .8rem">${icon('check')} Done</button>`
+        : `<button class="chip task-act" data-id="${t.id}" data-next="pending">${icon('undo', 'text-[14px]')} Reopen</button>`;
+    const row = (t) => `<div class="list-row">
+        <div class="avatar ${t.status === 'done' ? 'avatar-primary' : ''}" style="${t.status === 'done' ? '' : 'background:var(--surface-high)'}">${taskIcon(t)}</div>
+        <div style="flex:1;min-width:0"><p class="text-on-surface" style="font-weight:600;${t.status === 'done' ? 'opacity:.65' : ''}">${t.type} · <span class="mono">${t.room}</span></p>
+        <p class="text-body-md text-on-surface-variant">${esc(t.note)} · Due ${t.due}</p></div>
+        <div style="display:flex;align-items:center;gap:.5rem">${t.status === 'done' ? '' : badge(t.priority)}${actBtn(t)}</div>
+      </div>`;
     return `
     <section class="fade-in">
-      ${pageHero('My work', 'Assigned tasks', state.tasks.filter((t) => t.status !== 'done').length + ' open · tap to advance')}
-      <div class="divide-rows card" style="padding:.5rem">
-        ${list.map((t) => `<div class="list-row task-row" data-id="${t.id}" style="cursor:pointer">
-          <div class="avatar ${t.status === 'done' ? 'avatar-primary' : ''}" style="${t.status === 'done' ? '' : 'background:var(--surface-high)'}">${icon(t.type === 'Maintenance' ? 'build' : t.type === 'Cleaning' ? 'cleaning_services' : t.type === 'Incident' ? 'report' : t.type === 'Inspection' ? 'fact_check' : 'bed')}</div>
-          <div style="flex:1;min-width:0"><p class="text-on-surface" style="font-weight:600">${t.type} · <span class="mono">${t.room}</span></p><p class="text-body-md text-on-surface-variant">${esc(t.note)} · Due ${t.due}</p></div>
-          <div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end">${badge(t.priority)}${badge(t.status)}</div>
-        </div>`).join('')}
+      ${pageHero('My work', 'Assigned tasks', open.length + ' open · ' + done.length + ' completed')}
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-label-caps uppercase text-on-surface-variant">Shift progress</span>
+          <span class="mono text-on-surface">${done.length}/${state.tasks.length} · ${pct}%</span>
+        </div>
+        <div class="meter"><span data-w="${pct}" style="width:0"></span></div>
       </div>
-      <p class="text-body-md text-on-surface-variant mt-3" style="text-align:center">Tap a task to cycle: Pending → In-progress → Done</p>
+      ${urgent ? `<div class="card" style="margin-bottom:1.5rem;border-color:rgba(244,63,94,.35);background:rgba(244,63,94,.07);display:flex;align-items:center;gap:.9rem;flex-wrap:wrap">
+        <div class="avatar" style="background:rgba(244,63,94,.16);color:#fb7185">${icon('priority_high')}</div>
+        <div style="flex:1;min-width:0"><p class="text-on-surface" style="font-weight:600">Urgent · ${urgent.type} · <span class="mono">${urgent.room}</span></p>
+        <p class="text-body-md text-on-surface-variant">${esc(urgent.note)} · Due ${urgent.due}</p></div>
+        ${urgent.status === 'pending' ? `<button class="btn btn-primary task-act" data-id="${urgent.id}" data-next="in-progress">${icon('play_arrow')} Start now</button>` : badge(urgent.status)}
+      </div>` : ''}
+      ${sectionHead('To do', 'Sorted by priority')}
+      <div class="divide-rows card" style="padding:.5rem">
+        ${open.map(row).join('') || '<p class="text-body-md text-on-surface-variant" style="padding:1.2rem;text-align:center">All caught up — great work!</p>'}
+      </div>
+      ${done.length ? `<div style="margin-top:1.5rem">${sectionHead('Completed', 'Done this shift')}
+      <div class="divide-rows card" style="padding:.5rem">${done.map(row).join('')}</div></div>` : ''}
     </section>`;
   };
-  V.tasks.wire = () => $$('.task-row').forEach((row) => (row.onclick = () => {
-    const t = state.tasks.find((x) => x.id === row.dataset.id);
-    const flow = { pending: 'in-progress', 'in-progress': 'done', done: 'pending' };
-    t.status = flow[t.status];
+  V.tasks.wire = () => $$('.task-act').forEach((b) => (b.onclick = () => {
+    const t = state.tasks.find((x) => x.id === b.dataset.id);
+    if (!t) return;
+    t.status = b.dataset.next;
     persist();
-    C.toast(`${t.type} ${t.room} → ${C.titleCase(t.status)}`, t.status === 'done' ? 'success' : 'info', t.status === 'done' ? 'check_circle' : 'pending');
+    C.toast(`${t.type} ${t.room} → ${C.titleCase(t.status)}`, t.status === 'done' ? 'success' : 'info', t.status === 'done' ? 'check_circle' : t.status === 'in-progress' ? 'play_arrow' : 'undo');
     render();
   }));
 
@@ -1489,11 +1592,11 @@
     const active = D.BOOKINGS.filter((b) => ['confirmed', 'checked-in', 'pending', 'checkout-due'].includes(b.status)).length;
     const k = D.ANALYTICS.kpis;
     const card = (ic, title, sub, route, tone) => `
-      <div class="card card-hover" onclick="location.hash='#/${route}'" style="cursor:pointer;display:flex;align-items:center;gap:.9rem">
+      <button class="card card-hover" onclick="location.hash='#/${route}'" style="cursor:pointer;display:flex;align-items:center;gap:.9rem">
         <div class="qa-ic" style="${FEED_TONE[tone] || FEED_TONE.info}">${icon(ic)}</div>
         <div style="flex:1;min-width:0"><p class="text-on-surface" style="font-weight:600">${title}</p><p class="text-body-md text-on-surface-variant">${sub}</p></div>
         ${icon('chevron_right', 'text-on-surface-variant')}
-      </div>`;
+      </button>`;
     return `
     <section class="fade-in">
       ${pageHero('Administration', 'Overview', 'Everything at a glance — tap a card to manage')}
@@ -1617,7 +1720,7 @@
       <div class="modal-body">
         <p class="text-label-caps uppercase text-on-surface-variant mb-2">Live preview</p>
         <div class="phone-frame" style="margin:0 auto 1.2rem">
-          ${t.channel === 'SMS' ? `<div class="sms-bubble"><p class="sms-sender">FAMMY</p>${esc(sample)}</div>` : t.channel === 'Push' ? `<div class="card card-pad-sm" style="display:flex;gap:.6rem"><div class="brand-mark" style="width:32px;height:32px;font-size:16px">S</div><div><p class="text-on-surface" style="font-weight:600;font-size:13px">Fammy Comforts</p><p class="text-body-md text-on-surface-variant">${esc(sample)}</p></div></div>` : `<div class="card card-pad-sm"><p class="text-on-surface-variant text-body-md">From: Fammy Comforts &lt;hello@fammycomforts.co.ke&gt;</p><p class="text-on-surface mt-2">${esc(sample)}</p></div>`}
+          ${t.channel === 'SMS' ? `<div class="sms-bubble"><p class="sms-sender">FAMMY</p>${esc(sample)}</div>` : t.channel === 'Push' ? `<div class="card card-pad-sm" style="display:flex;gap:.6rem"><div class="brand-mark" style="width:32px;height:32px;font-size:16px">F</div><div><p class="text-on-surface" style="font-weight:600;font-size:13px">Fammy Comforts</p><p class="text-body-md text-on-surface-variant">${esc(sample)}</p></div></div>` : `<div class="card card-pad-sm"><p class="text-on-surface-variant text-body-md">From: Fammy Comforts &lt;hello@fammycomforts.co.ke&gt;</p><p class="text-on-surface mt-2">${esc(sample)}</p></div>`}
         </div>
         <div class="field"><label>Template body</label><textarea class="input" rows="3">${esc(t.body)}</textarea></div>
         <button class="btn btn-primary btn-block mt-3" data-close onclick="SC_toast('Template saved','success','sms')">Save changes</button>
