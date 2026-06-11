@@ -91,6 +91,18 @@ export async function resolvePermissions(
  * the caller has `area:action`. Returns the org identity on success; throws
  * `UNAUTHENTICATED` (no session) or `FORBIDDEN` (signed in, not granted).
  * Story 2.3's replacement for the superseded NestJS `@RequirePermission`.
+ *
+ * ── READ-GATING POLICY (deliberate, repo-wide) ───────────────────────────────
+ * - **All mutations** call `requirePermission(area, "manage")` and audit.
+ * - **Sensitive reads** (staff identities, audit log) call
+ *   `requirePermission(area, "read")`.
+ * - **Operational / config reads** (property, rooms, room types, amenities,
+ *   rate plans, notification settings, roles list) call only `requireOrgUser`
+ *   — any authenticated org member may read them; the web gates *display* via
+ *   `usePermissions`. This is intentional: rate plans live under "Settings", but
+ *   front desk (no `Settings:read`) must read prices to quote a booking, so
+ *   gating operational reads by `:read` would break Epic 4. Org-scoping still
+ *   applies to every read — never any cross-tenant leak.
  */
 export async function requirePermission(
   ctx: QueryCtx,

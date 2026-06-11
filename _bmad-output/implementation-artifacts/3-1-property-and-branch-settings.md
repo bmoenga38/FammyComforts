@@ -26,9 +26,13 @@ that guest-facing info and operational rules are correct. (FR13, FR17)
 2. **Branches hang off a property, same-org only.** Create/update/remove branches
    (name, location) under an org's property; a branch can never attach to another
    org's property (cross-org attempt throws).
-3. **Reads are permission-gated.** `property.list` / `branches.list` require an
-   authenticated org user (`Settings:read` via the role); guest-facing screens
-   will read check-in/out + ID policy from the property (Epic 4).
+3. **Reads are org-scoped (operational read policy).** `property.list` /
+   `branches.list` require an authenticated **org member** — not a specific
+   `Settings:read` grant (see the repo-wide read-gating policy in
+   `convex/lib/auth.ts`: operational/config reads are open to org members, writes
+   need `:manage`, only sensitive reads like staff/audit are `:read`-gated). They
+   stay strictly org-scoped. Guest-facing screens read check-in/out + ID policy
+   from the property (Epic 4).
 4. **Validation + isolation.** Bad time formats are rejected; a caller without
    `Settings:manage` gets `FORBIDDEN`; org A never sees org B's property/branches.
 5. **Gates green.** `convex codegen` + `pnpm typecheck` + `pnpm test` pass.
