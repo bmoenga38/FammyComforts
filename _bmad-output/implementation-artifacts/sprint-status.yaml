@@ -76,8 +76,8 @@ development_status:
   3-1-property-and-branch-settings: in-progress # backend + tests done; web settings form deferred to web batch
   3-2-room-types-and-amenities: in-progress # backend + tests done; web deferred
   3-3-rooms-management: in-progress # backend + tests done; web deferred
-  3-4-rate-plans-and-tax: backlog
-  3-5-notification-settings: backlog
+  3-4-rate-plans-and-tax: in-progress # backend + tests done; web deferred
+  3-5-notification-settings: in-progress # backend + tests done; web deferred
   epic-3-retrospective: optional
 
   # ===== Epic 4: Guest Booking Experience (R1) =====

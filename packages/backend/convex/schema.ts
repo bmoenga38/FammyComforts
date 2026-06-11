@@ -176,6 +176,42 @@ export default defineSchema({
     .index("by_roomType", ["roomTypeId"])
     .index("by_branch_number", ["branchId", "number"]),
 
+  // Rate plans + tax (Story 3.4) — "Settings" area. Money is integer minor units
+  // via int64 (never floats); tax rate is a fraction (0.16 = 16% VAT).
+  ratePlans: defineTable({
+    orgId: v.id("organizations"),
+    roomTypeId: v.id("roomTypes"),
+    name: v.string(),
+    nightlyCents: v.int64(),
+    currency: v.string(), // "KES"
+    active: v.boolean(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_roomType", ["roomTypeId"]),
+
+  taxRules: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    rate: v.number(), // fraction, e.g. 0.16
+    active: v.boolean(),
+  }).index("by_org", ["orgId"]),
+
+  // Notification settings (Story 3.5) — "Notifications" area. One row per
+  // (type, channel); the notification engine respects `enabled`.
+  notificationSettings: defineTable({
+    orgId: v.id("organizations"),
+    type: v.string(), // e.g. "booking_confirmation", "check_in_reminder"
+    channel: v.union(
+      v.literal("email"),
+      v.literal("sms"),
+      v.literal("whatsapp"),
+      v.literal("push"),
+    ),
+    enabled: v.boolean(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_type_channel", ["orgId", "type", "channel"]),
+
   auditLogs: defineTable({
     // Tenant scope (Story 2.3). Optional: Story-1 infra rows (backups) have no org.
     orgId: v.optional(v.id("organizations")),
