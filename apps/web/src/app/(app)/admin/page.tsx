@@ -11,12 +11,18 @@ export default function AdminWorkspacePage() {
   return (
     <div className="space-y-4">
       <WorkspacePlaceholder workspace={workspace} />
-      <div className="px-4 md:px-6">
+      <div className="flex flex-wrap gap-3 px-4 md:px-6">
         <Link
           href="/admin/access"
           className="inline-flex h-10 items-center rounded-xl border border-border px-4 text-sm font-medium hover:bg-bg-subtle"
         >
           Manage access (roles, staff, audit) →
+        </Link>
+        <Link
+          href="/admin/setup"
+          className="inline-flex h-10 items-center rounded-xl border border-border px-4 text-sm font-medium hover:bg-bg-subtle"
+        >
+          Property setup (rooms, rates, notifications) →
         </Link>
       </div>
     </div>

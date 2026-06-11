@@ -4,7 +4,7 @@ baseline_commit: ecb8ad1
 
 # Story 3.4: Rate plans and tax
 
-Status: in-progress
+Status: done
 
 > **Org-scoped, "Settings" area.** Backend landed + tested; web admin deferred.
 
@@ -26,7 +26,7 @@ correctly. (FR13, NFR14)
 - [x] `rates.ts`: list/create/update for rate plans + tax rules, gated + audited,
       money + tax-range validation.
 - [x] tests in `rates.test.ts`. Backend 35/35; full turbo gate green.
-- [ ] Web rates/tax admin. *(web batch)*
+- [x] Web: Rates & Tax tab of `/admin/setup` (KES↔cents via lib/money).
 
 ## Dev Agent Record
 ### File List

@@ -4,7 +4,7 @@ baseline_commit: ecb8ad1
 
 # Story 3.3: Rooms management
 
-Status: in-progress
+Status: done
 
 > **Org-scoped, "Rooms" area.** Backend landed + tested; web admin deferred.
 
@@ -27,7 +27,7 @@ exist to book and operate. (FR13)
       setStatus / remove — gated + audited.
 - [x] tests in `rooms.test.ts` (unique number, status, cross-org, gating).
       Backend 31/31; full turbo gate green.
-- [ ] Web rooms admin. *(web batch)*
+- [x] Web: Rooms tab of `/admin/setup` (status select, unique-number errors surfaced).
 
 ## Dev Agent Record
 ### File List

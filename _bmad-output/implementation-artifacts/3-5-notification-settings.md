@@ -4,7 +4,7 @@ baseline_commit: ecb8ad1
 
 # Story 3.5: Notification settings
 
-Status: in-progress
+Status: done
 
 > **Org-scoped, "Notifications" area.** Backend landed + tested; web admin deferred.
 
@@ -24,7 +24,7 @@ channels, so that the property controls guest/staff messaging. (FR13, ties FR56)
       by_org / by_org_type_channel.
 - [x] `notifications.ts`: list + setEnabled (upsert, gated, audited).
 - [x] tests in `rates.test.ts` (idempotent toggle, gating). Backend 35/35; gate green.
-- [ ] Web notification-settings admin. *(web batch)*
+- [x] Web: Notifications tab of `/admin/setup` (type × channel grid).
 
 ## Dev Agent Record
 ### File List

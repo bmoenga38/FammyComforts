@@ -4,7 +4,7 @@ baseline_commit: ecb8ad1
 
 # Story 3.2: Room types and amenities
 
-Status: in-progress
+Status: done
 
 > **Org-scoped, "Rooms" area.** Backend landed + tested; web admin deferred to
 > the web batch.
@@ -25,7 +25,7 @@ categorized and described consistently. (FR13)
 - [x] `amenities.ts` (list/create/remove) + `roomTypes.ts`
       (list-with-amenities/create/update/remove, in-use guard).
 - [x] tests in `rooms.test.ts` (amenities + types). Backend 31/31; gate green.
-- [ ] Web room-type/amenity admin. *(web batch)*
+- [x] Web: Room types tab of `/admin/setup`.
 
 ## Dev Agent Record
 ### File List

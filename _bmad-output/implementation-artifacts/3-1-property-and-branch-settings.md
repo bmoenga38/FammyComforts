@@ -4,7 +4,7 @@ baseline_commit: ecb8ad1
 
 # Story 3.1: Property and branch settings
 
-Status: in-progress
+Status: done
 
 > **Org-scoped (SSO model).** Per the multi-tenancy non-negotiable, `properties`
 > and `branches` carry `orgId` + `by_org`, and every function filters by the
@@ -48,7 +48,7 @@ that guest-facing info and operational rules are correct. (FR13, FR17)
       (Settings-gated, audited, same-org property check).
 - [x] `convex/property.test.ts`: create/update + audit, bad-time rejection,
       branch lifecycle + cross-org block, permission denial. **Backend 28/28.**
-- [ ] Web: a Settings → Property/Branches form under `/admin` (gated via
+- [x] Web: Property & Branches tab of `/admin/setup` (gated via
       `usePermissions`). *(Deferred to the web batch.)*
 
 ## Dev Notes

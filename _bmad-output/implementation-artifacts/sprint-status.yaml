@@ -72,12 +72,12 @@ development_status:
   epic-2-retrospective: optional
 
   # ===== Epic 3: Property, Rooms, Rates & Amenities Setup (R1) =====
-  epic-3: in-progress
-  3-1-property-and-branch-settings: in-progress # backend + tests done; web settings form deferred to web batch
-  3-2-room-types-and-amenities: in-progress # backend + tests done; web deferred
-  3-3-rooms-management: in-progress # backend + tests done; web deferred
-  3-4-rate-plans-and-tax: in-progress # backend + tests done; web deferred
-  3-5-notification-settings: in-progress # backend + tests done; web deferred
+  epic-3: done
+  3-1-property-and-branch-settings: done # backend + /admin/setup Property tab
+  3-2-room-types-and-amenities: done # backend + /admin/setup Room types tab
+  3-3-rooms-management: done # backend + /admin/setup Rooms tab
+  3-4-rate-plans-and-tax: done # backend + /admin/setup Rates & Tax tab (KES↔cents)
+  3-5-notification-settings: done # backend + /admin/setup Notifications grid
   epic-3-retrospective: optional
 
   # ===== Epic 4: Guest Booking Experience (R1) =====
