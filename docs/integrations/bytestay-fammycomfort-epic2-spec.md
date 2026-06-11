@@ -115,5 +115,11 @@ No other Bytebazaar env values are needed.
 **Identity/Access/Staff/Audit (FammyComfort Epic 2 proper):** done — see the
 2.1–2.5 story files. (Distinct from the platform integration above.)
 
-**PROD:** set the PROD env row (§4) + `convex deploy` to `notable-cod-441` when
-promoting.
+**PROD (`notable-cod-441`) — live + smoke-tested (2026-06-11):** auth keys +
+`BYTEBAZAAR_CONVEX_URL=https://wandering-corgi-957.convex.cloud` (Bytebazaar
+prod) set; `convex deploy` pushed all functions/indexes; `convex run
+sso:completeHandoff --prod` with a bogus token → `SSO_INVALID (not_found)`,
+confirming prod↔prod connectivity + contract. `SITE_URL` is a placeholder
+(`https://fammycomforts.vercel.app`) — **update it to the real FammyComfort web
+URL when `apps/web` is deployed to Vercel.** Remaining: deploy `apps/web` +
+point Bytebazaar prod's `NEXT_PUBLIC_BYTESTAY_URL` at it for the full sign-in.

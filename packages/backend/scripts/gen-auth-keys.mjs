@@ -1,8 +1,10 @@
 // One-off: generate the Convex Auth RS256 keypair the way `npx @convex-dev/auth`
-// does, and set SITE_URL / JWT_PRIVATE_KEY / JWKS on the current deployment.
+// does, and set SITE_URL / JWT_PRIVATE_KEY / JWKS on a deployment.
 // Run from packages/backend (so .env.local provides CONVEX_DEPLOYMENT):
-//   node scripts/gen-auth-keys.mjs
+//   node scripts/gen-auth-keys.mjs              # dev deployment
+//   SITE_URL=https://app.example node scripts/gen-auth-keys.mjs --prod   # prod
 // Secrets are piped straight to `convex env set` — never printed.
+const PROD = process.argv.includes("--prod");
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
@@ -34,9 +36,11 @@ const convexBin = path.join(
   "main.js",
 );
 const setEnv = (name, value) =>
-  execFileSync(process.execPath, [convexBin, "env", "set", "--", name, value], {
-    stdio: ["ignore", "inherit", "inherit"],
-  });
+  execFileSync(
+    process.execPath,
+    [convexBin, "env", "set", ...(PROD ? ["--prod"] : []), "--", name, value],
+    { stdio: ["ignore", "inherit", "inherit"] },
+  );
 
 setEnv("SITE_URL", process.env.SITE_URL || "http://localhost:3000");
 setEnv("JWT_PRIVATE_KEY", jwtPrivateKey);
