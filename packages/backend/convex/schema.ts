@@ -130,6 +130,52 @@ export default defineSchema({
     .index("by_org", ["orgId"])
     .index("by_property", ["propertyId"]),
 
+  // Room types + amenities (Story 3.2) — "Rooms" permission area.
+  amenities: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_name", ["orgId", "name"]),
+
+  roomTypes: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    capacity: v.number(),
+    sizeSqm: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
+
+  roomTypeAmenities: defineTable({
+    orgId: v.id("organizations"),
+    roomTypeId: v.id("roomTypes"),
+    amenityId: v.id("amenities"),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_roomType", ["roomTypeId"]),
+
+  // Rooms (Story 3.3) — real bookable units. `status` mirrors the RoomStatus
+  // domain enum (data-model.md). `by_branch_number` enforces unique numbers
+  // per branch via an in-mutation index read (no Convex unique constraint).
+  rooms: defineTable({
+    orgId: v.id("organizations"),
+    branchId: v.id("branches"),
+    roomTypeId: v.id("roomTypes"),
+    number: v.string(),
+    floor: v.optional(v.string()),
+    status: v.union(
+      v.literal("available"),
+      v.literal("occupied"),
+      v.literal("dirty"),
+      v.literal("cleaning"),
+      v.literal("maintenance"),
+      v.literal("blocked"),
+    ),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_branch", ["branchId"])
+    .index("by_roomType", ["roomTypeId"])
+    .index("by_branch_number", ["branchId", "number"]),
+
   auditLogs: defineTable({
     // Tenant scope (Story 2.3). Optional: Story-1 infra rows (backups) have no org.
     orgId: v.optional(v.id("organizations")),

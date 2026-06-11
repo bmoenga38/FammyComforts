@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as amenities from "../amenities.js";
 import type * as audit from "../audit.js";
 import type * as auditLogs from "../auditLogs.js";
 import type * as auth from "../auth.js";
@@ -22,6 +23,8 @@ import type * as lib_permissions from "../lib/permissions.js";
 import type * as property from "../property.js";
 import type * as rbac from "../rbac.js";
 import type * as roles from "../roles.js";
+import type * as roomTypes from "../roomTypes.js";
+import type * as rooms from "../rooms.js";
 import type * as sso from "../sso.js";
 import type * as staff from "../staff.js";
 
@@ -32,6 +35,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  amenities: typeof amenities;
   audit: typeof audit;
   auditLogs: typeof auditLogs;
   auth: typeof auth;
@@ -46,6 +50,8 @@ declare const fullApi: ApiFromModules<{
   property: typeof property;
   rbac: typeof rbac;
   roles: typeof roles;
+  roomTypes: typeof roomTypes;
+  rooms: typeof rooms;
   sso: typeof sso;
   staff: typeof staff;
 }>;
