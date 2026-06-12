@@ -76,8 +76,14 @@
   /* ============================================================
      AUTHENTICATION
      Admin → email + password · Everyone else → phone + OTP
+     New numbers must register (name + phone) before signing in.
+     The OTP SMS is sent under the FammyComfort sender ID.
      ============================================================ */
-  const loginHTML = (mode, step, phoneVal) => `
+  const normPhone = (p) => String(p || '').replace(/\D/g, '').slice(-9);
+  const findGuestByPhone = (p) => D.GUESTS.find((g) => normPhone(g.phone) && normPhone(g.phone) === normPhone(p));
+  const currentGuest = () => (state.auth && state.auth.method === 'phone' && findGuestByPhone(state.auth.identity)) || D.GUESTS[0];
+
+  const loginHTML = (mode, step, phoneVal, reg) => `
     <div class="login-card glass-panel fade-in">
       <button id="lg-theme" class="icon-btn" style="position:absolute;top:1rem;right:1rem" aria-label="Theme"><span class="material-symbols-outlined" data-theme-icon>light_mode</span></button>
       <div style="text-align:center;margin-bottom:1.4rem">
@@ -91,15 +97,28 @@
       </div>
       ${mode === 'phone'
         ? (step === 'enter'
-          ? `<div class="field" style="margin-bottom:1rem"><label>Phone number</label>
+          ? (reg.on
+            ? `<p class="text-label-caps uppercase text-on-surface-variant" style="margin-bottom:.9rem">${icon('person_add', 'text-[14px] align-middle')} Create your account</p>
+               <div class="field" style="margin-bottom:.8rem"><label>Full name</label><div class="input-icon">${icon('person')}<input id="lg-name" class="input" placeholder="e.g. Jane Muthoni" value="${esc(reg.name)}"/></div></div>
+               <div class="field" style="margin-bottom:.8rem"><label>Phone number</label><div class="input-icon">${icon('call')}<input id="lg-phone" class="input" inputmode="tel" placeholder="+254 7XX XXX XXX" value="${esc(phoneVal)}"/></div></div>
+               <div class="field" style="margin-bottom:1rem"><label>Email <span style="opacity:.6">(optional)</span></label><div class="input-icon">${icon('mail')}<input id="lg-remail" class="input" type="email" placeholder="you@example.com" value="${esc(reg.email)}"/></div></div>
+               <button class="btn btn-primary btn-block" id="lg-register">${icon('sms')} Register &amp; send OTP</button>
+               <button class="btn btn-ghost btn-block" id="lg-gosignin" style="margin-top:.6rem">I already have an account</button>
+               <p class="text-body-md text-on-surface-variant" style="text-align:center;margin-top:1rem">We'll verify your number with a code sent by <b class="text-on-surface">FammyComfort</b>.</p>`
+            : `<div class="field" style="margin-bottom:1rem"><label>Phone number</label>
                <div class="input-icon">${icon('call')}<input id="lg-phone" class="input" inputmode="tel" placeholder="+254 7XX XXX XXX" value="${esc(phoneVal)}"/></div></div>
              <button class="btn btn-primary btn-block" id="lg-send">${icon('sms')} Send OTP</button>
-             <p class="text-body-md text-on-surface-variant" style="text-align:center;margin-top:1rem">Guests &amp; staff sign in with their phone number.</p>`
+             <button class="btn btn-ghost btn-block" id="lg-goreg" style="margin-top:.6rem">${icon('person_add')} New here? Create an account</button>
+             <p class="text-body-md text-on-surface-variant" style="text-align:center;margin-top:1rem">Guests &amp; staff sign in with their phone number.</p>`)
           : `<p class="text-body-md text-on-surface-variant" style="margin-bottom:.8rem">Enter the 6-digit code sent to <b class="text-on-surface">${esc(phoneVal)}</b></p>
+             <div class="card card-pad-sm" style="margin-bottom:1rem;text-align:left">
+               <p class="sms-sender">FammyComfort</p>
+               <p class="text-body-md text-on-surface">${reg.on ? 'Karibu ' + esc((reg.name || 'guest').split(' ')[0]) + '! ' : ''}Your Fammy Comforts verification code is <b class="mono">123456</b>. It expires in 5 minutes. Do not share it with anyone.</p>
+             </div>
              <div class="field" style="margin-bottom:1rem"><label>One-time code</label><input id="lg-otp" class="input otp-input" inputmode="numeric" maxlength="6" placeholder="••••••"/></div>
-             <button class="btn btn-primary btn-block" id="lg-verify">${icon('lock_open')} Verify &amp; sign in</button>
+             <button class="btn btn-primary btn-block" id="lg-verify">${icon('lock_open')} ${reg.on ? 'Verify &amp; create account' : 'Verify &amp; sign in'}</button>
              <div style="display:flex;justify-content:space-between;margin-top:1rem">
-               <button id="lg-back" class="chip">${icon('arrow_back', 'text-[14px]')} Change number</button>
+               <button id="lg-back" class="chip">${icon('arrow_back', 'text-[14px]')} ${reg.on ? 'Edit details' : 'Change number'}</button>
                <button id="lg-resend" class="chip">Resend code</button></div>`)
         : `<div class="field" style="margin-bottom:.8rem"><label>Email</label><div class="input-icon">${icon('mail')}<input id="lg-email" class="input" type="email" placeholder="admin@fammycomforts.co.ke"/></div></div>
            <div class="field" style="margin-bottom:.5rem"><label>Password</label><div class="input-icon">${icon('lock')}<input id="lg-pass" class="input" type="password" placeholder="••••••••"/></div></div>
@@ -119,29 +138,60 @@
     const el = $('#login');
     el.classList.remove('hidden');
     let mode = 'phone', step = 'enter', phoneVal = '';
-    const draw = () => { el.innerHTML = loginHTML(mode, step, phoneVal); window.SC_Theme.apply(); wire(); };
+    const reg = { on: false, name: '', email: '' };
+    const sendOtp = (p) => C.toast('FammyComfort: OTP sent to ' + p + ' · demo code 123456', 'info', 'sms');
+    const draw = () => { el.innerHTML = loginHTML(mode, step, phoneVal, reg); window.SC_Theme.apply(); wire(); };
     const wire = () => {
-      $$('.lg-tab').forEach((b) => (b.onclick = () => { mode = b.dataset.m; step = 'enter'; draw(); }));
+      $$('.lg-tab').forEach((b) => (b.onclick = () => { mode = b.dataset.m; step = 'enter'; reg.on = false; draw(); }));
       $('#lg-theme').onclick = () => { window.SC_Theme.toggle(); draw(); };
-      if (mode === 'phone' && step === 'enter') {
+      if (mode === 'phone' && step === 'enter' && reg.on) {
+        const go = () => {
+          reg.name = ($('#lg-name').value || '').trim();
+          reg.email = ($('#lg-remail').value || '').trim();
+          const p = ($('#lg-phone').value || '').trim();
+          if (reg.name.replace(/\s+/g, ' ').length < 3) return C.toast('Enter your full name', 'error');
+          if (p.replace(/\D/g, '').length < 9) return C.toast('Enter a valid phone number', 'error');
+          if (findGuestByPhone(p)) {
+            phoneVal = p; reg.on = false; step = 'otp'; draw();
+            return C.toast('This number is already registered — sending a sign-in code instead', 'info', 'sms');
+          }
+          phoneVal = p; step = 'otp'; draw();
+          sendOtp(p);
+        };
+        $('#lg-register').onclick = go;
+        $('#lg-gosignin').onclick = () => { reg.on = false; draw(); };
+        [$('#lg-name'), $('#lg-phone'), $('#lg-remail')].forEach((i) => (i.onkeydown = (e) => { if (e.key === 'Enter') go(); }));
+      } else if (mode === 'phone' && step === 'enter') {
         const go = () => {
           const p = ($('#lg-phone').value || '').trim();
           if (p.replace(/\D/g, '').length < 9) return C.toast('Enter a valid phone number', 'error');
+          if (!findGuestByPhone(p)) {
+            phoneVal = p; reg.on = true; draw();
+            return C.toast('No account for ' + p + ' yet — register below to continue', 'warn', 'person_add');
+          }
           phoneVal = p; step = 'otp'; draw();
-          C.toast('OTP sent to ' + p + ' · demo code 123456', 'info', 'sms');
+          sendOtp(p);
         };
         $('#lg-send').onclick = go;
+        $('#lg-goreg').onclick = () => { reg.on = true; draw(); };
         $('#lg-phone').onkeydown = (e) => { if (e.key === 'Enter') go(); };
       } else if (mode === 'phone') {
         const go = () => {
           const c = ($('#lg-otp').value || '').replace(/\D/g, '');
           if (c.length < 6) return C.toast('Enter the 6-digit code', 'error');
-          enterApp('phone', phoneVal);
+          if (reg.on) {
+            const initials = reg.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase() || 'GG';
+            D.GUESTS.push({ id: 'G-' + (1000 + D.GUESTS.length + 1), name: reg.name, phone: phoneVal, email: reg.email, tier: 'Bronze', points: 100, stays: 0, vip: false, avatar: initials });
+            enterApp('phone', phoneVal);
+            C.toast('Karibu, ' + reg.name.split(' ')[0] + '! Account created · +100 welcome points', 'success', 'celebration');
+          } else {
+            enterApp('phone', phoneVal);
+          }
         };
         $('#lg-verify').onclick = go;
         $('#lg-otp').onkeydown = (e) => { if (e.key === 'Enter') go(); };
         $('#lg-back').onclick = () => { step = 'enter'; draw(); };
-        $('#lg-resend').onclick = () => C.toast('New OTP sent · demo code 123456', 'info', 'sms');
+        $('#lg-resend').onclick = () => sendOtp(phoneVal);
         setTimeout(() => $('#lg-otp') && $('#lg-otp').focus(), 60);
       } else {
         const go = () => {
@@ -161,6 +211,10 @@
     state.auth = { method, identity };
     if (method === 'email') state.role = 'admin';
     else if (state.role === 'admin') state.role = 'customer'; // phone users can't hold admin
+    if (method === 'phone') {
+      const g = findGuestByPhone(identity);
+      if (g) state.points = g.points; // loyalty balance follows the signed-in guest
+    }
     store.set('auth', state.auth);
     persist();
     document.body.classList.remove('auth-locked');
@@ -869,7 +923,7 @@
 
   /* ---------- CUSTOMER ---------- */
   V.home = () => {
-    const me = D.GUESTS[0];
+    const me = currentGuest();
     const featured = D.ROOMS.filter((r) => r.status === 'available').slice(0, 6);
     const active = D.BOOKINGS.find((b) => b.guest === me.id && b.status === 'confirmed');
     const room = active ? D.ROOMS.find((r) => r.id === active.room) : null;
@@ -953,7 +1007,7 @@
 
   function openBooking(roomId) {
     const r = D.ROOMS.find((x) => x.id === roomId);
-    const me = D.GUESTS[0];
+    const me = currentGuest();
     // captured client KYC for this booking
     const form = {
       name: me ? me.name : '',
@@ -1065,10 +1119,20 @@
     const step3 = () => {
       setStep(2);
       state.points += 120; persist();
-      // create the client + booking records so reception/admin see them
-      const initials = form.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase() || 'GG';
-      const gid = 'G-' + (1000 + D.GUESTS.length + 1);
-      D.GUESTS.push({ id: gid, name: form.name, phone: form.phone, email: '', tier: 'Bronze', points: 120, stays: 1, vip: false, avatar: initials, idNumber: form.idNo, idPhoto: form.idPhoto });
+      // create or update the client record so reception/admin see it (no duplicates per phone)
+      const existing = findGuestByPhone(form.phone);
+      let gid;
+      if (existing) {
+        gid = existing.id;
+        existing.idNumber = existing.idNumber || form.idNo;
+        existing.idPhoto = existing.idPhoto || form.idPhoto;
+        existing.points += 120;
+        existing.stays += 1;
+      } else {
+        const initials = form.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase() || 'GG';
+        gid = 'G-' + (1000 + D.GUESTS.length + 1);
+        D.GUESTS.push({ id: gid, name: form.name, phone: form.phone, email: '', tier: 'Bronze', points: 120, stays: 1, vip: false, avatar: initials, idNumber: form.idNo, idPhoto: form.idPhoto });
+      }
       const code = 'BK-' + (7847 + D.BOOKINGS.length + 1);
       created = { code, guest: gid, room: r.id, status: 'confirmed', checkIn: form.checkIn, checkOut: form.checkOut, nights, guests: 1, amount: total, paid: true, channel: 'App', eta: '14:00' };
       D.BOOKINGS.push(created);
@@ -1095,11 +1159,14 @@
   }
 
   V.reservations = () => {
-    const me = D.GUESTS[0];
-    const mine = D.BOOKINGS.filter((b) => b.guest === me.id || ['BK-7842', 'BK-7846'].includes(b.code));
+    const me = currentGuest();
+    // the seeded demo guest also sees a couple of showcase bookings
+    const mine = D.BOOKINGS.filter((b) => b.guest === me.id || (me.id === D.GUESTS[0].id && ['BK-7842', 'BK-7846'].includes(b.code)));
     return `
     <section class="fade-in">
       ${pageHero('My trips', 'Reservations', 'Upcoming and past stays')}
+      ${!mine.length ? C.empty('luggage', 'No trips yet', 'Book your first stay and it will appear here.') + `
+      <button class="btn btn-primary btn-block mt-4" onclick="location.hash='#/search'" style="max-width:320px;margin-left:auto;margin-right:auto;display:flex">${icon('search')} Find a lounge</button>` : ''}
       <div class="grid grid-2 stagger">
         ${mine.map((b) => {
           const r = D.ROOMS.find((x) => x.id === b.room);
@@ -1126,7 +1193,15 @@
   };
 
   V.checkin = () => {
-    const b = D.BOOKINGS.find((x) => x.code === 'BK-7841');
+    const me = currentGuest();
+    const b = D.BOOKINGS.find((x) => x.guest === me.id && ['confirmed', 'checked-in'].includes(x.status))
+      || (me.id === D.GUESTS[0].id ? D.BOOKINGS.find((x) => x.code === 'BK-7841') : null);
+    if (!b) return `
+    <section class="fade-in" style="max-width:520px;margin:0 auto">
+      ${pageHero('Check-in', 'No active booking', null)}
+      ${C.empty('qr_code_2', 'Nothing to check in', 'Book a lounge first — your QR pass will appear here.')}
+      <button class="btn btn-primary btn-block mt-4" onclick="location.hash='#/search'">${icon('search')} Find a lounge</button>
+    </section>`;
     const r = D.ROOMS.find((x) => x.id === b.room);
     const steps = ['Booked', 'Arrived', 'Checked-In', 'Enjoy', 'Checkout'];
     return `
@@ -1143,25 +1218,28 @@
           ${steps.map((s, i) => `<div class="step ${i < 1 ? 'done' : i === 1 ? 'current' : ''}"><div class="dot">${i < 1 ? icon('check', 'text-[16px]') : i + 1}</div><span class="lbl">${s}</span></div>`).join('')}
         </div>
       </div>
-      <button class="btn btn-primary btn-block mt-4" id="sim-checkin">${icon('login')} Simulate arrival & check-in</button>
+      <button class="btn btn-primary btn-block mt-4" id="sim-checkin" data-code="${b.code}">${icon('login')} Simulate arrival & check-in</button>
       ${credit}
     </section>`;
   };
   V.checkin.wire = () => {
-    $('#sim-checkin').onclick = () => {
-      const b = D.BOOKINGS.find((x) => x.code === 'BK-7841');
-      if (b && b.status !== 'checked-in') {
+    const sim = $('#sim-checkin');
+    if (!sim) return; // empty state — nothing to simulate
+    sim.onclick = () => {
+      const b = D.BOOKINGS.find((x) => x.code === sim.dataset.code);
+      if (!b) return;
+      const room = D.ROOMS.find((r) => r.id === b.room);
+      if (b.status !== 'checked-in') {
         b.status = 'checked-in'; b.eta = '—';
-        const room = D.ROOMS.find((r) => r.id === b.room);
         if (room) room.status = 'occupied';
         logActivity('login', 'success', 'Self check-in · ' + ((D.GUESTS.find((g) => g.id === b.guest) || {}).name || 'Guest'));
       }
-      C.toast('Checked in to Savannah Executive Suite — enjoy your stay!', 'success', 'login');
+      C.toast('Checked in to ' + (room ? room.name : b.room) + ' — enjoy your stay!', 'success', 'login');
     };
   };
 
   V.loyalty = () => {
-    const me = D.GUESTS[0];
+    const me = currentGuest();
     const nextTier = 6000;
     const pct = Math.min(100, Math.round((state.points / nextTier) * 100));
     return `
@@ -1193,14 +1271,14 @@
   };
 
   V.profile = () => {
-    const me = D.GUESTS[0];
+    const me = currentGuest();
     return `
     <section class="fade-in" style="max-width:560px;margin:0 auto">
       ${pageHero('Account', 'Profile', null)}
       <div class="card" style="display:flex;align-items:center;gap:1rem">
         <div class="avatar avatar-primary" style="width:64px;height:64px;font-size:24px">${me.avatar}</div>
         <div style="flex:1"><h3 class="font-display text-headline-sm text-on-surface">${esc(me.name)}</h3>
-        <p class="text-body-md text-on-surface-variant">${esc(me.email)}</p><div class="mt-1">${badge('platinum', me.tier + ' · ' + me.stays + ' stays')}</div></div>
+        <p class="text-body-md text-on-surface-variant">${esc(me.email || me.phone)}</p><div class="mt-1">${badge('platinum', me.tier + ' · ' + me.stays + ' stays')}</div></div>
       </div>
       <div class="card mt-4 divide-rows" style="padding:0">
         ${[['person', 'Personal details'], ['payments', 'Payment methods'], ['notifications', 'Notification preferences'], ['help', 'Help & support'], ['privacy_tip', 'Privacy & data']].map((x) => `<button class="list-row" style="width:100%;cursor:pointer">${icon(x[0], 'text-on-surface-variant')}<span class="text-on-surface" style="flex:1;text-align:left">${x[1]}</span>${icon('chevron_right', 'text-on-surface-variant')}</button>`).join('')}

@@ -284,6 +284,130 @@ export default defineSchema({
     .index("by_room", ["roomId"])
     .index("by_guest", ["guestId"]),
 
+  // ===== Payments, Ledger, Invoices (Epic 5) =====
+  // Money invariant (NFR14/AR5): every amount is integer minor units (int64
+  // cents) + currency; the booking balance is DERIVED from ledgerEntries (sum),
+  // never hand-edited. Sign convention: charge/adjustment positive, payment/
+  // refund negative.
+
+  // 5.1 — per-org payment-method toggles. Missing row = ENABLED by default;
+  // an explicit row turns a method off (or back on). Guest + desk flows offer
+  // only enabled methods.
+  paymentMethodSettings: defineTable({
+    orgId: v.id("organizations"),
+    method: v.union(
+      v.literal("mpesa_stk"),
+      v.literal("mpesa_manual"),
+      v.literal("cash"),
+      v.literal("card"),
+    ),
+    enabled: v.boolean(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_method", ["orgId", "method"]),
+
+  // 5.3/5.4 — per-org Daraja credentials (each property runs its OWN paybill —
+  // two-layer model). Admin-entered (Payments:manage); secrets never audited or
+  // returned to clients; Convex encrypts at rest. The OAuth token is cached on
+  // the row (no Redis in this stack).
+  mpesaConfigs: defineTable({
+    orgId: v.id("organizations"),
+    env: v.union(v.literal("sandbox"), v.literal("production")),
+    shortcode: v.string(),
+    passkey: v.string(),
+    consumerKey: v.string(),
+    consumerSecret: v.string(),
+    transactionType: v.union(
+      v.literal("CustomerPayBillOnline"),
+      v.literal("CustomerBuyGoodsOnline"),
+    ),
+    // Shared secret embedded in the callback path; rejected if mismatched.
+    callbackToken: v.string(),
+    cachedAccessToken: v.optional(v.string()),
+    cachedTokenExpiresAt: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
+
+  payments: defineTable({
+    orgId: v.id("organizations"),
+    bookingId: v.optional(v.id("bookings")), // null = standalone (restaurant, R3)
+    provider: v.union(
+      v.literal("mpesa_stk"),
+      v.literal("mpesa_manual"),
+      v.literal("cash"),
+      v.literal("card"),
+    ),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("confirmed"),
+      v.literal("failed"),
+      v.literal("reversed"),
+    ),
+    amountCents: v.int64(),
+    currency: v.string(),
+    providerCheckoutRequestId: v.optional(v.string()),
+    providerMerchantRequestId: v.optional(v.string()),
+    providerReceiptNumber: v.optional(v.string()),
+    paidPhone: v.optional(v.string()),
+    paidAt: v.optional(v.number()),
+    resultDesc: v.optional(v.string()),
+    reconciled: v.boolean(),
+    // Set when the callback amount differed from the requested amount (5.8).
+    amountMismatch: v.optional(v.boolean()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_booking", ["bookingId"])
+    .index("by_checkout_request", ["providerCheckoutRequestId"])
+    .index("by_receipt", ["providerReceiptNumber"])
+    .index("by_org_reconciled", ["orgId", "reconciled"]),
+
+  ledgerEntries: defineTable({
+    orgId: v.id("organizations"),
+    bookingId: v.id("bookings"),
+    type: v.union(
+      v.literal("charge"),
+      v.literal("payment"),
+      v.literal("refund"),
+      v.literal("adjustment"),
+    ),
+    amountCents: v.int64(), // signed: charge + / payment −
+    currency: v.string(),
+    memo: v.optional(v.string()),
+    paymentId: v.optional(v.id("payments")),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_booking", ["bookingId"]),
+
+  // 5.6 — invoices & receipts. Line items are snapshotted from the ledger at
+  // generation time so the document never drifts from what it billed.
+  invoices: defineTable({
+    orgId: v.id("organizations"),
+    bookingId: v.id("bookings"),
+    number: v.string(), // INV-/RCT- + booking reference + sequence
+    isReceipt: v.boolean(),
+    totalCents: v.int64(),
+    currency: v.string(),
+    lines: v.array(
+      v.object({
+        description: v.string(),
+        amountCents: v.int64(),
+      }),
+    ),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_booking", ["bookingId"])
+    .index("by_number", ["number"]),
+
+  // 5.7 — guest requests from the portal; surfaced to staff (full ops = R2).
+  guestRequests: defineTable({
+    orgId: v.id("organizations"),
+    bookingId: v.id("bookings"),
+    message: v.string(),
+    status: v.union(v.literal("open"), v.literal("resolved")),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_status", ["orgId", "status"])
+    .index("by_booking", ["bookingId"]),
+
   // Queued outbound notifications (Story 4.7 "confirmation queued"). The send
   // engine (own SenderID SMS — Epic 5/10) consumes rows with status "queued",
   // honoring notificationSettings.

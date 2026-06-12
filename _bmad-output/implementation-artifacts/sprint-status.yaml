@@ -93,15 +93,15 @@ development_status:
   epic-4-retrospective: optional
 
   # ===== Epic 5: Payments, Invoicing & Reconciliation (R1) =====
-  epic-5: backlog
-  5-1-payment-method-configuration: backlog
-  5-2-exact-money-engine-and-ledger: backlog
-  5-3-m-pesa-stk-push-initiation: backlog
-  5-4-m-pesa-callback-processing-and-confirmation: backlog
-  5-5-manual-m-pesa-cash-and-card-recording: backlog
-  5-6-invoices-and-receipts-pdf: backlog
-  5-7-guest-portal-for-bookings-invoices-and-requests: backlog
-  5-8-reconciliation-view: backlog
+  epic-5: done
+  5-1-payment-method-configuration: done # toggles + booking-flow enforcement
+  5-2-exact-money-engine-and-ledger: done # int64 ledger, derived balances, charge-on-create
+  5-3-m-pesa-stk-push-initiation: done # per-org Daraja, pending payment w/ CheckoutRequestID
+  5-4-m-pesa-callback-processing-and-confirmation: done # idempotent, mismatch-flagging, token-verified
+  5-5-manual-m-pesa-cash-and-card-recording: done # receipt dedupe, reconciled:false
+  5-6-invoices-and-receipts-pdf: done # ledger snapshots; print-to-PDF view (server PDF deferred)
+  5-7-guest-portal-for-bookings-invoices-and-requests: done # portal + requests + staff queue
+  5-8-reconciliation-view: done # worklist + audited resolve in /admin/payments
   epic-5-retrospective: optional
 
   # ===== Epic 6: Front Desk Operations (R1) =====

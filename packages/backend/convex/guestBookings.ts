@@ -10,6 +10,8 @@ import {
   hasConflict,
   priceStay,
 } from "./lib/bookingDomain";
+import { postLedgerEntry, bookingBalanceCents } from "./lib/ledger";
+import { enabledMethodsFor } from "./paymentMethods";
 
 /**
  * PUBLIC no-account booking (Stories 4.4–4.8). The tenant comes from the org
@@ -95,6 +97,11 @@ export const create = mutation({
       throw new Error("Check-in date cannot be in the past.");
     }
 
+    // Payment-method intent must be one the property enabled (Story 5.1).
+    if (!(await enabledMethodsFor(ctx, org._id)).includes(args.paymentMethod)) {
+      throw new Error("That payment method is not available at this property.");
+    }
+
     // Room must be this tenant's, operational, and priced.
     const room = await ctx.db.get(args.roomId);
     if (!room || room.orgId !== org._id) throw new Error("Room not found.");
@@ -150,6 +157,17 @@ export const create = mutation({
       currency: plan.currency,
       paymentMethod: args.paymentMethod,
       paymentSplits: args.paymentSplits,
+    });
+
+    // Initialize the ledger with the expected-stay charge (Story 5.2): the
+    // balance is derived from entries from day one, never hand-set.
+    await postLedgerEntry(ctx, {
+      orgId: org._id,
+      bookingId,
+      type: "charge",
+      amountCents: totalCents,
+      currency: plan.currency,
+      memo: `Stay ${args.checkInDate} → ${args.checkOutDate} (${nights} nights, tax incl.)`,
     });
 
     for (const doc of args.documents ?? []) {
@@ -243,10 +261,87 @@ export const lookup = query({
       propertyName: org?.name ?? null,
       guestName: guest.fullName,
       expectedTotalCents: booking.expectedTotalCents,
-      // No payments are processed until Epic 5, so the open balance is the total.
-      balanceCents: booking.expectedTotalCents,
+      // Derived from the ledger (Story 5.2) — charges minus confirmed payments.
+      balanceCents: await bookingBalanceCents(ctx, booking._id),
       currency: booking.currency,
       paymentMethod: booking.paymentMethod,
+    };
+  },
+});
+
+/**
+ * Guest portal data (Story 5.7): the verified lookup plus payments, invoices,
+ * and open requests — everything the lightweight portal renders. Same
+ * anti-enumeration contract as `lookup` (null unless reference + contact match).
+ */
+export const portal = query({
+  args: { reference: v.string(), contact: v.string() },
+  handler: async (ctx, { reference, contact }) => {
+    const booking = await ctx.db
+      .query("bookings")
+      .withIndex("by_reference", (q) =>
+        q.eq("reference", reference.trim().toUpperCase()),
+      )
+      .unique();
+    if (!booking) return null;
+    const guest = await ctx.db.get(booking.guestId);
+    const needle = contact.trim().toLowerCase();
+    if (
+      !guest ||
+      needle.length === 0 ||
+      (guest.phone.toLowerCase() !== needle &&
+        (guest.email ?? "").toLowerCase() !== needle)
+    ) {
+      return null;
+    }
+
+    const payments = await ctx.db
+      .query("payments")
+      .withIndex("by_booking", (q) => q.eq("bookingId", booking._id))
+      .collect();
+    const invoices = await ctx.db
+      .query("invoices")
+      .withIndex("by_booking", (q) => q.eq("bookingId", booking._id))
+      .collect();
+    const requests = await ctx.db
+      .query("guestRequests")
+      .withIndex("by_booking", (q) => q.eq("bookingId", booking._id))
+      .collect();
+    const room = await ctx.db.get(booking.roomId);
+    const type = room ? await ctx.db.get(room.roomTypeId) : null;
+    const org = await ctx.db.get(booking.orgId);
+
+    return {
+      reference: booking.reference,
+      status: booking.status,
+      checkInDate: booking.checkInDate,
+      checkOutDate: booking.checkOutDate,
+      roomNumber: room?.number ?? null,
+      roomType: type?.name ?? null,
+      propertyName: org?.name ?? null,
+      guestName: guest.fullName,
+      currency: booking.currency,
+      expectedTotalCents: booking.expectedTotalCents,
+      balanceCents: await bookingBalanceCents(ctx, booking._id),
+      payments: payments.map((p) => ({
+        provider: p.provider,
+        status: p.status,
+        amountCents: p.amountCents,
+        receiptNumber: p.providerReceiptNumber ?? null,
+        paidAt: p.paidAt ?? null,
+      })),
+      invoices: invoices.map((i) => ({
+        invoiceId: i._id,
+        number: i.number,
+        isReceipt: i.isReceipt,
+        totalCents: i.totalCents,
+        lines: i.lines,
+      })),
+      requests: requests.map((r) => ({
+        message: r.message,
+        status: r.status,
+        createdAt: r._creationTime,
+      })),
     };
   },
 });

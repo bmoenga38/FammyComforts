@@ -1,54 +1,77 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 
-/** Guest lookup (4.8): submits reference+contact, renders the safe result view. */
-let lookupResult: unknown = undefined;
+/**
+ * Guest portal (4.8 + 5.7): verified lookup renders status/balance, payments,
+ * invoices, and the request box; mismatches show the generic no-match message.
+ */
+let portalResult: unknown = undefined;
 let lastArgs: unknown = null;
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ orgSlug: "acme" }),
 }));
 vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
-  api: { guestBookings: { lookup: "guestBookings.lookup" } },
+  api: {
+    guestBookings: { portal: "guestBookings.portal" },
+    guestRequests: { submit: "guestRequests.submit" },
+    mpesa: { initiateStk: "mpesa.initiateStk" },
+  },
 }));
 vi.mock("convex/react", () => ({
   useQuery: (_ref: string, args: unknown) => {
     if (args === "skip") return undefined;
     lastArgs = args;
-    return lookupResult;
+    return portalResult;
   },
+  useMutation: () => vi.fn(),
+  useAction: () => vi.fn(),
 }));
 
-import LookupPage from "./page";
+import PortalPage from "./page";
 
 beforeEach(() => {
-  lookupResult = undefined;
+  portalResult = undefined;
   lastArgs = null;
 });
 
-describe("guest lookup page", () => {
-  it("requires both reference and contact before querying", () => {
-    render(<LookupPage />);
-    fireEvent.click(screen.getByRole("button", { name: /look up/i }));
-    expect(lastArgs).toBeNull(); // skip — nothing submitted
-  });
+const PORTAL = {
+  reference: "BK-ABC234",
+  status: "pending",
+  checkInDate: "2099-03-01",
+  checkOutDate: "2099-03-04",
+  roomNumber: "101",
+  roomType: "Deluxe",
+  propertyName: "Org acme",
+  guestName: "Ada Guest",
+  currency: "KES",
+  expectedTotalCents: 1218000n,
+  balanceCents: 718000n,
+  payments: [
+    {
+      provider: "mpesa_manual",
+      status: "confirmed",
+      amountCents: 500000n,
+      receiptNumber: "QABC123XYZ",
+      paidAt: 1,
+    },
+  ],
+  invoices: [
+    {
+      invoiceId: "inv1",
+      number: "INV-ABC234-1",
+      isReceipt: false,
+      totalCents: 1218000n,
+      lines: [{ description: "Stay", amountCents: 1218000n }],
+    },
+  ],
+  requests: [],
+};
 
-  it("shows the booking summary on a match", () => {
-    lookupResult = {
-      reference: "BK-ABC234",
-      status: "pending",
-      checkInDate: "2099-03-01",
-      checkOutDate: "2099-03-04",
-      roomNumber: "101",
-      roomType: "Deluxe",
-      propertyName: "Org acme",
-      guestName: "Ada Guest",
-      expectedTotalCents: 1218000n,
-      balanceCents: 1218000n,
-      currency: "KES",
-      paymentMethod: "mpesa_stk",
-    };
-    render(<LookupPage />);
+describe("guest portal page", () => {
+  it("shows balance, payments, invoice links, pay box, and request box on a match", () => {
+    portalResult = PORTAL;
+    render(<PortalPage />);
     fireEvent.change(screen.getByLabelText(/booking reference/i), {
       target: { value: "BK-ABC234" },
     });
@@ -58,15 +81,30 @@ describe("guest lookup page", () => {
     fireEvent.click(screen.getByRole("button", { name: /look up/i }));
 
     expect(screen.getByText("BK-ABC234")).toBeInTheDocument();
-    expect(screen.getByText(/pending/i)).toBeInTheDocument();
-    // Total and balance are equal until Epic 5 records payments — two matches.
-    expect(screen.getAllByText(/KES 12,180/)).toHaveLength(2);
+    expect(screen.getByText(/KES 7,180/)).toBeInTheDocument(); // balance
+    expect(screen.getByText(/QABC123XYZ/)).toBeInTheDocument(); // payment
+    expect(screen.getByRole("link", { name: /INV-ABC234-1/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /send stk push/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/request message/i)).toBeInTheDocument();
     expect(lastArgs).toEqual({ reference: "BK-ABC234", contact: "+254700000001" });
   });
 
-  it("shows a generic no-match message (no enumeration hint)", () => {
-    lookupResult = null;
-    render(<LookupPage />);
+  it("hides the pay box when the balance is settled", () => {
+    portalResult = { ...PORTAL, balanceCents: 0n };
+    render(<PortalPage />);
+    fireEvent.change(screen.getByLabelText(/booking reference/i), {
+      target: { value: "BK-ABC234" },
+    });
+    fireEvent.change(screen.getByLabelText(/phone or email/i), {
+      target: { value: "+254700000001" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /look up/i }));
+    expect(screen.queryByRole("button", { name: /send stk push/i })).toBeNull();
+  });
+
+  it("shows a generic no-match message", () => {
+    portalResult = null;
+    render(<PortalPage />);
     fireEvent.change(screen.getByLabelText(/booking reference/i), {
       target: { value: "BK-WRONG1" },
     });

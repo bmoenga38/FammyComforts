@@ -24,6 +24,12 @@ export default function AdminWorkspacePage() {
         >
           Property setup (rooms, rates, notifications) →
         </Link>
+        <Link
+          href="/admin/payments"
+          className="inline-flex h-10 items-center rounded-xl border border-border px-4 text-sm font-medium hover:bg-bg-subtle"
+        >
+          Payments (methods, M-Pesa, reconciliation) →
+        </Link>
       </div>
     </div>
   );
