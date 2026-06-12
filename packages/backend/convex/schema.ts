@@ -536,6 +536,7 @@ export default defineSchema({
       }),
     ),
     totalCents: v.int64(),
+    receivedAt: v.optional(v.number()), // set on receipt; P&L buckets by this
   })
     .index("by_org", ["orgId"])
     .index("by_supplier", ["supplierId"]),

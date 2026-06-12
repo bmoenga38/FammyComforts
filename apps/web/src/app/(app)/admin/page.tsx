@@ -19,6 +19,8 @@ import {
   History,
   Boxes,
   BarChart3,
+  UtensilsCrossed,
+  ListTodo,
 } from "lucide-react";
 
 /**
@@ -70,6 +72,26 @@ const MODULES = [
     tone: "bg-badge-success text-badge-success-fg",
   },
 ];
+
+function ActionQueue({ items }: { items: [number, string, string][] }) {
+  const due = items.filter(([n]) => n > 0);
+  if (due.length === 0) {
+    return <p className="py-1 text-body-md text-text-muted">Nothing needs attention. 🎉</p>;
+  }
+  return (
+    <>
+      {due.map(([n, label, href]) => (
+        <Link key={label} href={href} className="list-row !px-1">
+          <span className="grid size-8 place-items-center rounded-full bg-badge-warning font-mono text-sm font-bold text-badge-warning-fg">
+            {n}
+          </span>
+          <span className="flex-1 text-body-md text-text">{label}</span>
+          <ChevronRight className="size-4 text-text-muted" aria-hidden="true" />
+        </Link>
+      ))}
+    </>
+  );
+}
 
 export default function AdminOverviewPage() {
   const { can, isLoading } = usePermissions();
@@ -127,6 +149,42 @@ export default function AdminOverviewPage() {
             <span className="text-label-caps uppercase text-text-muted">Occupancy</span>
             <span className="kpi-value text-text">{summary.occupancyPct}%</span>
           </div>
+          <div className="card card-hover flex flex-col gap-1.5">
+            <span className="kpi-icon mb-1 bg-badge-premium text-badge-premium-fg">
+              <UtensilsCrossed className="size-5" />
+            </span>
+            <span className="text-label-caps uppercase text-text-muted">Restaurant today</span>
+            <span className="kpi-value font-mono !text-xl text-text">
+              {formatKes(summary.restaurantTodayCents)}
+            </span>
+          </div>
+          <div className="card card-hover flex flex-col gap-1.5">
+            <span className="kpi-icon mb-1 bg-badge-danger text-badge-danger-fg">
+              <Wallet className="size-5" />
+            </span>
+            <span className="text-label-caps uppercase text-text-muted">Outstanding</span>
+            <span className="kpi-value font-mono !text-xl text-text">
+              {formatKes(summary.outstandingCents)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 10.1 — daily action queue: what needs a human, in one list */}
+      {summary && (
+        <div className="card">
+          <h2 className="mb-2 flex items-center gap-2 font-display text-headline-sm text-text">
+            <ListTodo className="size-5 text-primary" aria-hidden="true" /> Action queue
+          </h2>
+          <ActionQueue
+            items={[
+              [summary.openEscalations, "open escalation(s)", "/operations"],
+              [summary.lateCheckouts, "late checkout(s)", "/front-desk"],
+              [summary.arrivalsToday, "arrival(s) to check in", "/front-desk"],
+              [summary.pendingTasks, "cleaning task(s) pending", "/housekeeping"],
+              [summary.openRequests, "open guest request(s)", "/front-desk"],
+            ]}
+          />
         </div>
       )}
 

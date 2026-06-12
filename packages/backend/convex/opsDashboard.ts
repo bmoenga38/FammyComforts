@@ -83,6 +83,18 @@ export const summary = query({
     }
     const revenueTodayCents = revenue7d[6]?.cents ?? 0n;
 
+    // 10.1: settled restaurant orders today (room charges carry no payment row).
+    const orders = await ctx.db
+      .query("orders")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+    let restaurantTodayCents = 0n;
+    for (const o of orders) {
+      if (o.status === "paid" && o._creationTime >= startOfToday) {
+        restaurantTodayCents += o.totalCents;
+      }
+    }
+
     // Forward occupancy: booked room-nights per day over the next 7 days.
     const next7d: { day: string; pct: number }[] = [];
     for (let i = 0; i < 7; i++) {
@@ -107,6 +119,7 @@ export const summary = query({
       lateCheckouts,
       outstandingCents,
       revenueTodayCents,
+      restaurantTodayCents,
       revenue7d,
       next7d,
     };

@@ -348,7 +348,7 @@ export const receivePurchaseOrder = mutation({
         actorId: user._id,
       });
     }
-    await ctx.db.patch(poId, { status: "received" });
+    await ctx.db.patch(poId, { status: "received", receivedAt: Date.now() });
     await ctx.db.insert("auditLogs", {
       orgId,
       actorId: user._id,
