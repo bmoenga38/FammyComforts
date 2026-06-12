@@ -32,16 +32,22 @@ export async function postLedgerEntry(
     paymentId?: Id<"payments">;
   },
 ): Promise<Id<"ledgerEntries">> {
-  // Enforce the sign convention so a mis-signed call can't corrupt balances.
-  if (
-    (entry.type === "charge" || entry.type === "adjustment") &&
-    entry.amountCents <= 0n &&
-    entry.type === "charge"
-  ) {
+  // Enforce the sign convention so a mis-signed call can't corrupt balances:
+  //   charge  > 0   (raises what the guest owes)
+  //   payment < 0   (reduces it)
+  //   refund  > 0   (money returned to the guest raises the open balance back)
+  //   adjustment ≠ 0 (discounts negative, fees/damage positive)
+  if (entry.type === "charge" && entry.amountCents <= 0n) {
     throw new Error("Charges must be positive.");
   }
-  if ((entry.type === "payment" || entry.type === "refund") && entry.amountCents >= 0n) {
-    throw new Error("Payments/refunds must be negative (they reduce the balance).");
+  if (entry.type === "payment" && entry.amountCents >= 0n) {
+    throw new Error("Payments must be negative (they reduce the balance).");
+  }
+  if (entry.type === "refund" && entry.amountCents <= 0n) {
+    throw new Error("Refunds must be positive (they raise the open balance).");
+  }
+  if (entry.type === "adjustment" && entry.amountCents === 0n) {
+    throw new Error("Adjustments cannot be zero.");
   }
   return await ctx.db.insert("ledgerEntries", entry);
 }

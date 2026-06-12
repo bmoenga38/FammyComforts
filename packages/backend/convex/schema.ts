@@ -397,6 +397,32 @@ export default defineSchema({
     .index("by_booking", ["bookingId"])
     .index("by_number", ["number"]),
 
+  // 6.6 (R1 minimal) — post-checkout cleaning tasks. The full housekeeping
+  // workspace (assignment, checklists, photos) is Epic 7/R2; R1 creates the
+  // task record and flips the room status.
+  housekeepingTasks: defineTable({
+    orgId: v.id("organizations"),
+    roomId: v.id("rooms"),
+    bookingId: v.optional(v.id("bookings")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("in_progress"),
+      v.literal("paused"),
+      v.literal("completed"),
+      v.literal("flagged"),
+    ),
+    priority: v.union(
+      v.literal("low"),
+      v.literal("normal"),
+      v.literal("high"),
+      v.literal("urgent"),
+    ),
+    notes: v.optional(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_room", ["roomId"])
+    .index("by_org_status", ["orgId", "status"]),
+
   // 5.7 — guest requests from the portal; surfaced to staff (full ops = R2).
   guestRequests: defineTable({
     orgId: v.id("organizations"),

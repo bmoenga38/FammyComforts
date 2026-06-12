@@ -24,12 +24,12 @@ export const generate = mutation({
       .withIndex("by_booking", (q) => q.eq("bookingId", bookingId))
       .collect();
 
-    // Invoice = positive entries (charges/adjustments); receipt = payments
-    // (shown positive on the document).
+    // Invoice = charges/adjustments; receipt = payments only (shown positive).
+    // Refunds appear on the ledger/balance, not on receipts (R1).
     const lines = entries
       .filter((e) =>
         isReceipt
-          ? e.type === "payment" || e.type === "refund"
+          ? e.type === "payment"
           : e.type === "charge" || e.type === "adjustment",
       )
       .map((e) => ({

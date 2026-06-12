@@ -105,15 +105,15 @@ development_status:
   epic-5-retrospective: optional
 
   # ===== Epic 6: Front Desk Operations (R1) =====
-  epic-6: backlog
-  6-1-reception-booking-creation-and-editing: backlog
-  6-2-guest-profile-management: backlog
-  6-3-availability-calendar: backlog
-  6-4-check-in-with-id-verification: backlog
-  6-5-check-out-with-balance-and-receipt: backlog
-  6-6-check-out-asset-verification-and-housekeeping-trigger: backlog
-  6-7-booking-modifications-extend-change-room-cancel-no-show-refund: backlog
-  6-8-partial-and-split-payment-recording: backlog
+  epic-6: done # R1 MVP COMPLETE (Epics 1-6)
+  6-1-reception-booking-creation-and-editing: done # desk create + confirm + notes
+  6-2-guest-profile-management: done # profiles + search + spend stats
+  6-3-availability-calendar: done # calendar.grid + 14-day web grid
+  6-4-check-in-with-id-verification: done # ID gate, room -> occupied
+  6-5-check-out-with-balance-and-receipt: done # ledger balance gate + audited exception
+  6-6-check-out-asset-verification-and-housekeeping-trigger: done # damage charge + HK task + room dirty
+  6-7-booking-modifications-extend-change-room-cancel-no-show-refund: done # incl. refund sign fix
+  6-8-partial-and-split-payment-recording: done # via Epic 5 ledger engine
   epic-6-retrospective: optional
 
   # ===== Epic 7: Operations & Housekeeping (R2) =====
