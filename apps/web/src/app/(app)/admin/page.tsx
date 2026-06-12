@@ -17,6 +17,8 @@ import {
   ConciergeBell,
   ChevronRight,
   History,
+  Boxes,
+  BarChart3,
 } from "lucide-react";
 
 /**
@@ -52,6 +54,20 @@ const MODULES = [
     title: "Front desk",
     sub: "Bookings, calendar & room board",
     tone: "bg-badge-warning text-badge-warning-fg",
+  },
+  {
+    href: "/admin/inventory",
+    icon: <Boxes className="size-5" />,
+    title: "Inventory & purchases",
+    sub: "Products, stock, suppliers & POs",
+    tone: "bg-badge-info text-badge-info-fg",
+  },
+  {
+    href: "/admin/reports",
+    icon: <BarChart3 className="size-5" />,
+    title: "Reports & exports",
+    sub: "Revenue, occupancy, P&L, tax, CSV",
+    tone: "bg-badge-success text-badge-success-fg",
   },
 ];
 
