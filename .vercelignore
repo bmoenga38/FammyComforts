@@ -1,0 +1,25 @@
+# Keep CLI uploads small: only workspace sources + lockfile are needed for the
+# remote turbo build (the .gitignore alone is not reliably applied by the CLI
+# in this pnpm monorepo — the first deploys tried to upload 1.9 GB).
+node_modules
+.next
+.turbo
+dist
+coverage
+.git
+*.log
+*.tsbuildinfo
+.vscode
+
+# Non-build content (reference assets, planning docs, agent tooling)
+ui-samples
+prototype
+Design.md
+_bmad
+_bmad-output
+.agents
+.claude
+docs
+method
+test-results
+playwright-report
