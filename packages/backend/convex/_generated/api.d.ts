@@ -18,6 +18,7 @@ import type * as calendar from "../calendar.js";
 import type * as catalog from "../catalog.js";
 import type * as crons from "../crons.js";
 import type * as deskBookings from "../deskBookings.js";
+import type * as devSeed from "../devSeed.js";
 import type * as guestBookings from "../guestBookings.js";
 import type * as guestRequests from "../guestRequests.js";
 import type * as guests from "../guests.js";
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   catalog: typeof catalog;
   crons: typeof crons;
   deskBookings: typeof deskBookings;
+  devSeed: typeof devSeed;
   guestBookings: typeof guestBookings;
   guestRequests: typeof guestRequests;
   guests: typeof guests;
