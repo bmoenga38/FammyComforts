@@ -1,6 +1,7 @@
 import { query } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { addDaysIso } from "./lib/bookingDomain";
+import { bookingBalanceCents } from "./lib/ledger";
 
 /**
  * Daily-operations summary (prototype V.ops / V.forecast, Dashboard:read).
@@ -45,6 +46,21 @@ export const summary = query({
       .query("guestRequests")
       .withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "open"))
       .collect();
+    const openEscalations = await ctx.db
+      .query("escalations")
+      .withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "open"))
+      .collect();
+
+    // 7.1: late checkouts (in-house past departure) + outstanding balances
+    // across active stays (derived from the ledger — never stored).
+    const lateCheckouts = bookings.filter(
+      (b) => b.status === "checked_in" && b.checkOutDate < today,
+    ).length;
+    let outstandingCents = 0n;
+    for (const b of active) {
+      const bal = await bookingBalanceCents(ctx, b._id);
+      if (bal > 0n) outstandingCents += bal;
+    }
 
     // Revenue from confirmed payments, bucketed into the last 7 local days.
     const payments = await ctx.db
@@ -87,6 +103,9 @@ export const summary = query({
       inHouse: bookings.filter((b) => b.status === "checked_in").length,
       pendingTasks: tasks.length,
       openRequests: requests.length,
+      openEscalations: openEscalations.length,
+      lateCheckouts,
+      outstandingCents,
       revenueTodayCents,
       revenue7d,
       next7d,

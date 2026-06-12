@@ -29,7 +29,7 @@ import {
  * are gated by the caller's `:manage` permission per area — the server enforces
  * the same checks authoritatively.
  */
-type Tab = "property" | "roomTypes" | "rooms" | "rates" | "notifications";
+type Tab = "property" | "roomTypes" | "rooms" | "rates" | "notifications" | "assets";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "property", label: "Property & Branches" },
@@ -37,6 +37,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "rooms", label: "Rooms" },
   { id: "rates", label: "Rates & Tax" },
   { id: "notifications", label: "Notifications" },
+  { id: "assets", label: "Assets & Checklists" },
 ];
 
 export default function SetupAdminPage() {
@@ -69,6 +70,160 @@ export default function SetupAdminPage() {
       {tab === "notifications" && (
         <NotificationsSection canManage={can("Notifications", "manage")} />
       )}
+      {tab === "assets" && (
+        <AssetsSection
+          canManageAssets={can("Assets", "manage")}
+          canManageChecklists={can("Housekeeping", "manage")}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---------- Epic 7 (7.4 + 7.7): room assets & cleaning checklist templates ----------
+function AssetsSection({
+  canManageAssets,
+  canManageChecklists,
+}: {
+  canManageAssets: boolean;
+  canManageChecklists: boolean;
+}) {
+  const rooms = useQuery(api.rooms.list, {});
+  const roomTypes = useQuery(api.roomTypes.list);
+  const templates = useQuery(api.housekeeping.getTemplates);
+  const addAsset = useMutation(api.assets.add);
+  const removeAsset = useMutation(api.assets.remove);
+  const setTemplate = useMutation(api.housekeeping.setTemplate);
+
+  const [roomId, setRoomId] = useState("");
+  const [assetName, setAssetName] = useState("");
+  const assets = useQuery(
+    api.assets.listByRoom,
+    roomId ? { roomId: roomId as Parameters<typeof addAsset>[0]["roomId"] } : "skip",
+  );
+  const [tplRoomType, setTplRoomType] = useState("");
+  const [tplItems, setTplItems] = useState("");
+
+  const currentTpl = templates?.find((t) => (t.roomTypeId ?? "") === tplRoomType);
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <Card>
+        <CardContent className="space-y-3">
+          <h2 className="font-semibold">Room assets (verified at checkout)</h2>
+          <select
+            aria-label="Room"
+            className="rounded-ctrl border border-border bg-bg-input px-2 py-2"
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+          >
+            <option value="">Select a room…</option>
+            {rooms?.map((r) => (
+              <option key={r._id} value={r._id}>
+                Rm {r.number}
+              </option>
+            ))}
+          </select>
+          {roomId && (
+            <>
+              <ul className="space-y-1.5">
+                {assets?.length === 0 && (
+                  <li className="text-sm text-fg-muted">No assets registered for this room.</li>
+                )}
+                {assets?.map((a) => (
+                  <li key={a.assetId} className="flex items-center justify-between gap-2">
+                    <span>{a.name}</span>
+                    {canManageAssets && (
+                      <Button size="sm" variant="ghost" onClick={() => removeAsset({ assetId: a.assetId })}>
+                        Remove
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {canManageAssets && (
+                <form
+                  className="flex gap-2"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!assetName.trim()) return;
+                    await addAsset({
+                      roomId: roomId as Parameters<typeof addAsset>[0]["roomId"],
+                      name: assetName,
+                    });
+                    setAssetName("");
+                  }}
+                >
+                  <Input
+                    aria-label="Asset name"
+                    placeholder="e.g. Smart TV, Kettle, Iron box"
+                    value={assetName}
+                    onChange={(e) => setAssetName(e.target.value)}
+                  />
+                  <Button type="submit" disabled={!assetName.trim()}>
+                    Add
+                  </Button>
+                </form>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="space-y-3">
+          <h2 className="font-semibold">Cleaning checklist templates</h2>
+          <p className="text-sm text-fg-muted">
+            Snapshotted onto a task when work starts. One template per room type, plus a default.
+          </p>
+          <select
+            aria-label="Template room type"
+            className="rounded-ctrl border border-border bg-bg-input px-2 py-2"
+            value={tplRoomType}
+            onChange={(e) => setTplRoomType(e.target.value)}
+          >
+            <option value="">All room types (default)</option>
+            {roomTypes?.map((rt) => (
+              <option key={rt._id} value={rt._id}>
+                {rt.name}
+              </option>
+            ))}
+          </select>
+          {currentTpl && (
+            <ul className="list-inside list-disc text-sm">
+              {currentTpl.items.map((i) => (
+                <li key={i}>{i}</li>
+              ))}
+            </ul>
+          )}
+          {canManageChecklists && (
+            <form
+              className="space-y-2"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                await setTemplate({
+                  roomTypeId: (tplRoomType || undefined) as Parameters<
+                    typeof setTemplate
+                  >[0]["roomTypeId"],
+                  items: tplItems.split("\n").map((s) => s.trim()).filter(Boolean),
+                });
+                setTplItems("");
+              }}
+            >
+              <textarea
+                aria-label="Checklist items, one per line"
+                placeholder={"One item per line, e.g.\nStrip & remake bed\nClean bathroom\nRestock amenities"}
+                className="min-h-24 w-full rounded-ctrl border border-border bg-bg-input p-2 text-sm"
+                value={tplItems}
+                onChange={(e) => setTplItems(e.target.value)}
+              />
+              <Button type="submit" disabled={!tplItems.trim()}>
+                Save template
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

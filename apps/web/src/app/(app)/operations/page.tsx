@@ -1,18 +1,26 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { usePermissions } from "@/lib/use-permissions";
 import { formatKes } from "@/lib/money";
-import { EmptyState, StatusChip } from "@/components/ui";
-import { DonutIcon, BanknoteIcon, LogIn, Brush } from "lucide-react";
+import { Button, EmptyState, StatusChip } from "@/components/ui";
+import {
+  DonutIcon,
+  BanknoteIcon,
+  LogIn,
+  Brush,
+  Siren,
+  Wrench,
+  Clock,
+  Wallet,
+} from "lucide-react";
 
 /**
- * Operations workspace (prototype V.ops): KPI tiles, revenue last-7-days bar
- * chart, forward 7-day occupancy projection, plus pending housekeeping tasks
- * and open guest requests — all derived live from real records via
- * opsDashboard.summary (Dashboard:read). Historical analytics (retention,
- * satisfaction, peak hours) are Epic 10 scope (gap-listed).
+ * Operations workspace (prototype V.ops + Epic 7): live KPI tiles — including
+ * outstanding balances, late checkouts, and open escalations (7.1/7.8) —
+ * revenue + forward-occupancy charts, arrivals, pending tasks, the escalation
+ * queue (resolve = Maintenance:write), and open maintenance issues (7.6).
  */
 function BarChart({
   bars,
@@ -42,10 +50,14 @@ function BarChart({
 export default function OperationsPage() {
   const { can, isLoading } = usePermissions();
   const summary = useQuery(api.opsDashboard.summary);
-  const tasks = useQuery(api.housekeeping.list);
+  const tasks = useQuery(api.housekeeping.list, {});
   const board = useQuery(api.deskBookings.board, {
     date: new Date().toISOString().slice(0, 10),
   });
+  const escalations = useQuery(api.escalations.list, can("Dashboard", "read") ? {} : "skip");
+  const issues = useQuery(api.maintenance.list, can("Maintenance", "read") ? {} : "skip");
+  const resolveEscalation = useMutation(api.escalations.resolve);
+  const setIssueStatus = useMutation(api.maintenance.setStatus);
 
   if (isLoading) return <p className="p-6 text-sm text-text-muted">Loading…</p>;
   if (!can("Dashboard", "read")) {
@@ -87,6 +99,21 @@ export default function OperationsPage() {
       label: "Pending tasks",
       value: summary.pendingTasks,
       sub: `${summary.openRequests} open requests`,
+      tone: "bg-badge-warning text-badge-warning-fg",
+    },
+    {
+      icon: <Wallet className="size-5" />,
+      label: "Outstanding",
+      value: formatKes(summary.outstandingCents),
+      sub: "open balances, active stays",
+      tone: "bg-badge-danger text-badge-danger-fg",
+      mono: true,
+    },
+    {
+      icon: <Clock className="size-5" />,
+      label: "Late checkouts",
+      value: summary.lateCheckouts,
+      sub: `${summary.openEscalations} open escalations`,
       tone: "bg-badge-warning text-badge-warning-fg",
     },
   ];
@@ -188,6 +215,90 @@ export default function OperationsPage() {
                     <StatusChip status={t.status === "in_progress" ? "info" : "warning"}>
                       {t.status.replaceAll("_", " ")}
                     </StatusChip>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Epic 7 — escalation queue + maintenance issues */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="card">
+          <h2 className="mb-3 flex items-center gap-2 font-display text-headline-sm text-text">
+            <Siren className="size-4 text-danger" aria-hidden="true" /> Escalations
+          </h2>
+          <div className="divide-rows">
+            {escalations === undefined ? (
+              <p className="py-2 text-body-md text-text-muted">Loading…</p>
+            ) : escalations.length === 0 ? (
+              <p className="py-2 text-body-md text-text-muted">No open escalations.</p>
+            ) : (
+              escalations.slice(0, 6).map((e) => (
+                <div key={e.escalationId} className="list-row !px-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-text">
+                      {e.trigger.replaceAll("_", " ")}
+                    </p>
+                    <p className="truncate text-body-md text-text-muted">{e.message}</p>
+                  </div>
+                  {can("Maintenance", "write") && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => resolveEscalation({ escalationId: e.escalationId })}
+                    >
+                      Resolve
+                    </Button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="card">
+          <h2 className="mb-3 flex items-center gap-2 font-display text-headline-sm text-text">
+            <Wrench className="size-4" aria-hidden="true" /> Maintenance &amp; damage
+          </h2>
+          <div className="divide-rows">
+            {issues === undefined ? (
+              <p className="py-2 text-body-md text-text-muted">
+                {can("Maintenance", "read") ? "Loading…" : "No maintenance access."}
+              </p>
+            ) : issues.filter((i) => i.status !== "resolved").length === 0 ? (
+              <p className="py-2 text-body-md text-text-muted">No open issues.</p>
+            ) : (
+              issues
+                .filter((i) => i.status !== "resolved")
+                .slice(0, 6)
+                .map((i) => (
+                  <div key={i.issueId} className="list-row !px-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-text">
+                        {i.kind === "damage" ? "Damage" : "Maintenance"}
+                        {i.roomNumber && (
+                          <span className="ml-1 font-mono">· Rm {i.roomNumber}</span>
+                        )}
+                      </p>
+                      <p className="truncate text-body-md text-text-muted">{i.description}</p>
+                    </div>
+                    <StatusChip status={i.kind === "damage" ? "danger" : "warning"}>
+                      {i.status.replaceAll("_", " ")}
+                    </StatusChip>
+                    {can("Maintenance", "write") && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          setIssueStatus({
+                            issueId: i.issueId,
+                            status: i.status === "open" ? "in_progress" : "resolved",
+                          })
+                        }
+                      >
+                        {i.status === "open" ? "Start" : "Resolve"}
+                      </Button>
+                    )}
                   </div>
                 ))
             )}

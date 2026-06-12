@@ -13,7 +13,12 @@ import { requireOrgUser, resolvePermissions } from "./lib/auth";
  * capped at 30 items. `count` is the badge number.
  */
 export type FeedItem = {
-  kind: "booking_pending" | "guest_request" | "housekeeping" | "sms_queued";
+  kind:
+    | "booking_pending"
+    | "guest_request"
+    | "housekeeping"
+    | "sms_queued"
+    | "escalation";
   title: string;
   detail: string;
   tone: "success" | "info" | "warning" | "danger";
@@ -74,6 +79,22 @@ export const feed = query({
           detail: t.notes ?? "Housekeeping task pending",
           tone: "warning",
           at: t._creationTime,
+        });
+      }
+    }
+
+    if (perms.has("Dashboard:read")) {
+      const escalations = await ctx.db
+        .query("escalations")
+        .withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "open"))
+        .collect();
+      for (const e of escalations) {
+        items.push({
+          kind: "escalation",
+          title: `Escalation: ${e.trigger.replaceAll("_", " ")}`,
+          detail: e.message,
+          tone: "danger",
+          at: e._creationTime,
         });
       }
     }

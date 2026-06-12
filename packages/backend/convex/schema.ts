@@ -404,9 +404,11 @@ export default defineSchema({
     .index("by_booking", ["bookingId"])
     .index("by_number", ["number"]),
 
-  // 6.6 (R1 minimal) — post-checkout cleaning tasks. The full housekeeping
-  // workspace (assignment, checklists, photos) is Epic 7/R2; R1 creates the
-  // task record and flips the room status.
+  // 6.6 + Epic 7 (R2) — housekeeping tasks: created at checkout or manually
+  // (7.3), assignable with priority, executed with room-type checklists (7.4)
+  // and photo proof (7.5). Checklist items are snapshotted onto the task from
+  // `checklistTemplates` when work starts, so later template edits don't
+  // rewrite in-flight tasks.
   housekeepingTasks: defineTable({
     orgId: v.id("organizations"),
     roomId: v.id("rooms"),
@@ -425,9 +427,186 @@ export default defineSchema({
       v.literal("urgent"),
     ),
     notes: v.optional(v.string()),
+    assigneeId: v.optional(v.id("users")),
+    checklist: v.optional(
+      v.array(v.object({ label: v.string(), done: v.boolean() })),
+    ),
+    photoStorageId: v.optional(v.id("_storage")),
   })
     .index("by_org", ["orgId"])
     .index("by_room", ["roomId"])
+    .index("by_org_status", ["orgId", "status"])
+    .index("by_assignee", ["assigneeId"]),
+
+  // 7.4 — cleaning checklist templates: one per room type, plus an org-wide
+  // default (roomTypeId unset). Items are plain labels.
+  checklistTemplates: defineTable({
+    orgId: v.id("organizations"),
+    roomTypeId: v.optional(v.id("roomTypes")),
+    items: v.array(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_roomType", ["roomTypeId"]),
+
+  // 7.6 — maintenance issues & damage reports. Damage with a bookingId +
+  // chargeCents posts a positive ledger adjustment (ties FR54).
+  maintenanceIssues: defineTable({
+    orgId: v.id("organizations"),
+    roomId: v.optional(v.id("rooms")),
+    bookingId: v.optional(v.id("bookings")),
+    kind: v.union(v.literal("maintenance"), v.literal("damage")),
+    description: v.string(),
+    status: v.union(
+      v.literal("open"),
+      v.literal("in_progress"),
+      v.literal("resolved"),
+    ),
+    photoStorageId: v.optional(v.id("_storage")),
+    chargeCents: v.optional(v.int64()),
+    reportedBy: v.id("users"),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_status", ["orgId", "status"])
+    .index("by_room", ["roomId"]),
+
+  // 7.7 — per-room asset registry, verified at checkout. Verification results
+  // live on maintenanceIssues (kind "damage") + escalations.
+  roomAssets: defineTable({
+    orgId: v.id("organizations"),
+    roomId: v.id("rooms"),
+    name: v.string(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_room", ["roomId"]),
+
+  // 7.8 — operational escalations (unpaid balance, dirty-room SLA, missing
+  // asset, low stock, failed payment). Raised by lib/escalate.ts, surfaced on
+  // the ops dashboard + notification feed.
+  escalations: defineTable({
+    orgId: v.id("organizations"),
+    trigger: v.string(),
+    message: v.string(),
+    status: v.union(v.literal("open"), v.literal("resolved")),
+    entityType: v.optional(v.string()),
+    entityId: v.optional(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_status", ["orgId", "status"]),
+
+  // ===== Inventory & Procurement (Epic 8) =====
+  // `stockQty` on the product is the cached on-hand; EVERY change goes through
+  // lib/stock.ts → applyStockMovement, which also writes the immutable
+  // stockMovements audit row (8.3) and raises the low-stock escalation (8.5).
+  products: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    category: v.optional(v.string()),
+    unit: v.string(), // "pcs", "kg", "ltr", …
+    costCents: v.int64(),
+    priceCents: v.optional(v.int64()), // selling price (menu links may override)
+    stockQty: v.number(),
+    reorderLevel: v.number(),
+    active: v.boolean(),
+  }).index("by_org", ["orgId"]),
+
+  suppliers: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+  }).index("by_org", ["orgId"]),
+
+  // 8.2 — line items are snapshotted (name + cost at order time). Receiving
+  // posts purchase stock movements and flips status.
+  purchaseOrders: defineTable({
+    orgId: v.id("organizations"),
+    supplierId: v.id("suppliers"),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("ordered"),
+      v.literal("received"),
+      v.literal("cancelled"),
+    ),
+    items: v.array(
+      v.object({
+        productId: v.id("products"),
+        name: v.string(),
+        qty: v.number(),
+        unitCostCents: v.int64(),
+      }),
+    ),
+    totalCents: v.int64(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_supplier", ["supplierId"]),
+
+  stockMovements: defineTable({
+    orgId: v.id("organizations"),
+    productId: v.id("products"),
+    deltaQty: v.number(), // signed
+    reason: v.union(
+      v.literal("purchase"),
+      v.literal("usage"),
+      v.literal("adjustment"),
+      v.literal("stocktake"),
+    ),
+    refType: v.optional(v.string()), // "purchaseOrder" | "order" | …
+    refId: v.optional(v.string()),
+    actorId: v.optional(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_product", ["productId"]),
+
+  // ===== Restaurant & Kitchen (Epic 9) =====
+  // 9.1 — menu items, optionally linked to inventory products (qty consumed
+  // per serving). Serving an order posts usage movements for each link.
+  menuItems: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    category: v.optional(v.string()), // "food" | "drink" | …
+    priceCents: v.int64(),
+    active: v.boolean(),
+    ingredients: v.optional(
+      v.array(v.object({ productId: v.id("products"), qty: v.number() })),
+    ),
+  }).index("by_org", ["orgId"]),
+
+  // 9.2–9.4 — orders across channels with kitchen status lanes. Line items are
+  // price-snapshotted. Settlement: charge-to-room posts a booking ledger charge
+  // (Epic 5); separate payment inserts a standalone confirmed payments row
+  // (bookingId unset).
+  orders: defineTable({
+    orgId: v.id("organizations"),
+    number: v.string(), // ORD-XXXXXX
+    channel: v.union(
+      v.literal("room_service"),
+      v.literal("dine_in"),
+      v.literal("takeaway"),
+      v.literal("bar"),
+    ),
+    tableOrRoom: v.optional(v.string()),
+    bookingId: v.optional(v.id("bookings")), // set when charged to a room
+    items: v.array(
+      v.object({
+        menuItemId: v.id("menuItems"),
+        name: v.string(),
+        qty: v.number(),
+        priceCents: v.int64(),
+      }),
+    ),
+    totalCents: v.int64(),
+    currency: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("preparing"),
+      v.literal("ready"),
+      v.literal("served"),
+      v.literal("paid"),
+      v.literal("cancelled"),
+    ),
+    paymentId: v.optional(v.id("payments")),
+  })
+    .index("by_org", ["orgId"])
     .index("by_org_status", ["orgId", "status"]),
 
   // 5.7 — guest requests from the portal; surfaced to staff (full ops = R2).
@@ -441,12 +620,13 @@ export default defineSchema({
     .index("by_org_status", ["orgId", "status"])
     .index("by_booking", ["bookingId"]),
 
-  // Queued outbound notifications (Story 4.7 "confirmation queued"). The send
-  // engine (own SenderID SMS — Epic 5/10) consumes rows with status "queued",
-  // honoring notificationSettings.
+  // Queued outbound notifications (Story 4.7 queue → Story 10.6 engine). The
+  // cron-driven engine (notificationsEngine.ts) consumes "queued" rows: sends
+  // via the org's own SMS gateway when SMS_GATEWAY_URL/SMS_API_KEY are set,
+  // honors notificationSettings, retries up to 3 attempts, then fails.
   outboundNotifications: defineTable({
     orgId: v.id("organizations"),
-    type: v.string(), // e.g. "booking_confirmation"
+    type: v.string(), // e.g. "booking_confirmation", "task_assignment"
     channel: v.union(
       v.literal("email"),
       v.literal("sms"),
@@ -455,6 +635,11 @@ export default defineSchema({
     ),
     bookingId: v.optional(v.id("bookings")),
     status: v.union(v.literal("queued"), v.literal("sent"), v.literal("failed")),
+    recipient: v.optional(v.string()), // phone/email; in-app rows omit it
+    body: v.optional(v.string()),
+    attempts: v.optional(v.number()),
+    sentAt: v.optional(v.number()),
+    error: v.optional(v.string()),
   })
     .index("by_org", ["orgId"])
     .index("by_status", ["status"]),

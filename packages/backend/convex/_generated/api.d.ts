@@ -9,6 +9,7 @@
  */
 
 import type * as amenities from "../amenities.js";
+import type * as assets from "../assets.js";
 import type * as audit from "../audit.js";
 import type * as auditLogs from "../auditLogs.js";
 import type * as auth from "../auth.js";
@@ -20,6 +21,7 @@ import type * as crons from "../crons.js";
 import type * as demoAuth from "../demoAuth.js";
 import type * as deskBookings from "../deskBookings.js";
 import type * as devSeed from "../devSeed.js";
+import type * as escalations from "../escalations.js";
 import type * as guestBookings from "../guestBookings.js";
 import type * as guestRequests from "../guestRequests.js";
 import type * as guests from "../guests.js";
@@ -31,11 +33,14 @@ import type * as invoices from "../invoices.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bookingDomain from "../lib/bookingDomain.js";
 import type * as lib_demoPhone from "../lib/demoPhone.js";
+import type * as lib_escalate from "../lib/escalate.js";
 import type * as lib_ledger from "../lib/ledger.js";
 import type * as lib_mpesa from "../lib/mpesa.js";
 import type * as lib_permissions from "../lib/permissions.js";
+import type * as maintenance from "../maintenance.js";
 import type * as mpesa from "../mpesa.js";
 import type * as notifications from "../notifications.js";
+import type * as notificationsEngine from "../notificationsEngine.js";
 import type * as notificationsFeed from "../notificationsFeed.js";
 import type * as opsDashboard from "../opsDashboard.js";
 import type * as paymentMethods from "../paymentMethods.js";
@@ -57,6 +62,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   amenities: typeof amenities;
+  assets: typeof assets;
   audit: typeof audit;
   auditLogs: typeof auditLogs;
   auth: typeof auth;
@@ -68,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   demoAuth: typeof demoAuth;
   deskBookings: typeof deskBookings;
   devSeed: typeof devSeed;
+  escalations: typeof escalations;
   guestBookings: typeof guestBookings;
   guestRequests: typeof guestRequests;
   guests: typeof guests;
@@ -79,11 +86,14 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/bookingDomain": typeof lib_bookingDomain;
   "lib/demoPhone": typeof lib_demoPhone;
+  "lib/escalate": typeof lib_escalate;
   "lib/ledger": typeof lib_ledger;
   "lib/mpesa": typeof lib_mpesa;
   "lib/permissions": typeof lib_permissions;
+  maintenance: typeof maintenance;
   mpesa: typeof mpesa;
   notifications: typeof notifications;
+  notificationsEngine: typeof notificationsEngine;
   notificationsFeed: typeof notificationsFeed;
   opsDashboard: typeof opsDashboard;
   paymentMethods: typeof paymentMethods;

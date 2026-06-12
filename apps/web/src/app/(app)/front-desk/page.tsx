@@ -120,6 +120,7 @@ type BoardRow = {
   checkInDate: string;
   checkOutDate: string;
   guestName: string;
+  roomId: Id<"rooms">;
   roomNumber: string;
   balanceCents: bigint;
 };
@@ -381,6 +382,7 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
           {b.status === "checked_in" && (
             <div className="space-y-2 rounded-ctrl border border-border p-3">
               <p className="font-semibold text-text">Check out</p>
+              <AssetCheckBlock bookingId={b.bookingId} roomId={b.roomId} onNote={setNote} />
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={assetOk} onChange={(e) => setAssetOk(e.target.checked)} />
                 Assets verified OK
@@ -911,6 +913,96 @@ function GuestsSection({ canWrite }: { canWrite: boolean }) {
           </Button>
         </form>
       )}
+    </div>
+  );
+}
+
+/* ─────────────── Story 7.7: per-asset checkout verification ─────────────── */
+
+function AssetCheckBlock({
+  bookingId,
+  roomId,
+  onNote,
+}: {
+  bookingId: Id<"bookings">;
+  roomId: Id<"rooms">;
+  onNote: (s: string) => void;
+}) {
+  const { can } = usePermissions();
+  const assets = useQuery(api.assets.listByRoom, can("Assets", "read") ? { roomId } : "skip");
+  const verify = useMutation(api.assets.verifyCheckout);
+  const [conditions, setConditions] = useState<
+    Record<string, { condition: "present" | "missing" | "damaged"; charge: string }>
+  >({});
+  const [done, setDone] = useState(false);
+
+  if (!assets || assets.length === 0 || !can("Assets", "write")) return null;
+
+  const submit = () =>
+    verify({
+      bookingId,
+      results: assets.map((a) => {
+        const c = conditions[a.assetId] ?? { condition: "present" as const, charge: "" };
+        return {
+          assetId: a.assetId,
+          condition: c.condition,
+          chargeCents:
+            c.condition !== "present" && c.charge ? kesToCents(c.charge) : undefined,
+        };
+      }),
+    })
+      .then((r) => {
+        setDone(true);
+        onNote(
+          r.discrepancies === 0
+            ? "Asset check passed — all present."
+            : `Asset check: ${r.discrepancies} discrepancie(s), ${formatKes(r.chargedCents)} charged.`,
+        );
+      })
+      .catch((e) => onNote(String(e.message ?? e)));
+
+  return (
+    <div className="space-y-2 rounded-ctrl border border-border p-2">
+      <p className="text-label-caps uppercase text-text-muted">Room asset check</p>
+      {assets.map((a) => {
+        const c = conditions[a.assetId] ?? { condition: "present" as const, charge: "" };
+        return (
+          <div key={a.assetId} className="flex flex-wrap items-center gap-2">
+            <span className="min-w-28 text-text">{a.name}</span>
+            <select
+              aria-label={`${a.name} condition`}
+              className="rounded-ctrl border border-border bg-bg-input px-2 py-1.5"
+              value={c.condition}
+              disabled={done}
+              onChange={(e) =>
+                setConditions({
+                  ...conditions,
+                  [a.assetId]: { ...c, condition: e.target.value as typeof c.condition },
+                })
+              }
+            >
+              <option value="present">present</option>
+              <option value="missing">missing</option>
+              <option value="damaged">damaged</option>
+            </select>
+            {c.condition !== "present" && (
+              <Input
+                aria-label={`${a.name} charge KES`}
+                placeholder="Charge KES"
+                value={c.charge}
+                disabled={done}
+                onChange={(e) =>
+                  setConditions({ ...conditions, [a.assetId]: { ...c, charge: e.target.value } })
+                }
+                className="w-28"
+              />
+            )}
+          </div>
+        );
+      })}
+      <Button size="sm" variant="ghost" disabled={done} onClick={submit}>
+        {done ? "Asset check recorded ✓" : "Record asset check"}
+      </Button>
     </div>
   );
 }

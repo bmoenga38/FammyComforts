@@ -229,11 +229,6 @@ export default function SignInPage() {
         )}
 
         <div className="mt-6 space-y-2 text-center">
-          {byteplaneUrl && (
-            <a href={byteplaneUrl} className="text-sm text-primary underline">
-              Sign in via ByteStay (SSO)
-            </a>
-          )}
           <p className="text-xs text-text-muted">
             Powered by{" "}
             <a

@@ -533,6 +533,7 @@ async function bookingRow(ctx: QueryCtx, b: Doc<"bookings">) {
     checkOutDate: b.checkOutDate,
     guestName: guest?.fullName ?? "—",
     guestPhone: guest?.phone ?? null,
+    roomId: b.roomId,
     roomNumber: room?.number ?? "—",
     notes: b.notes ?? null,
     expectedTotalCents: b.expectedTotalCents,

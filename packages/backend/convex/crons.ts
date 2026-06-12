@@ -1,5 +1,5 @@
 import { cronJobs } from "convex/server";
-// import { internal } from "./_generated/api"; // re-enable together with the cron below
+import { internal } from "./_generated/api";
 
 /**
  * Scheduled jobs (Story 1.10). There is exactly ONE `crons.ts` per Convex
@@ -21,5 +21,22 @@ const crons = cronJobs();
 //   internal.backups.dailyExport,
 //   {},
 // );
+
+// Story 7.8 — time-based escalations (dirty-room SLA, unpaid balances).
+crons.hourly(
+  "operational escalation sweep",
+  { minuteUTC: 10 },
+  internal.escalations.sweep,
+  {},
+);
+
+// Story 10.6 — drain the outbound notification queue (SMS via the org's own
+// gateway when SMS_GATEWAY_URL/SMS_API_KEY are configured).
+crons.interval(
+  "notification queue drain",
+  { minutes: 5 },
+  internal.notificationsEngine.drain,
+  {},
+);
 
 export default crons;

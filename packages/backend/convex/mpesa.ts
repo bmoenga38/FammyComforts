@@ -10,6 +10,7 @@ import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { requirePermission } from "./lib/auth";
 import { postLedgerEntry } from "./lib/ledger";
+import { raiseEscalation } from "./lib/escalate";
 import { enabledMethodsFor } from "./paymentMethods";
 import {
   DARAJA_BASE,
@@ -349,6 +350,14 @@ export const processStkResult = internalMutation({
       await ctx.db.patch(payment._id, {
         status: "failed",
         resultDesc: args.resultDesc,
+      });
+      // Failed-payment escalation (Story 7.8, FR30).
+      await raiseEscalation(ctx, {
+        orgId: payment.orgId,
+        trigger: "failed_payment",
+        message: `M-Pesa payment failed: ${args.resultDesc}`,
+        entityType: "payment",
+        entityId: payment._id,
       });
       await ctx.db.insert("auditLogs", {
         orgId: payment.orgId,
