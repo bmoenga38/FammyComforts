@@ -36,6 +36,13 @@ export function nightsBetween(checkIn: string, checkOut: string): number {
   return Math.round(ms / 86_400_000);
 }
 
+/** ISO date arithmetic in UTC (safe for "YYYY-MM-DD" strings). */
+export function addDaysIso(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 /** Booking statuses that hold the room (block availability). */
 const BLOCKING = new Set(["pending", "confirmed", "checked_in"]);
 

@@ -1,36 +1,168 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-import { WorkspacePlaceholder } from "@/components/shell/workspace-placeholder";
-import { WORKSPACE_BY_SLUG } from "@/lib/workspaces";
+import { useQuery } from "convex/react";
+import { api } from "@fammycomforts/backend/convex/_generated/api";
+import { usePermissions } from "@/lib/use-permissions";
+import { formatKes } from "@/lib/money";
+import { EmptyState } from "@/components/ui";
+import {
+  Users,
+  CalendarCheck,
+  BanknoteIcon,
+  DonutIcon,
+  ShieldCheck,
+  Hotel,
+  Wallet,
+  ConciergeBell,
+  ChevronRight,
+  History,
+} from "lucide-react";
 
-const workspace = WORKSPACE_BY_SLUG.admin;
+/**
+ * Admin overview (prototype V.overview): live KPI row, tappable module cards,
+ * and the activity feed (audit log). KPIs come from opsDashboard.summary;
+ * the feed from audit.list — each section renders only with its permission.
+ */
+const MODULES = [
+  {
+    href: "/admin/access",
+    icon: <ShieldCheck className="size-5" />,
+    title: "Users, roles & audit",
+    sub: "Staff, permissions matrix, audit log",
+    tone: "bg-badge-info text-badge-info-fg",
+  },
+  {
+    href: "/admin/setup",
+    icon: <Hotel className="size-5" />,
+    title: "Property setup",
+    sub: "Rooms, types, rates & notifications",
+    tone: "bg-badge-success text-badge-success-fg",
+  },
+  {
+    href: "/admin/payments",
+    icon: <Wallet className="size-5" />,
+    title: "Payments",
+    sub: "Methods, M-Pesa, reconciliation",
+    tone: "bg-badge-premium text-badge-premium-fg",
+  },
+  {
+    href: "/front-desk",
+    icon: <ConciergeBell className="size-5" />,
+    title: "Front desk",
+    sub: "Bookings, calendar & room board",
+    tone: "bg-badge-warning text-badge-warning-fg",
+  },
+];
 
-export const metadata: Metadata = { title: workspace.title };
+export default function AdminOverviewPage() {
+  const { can, isLoading } = usePermissions();
+  const summary = useQuery(api.opsDashboard.summary);
+  const audit = useQuery(api.audit.list, { limit: 6 });
 
-export default function AdminWorkspacePage() {
-  return (
-    <div className="space-y-4">
-      <WorkspacePlaceholder workspace={workspace} />
-      <div className="flex flex-wrap gap-3 px-4 md:px-6">
-        <Link
-          href="/admin/access"
-          className="inline-flex h-10 items-center rounded-xl border border-border px-4 text-sm font-medium hover:bg-bg-subtle"
-        >
-          Manage access (roles, staff, audit) →
-        </Link>
-        <Link
-          href="/admin/setup"
-          className="inline-flex h-10 items-center rounded-xl border border-border px-4 text-sm font-medium hover:bg-bg-subtle"
-        >
-          Property setup (rooms, rates, notifications) →
-        </Link>
-        <Link
-          href="/admin/payments"
-          className="inline-flex h-10 items-center rounded-xl border border-border px-4 text-sm font-medium hover:bg-bg-subtle"
-        >
-          Payments (methods, M-Pesa, reconciliation) →
-        </Link>
+  if (isLoading) return <p className="p-6 text-sm text-text-muted">Loading…</p>;
+  if (!can("Dashboard", "read") && !can("Roles", "read")) {
+    return (
+      <div className="p-6">
+        <EmptyState title="No access" description="You don't have admin permissions." />
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <section className="fade-in space-y-5 p-4 md:p-6">
+      <header>
+        <p className="eyebrow mb-1">Administration</p>
+        <h1 className="hero-title font-display text-headline-lg">Overview</h1>
+        <p className="mt-1 text-body-lg text-text-muted">
+          Everything at a glance — tap a card to manage
+        </p>
+      </header>
+
+      {summary && (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="card card-hover flex flex-col gap-1.5">
+            <span className="kpi-icon mb-1 bg-badge-info text-badge-info-fg">
+              <Users className="size-5" />
+            </span>
+            <span className="text-label-caps uppercase text-text-muted">In-house</span>
+            <span className="kpi-value text-text">{summary.inHouse}</span>
+          </div>
+          <div className="card card-hover flex flex-col gap-1.5">
+            <span className="kpi-icon mb-1 bg-badge-success text-badge-success-fg">
+              <CalendarCheck className="size-5" />
+            </span>
+            <span className="text-label-caps uppercase text-text-muted">Arrivals today</span>
+            <span className="kpi-value text-text">{summary.arrivalsToday}</span>
+          </div>
+          <div className="card card-hover flex flex-col gap-1.5">
+            <span className="kpi-icon mb-1 bg-badge-premium text-badge-premium-fg">
+              <BanknoteIcon className="size-5" />
+            </span>
+            <span className="text-label-caps uppercase text-text-muted">Revenue today</span>
+            <span className="kpi-value font-mono !text-xl text-text">
+              {formatKes(summary.revenueTodayCents)}
+            </span>
+          </div>
+          <div className="card card-hover flex flex-col gap-1.5">
+            <span className="kpi-icon mb-1 bg-badge-warning text-badge-warning-fg">
+              <DonutIcon className="size-5" />
+            </span>
+            <span className="text-label-caps uppercase text-text-muted">Occupancy</span>
+            <span className="kpi-value text-text">{summary.occupancyPct}%</span>
+          </div>
+        </div>
+      )}
+
+      <div>
+        <h2 className="mb-2 font-display text-headline-sm text-text">Manage</h2>
+        <div className="stagger grid gap-3 sm:grid-cols-2">
+          {MODULES.map((m) => (
+            <Link key={m.href} href={m.href} className="card card-hover flex items-center gap-3 !p-4">
+              <span className={`kpi-icon ${m.tone}`}>{m.icon}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold text-text">{m.title}</span>
+                <span className="block truncate text-body-md text-text-muted">{m.sub}</span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {can("Audit logs", "read") && (
+        <div className="card">
+          <h2 className="mb-2 flex items-center gap-2 font-display text-headline-sm text-text">
+            <History className="size-5 text-primary" aria-hidden="true" /> Recent activity
+          </h2>
+          {audit === undefined ? (
+            <p className="py-2 text-body-md text-text-muted">Loading…</p>
+          ) : audit.length === 0 ? (
+            <p className="py-2 text-body-md text-text-muted">No activity yet.</p>
+          ) : (
+            <div>
+              {audit.map((a) => (
+                <div key={a._id} className="feed-item">
+                  <span className="feed-dot bg-badge-info text-badge-info-fg">
+                    <History className="size-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-body-md text-text">
+                      {a.action.replaceAll(".", " · ").replaceAll("_", " ")}
+                    </p>
+                    <p className="font-mono text-[11px] text-text-dim">
+                      {new Date(a._creationTime).toLocaleTimeString("en-KE", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   );
 }

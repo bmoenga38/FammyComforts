@@ -91,6 +91,10 @@ function Catalog() {
             <Link href={`/book/${orgSlug}/lookup`} className="text-primary underline">
               Find my booking
             </Link>
+            <span aria-hidden="true"> &middot; </span>
+            <Link href="/login" className="text-primary underline">
+              Sign in
+            </Link>
           </p>
         </header>
 
