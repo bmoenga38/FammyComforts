@@ -54,16 +54,17 @@ describe("FrontDeskPage gating", () => {
   it("read-only staff see the board but no New-booking tab", () => {
     perms = ["Bookings:read"];
     render(<FrontDeskPage />);
-    expect(screen.getByRole("tab", { name: /today/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /desk/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /calendar/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /rooms/i })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /new booking/i })).toBeNull();
     expect(screen.queryByRole("tab", { name: /guests/i })).toBeNull();
   });
 
-  it("a receptionist grant set shows all four tabs", () => {
+  it("a receptionist grant set shows all five tabs", () => {
     perms = ["Bookings:read", "Bookings:write", "Guests:read", "Guests:write", "Payments:write"];
     render(<FrontDeskPage />);
-    for (const label of [/today/i, /calendar/i, /new booking/i, /guests/i]) {
+    for (const label of [/desk/i, /calendar/i, /rooms/i, /new booking/i, /guests/i]) {
       expect(screen.getByRole("tab", { name: label })).toBeInTheDocument();
     }
   });
