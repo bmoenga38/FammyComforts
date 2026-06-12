@@ -35,7 +35,7 @@ export default function PortalPage() {
       <Link href={`/book/${orgSlug}`} className="text-sm text-fg-muted underline">
         ← All rooms
       </Link>
-      <h1 className="font-display text-2xl font-semibold">Find my booking</h1>
+      <header><p className="eyebrow mb-1">Guest portal</p><h1 className="hero-title font-display text-headline-lg">Find my booking</h1></header>
 
       <form
         className="space-y-3"

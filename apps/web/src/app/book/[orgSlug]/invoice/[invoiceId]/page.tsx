@@ -31,7 +31,7 @@ function InvoiceDoc() {
   if (!portal || !invoice) return <p className="p-8 text-sm">Document not found.</p>;
 
   return (
-    <main className="mx-auto max-w-xl space-y-6 bg-white p-8 text-black print:p-0">
+    <main className="print-doc mx-auto max-w-xl space-y-6 bg-white p-8 text-black print:p-0">
       <header className="flex items-start justify-between border-b pb-4">
         <div>
           <h1 className="text-xl font-semibold">{portal.propertyName}</h1>

@@ -1,9 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 /**
- * Booking form (4.4): consent is required — the submit button stays disabled
- * until the consent box is checked (and dates are present via the URL).
+ * 3-step booking flow (4.2/4.4): step 1 shows detail facts + exact totals and
+ * validates guest fields before advancing; step 2 (Pay) gates the confirm
+ * button behind consent — matching the prototype's Details → Pay → Confirmed
+ * stepper.
  */
 vi.mock("next/navigation", () => ({
   useParams: () => ({ orgSlug: "acme", roomId: "room_1" }),
@@ -12,6 +14,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
   api: {
     catalog: { roomDetail: "catalog.roomDetail" },
+    paymentMethods: { enabledMethods: "paymentMethods.enabledMethods" },
     guestBookings: {
       create: "guestBookings.create",
       generateUploadUrl: "guestBookings.generateUploadUrl",
@@ -19,44 +22,68 @@ vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
   },
 }));
 vi.mock("convex/react", () => ({
-  useQuery: () => ({
-    propertyName: "Org acme",
-    number: "101",
-    floor: null,
-    status: "available",
-    branchName: "Main",
-    location: "CBD",
-    typeName: "Deluxe",
-    capacity: 2,
-    sizeSqm: 24,
-    amenities: ["Wi-Fi"],
-    nightlyCents: 350000n,
-    currency: "KES",
-    checkInTime: "14:00",
-    checkOutTime: "10:00",
-    cancellationNote: null,
-    idRequired: true,
-    available: true,
-    nights: 3,
-    totals: { subtotalCents: 1050000n, taxCents: 168000n, totalCents: 1218000n },
-  }),
+  useQuery: (ref: string) =>
+    ref === "paymentMethods.enabledMethods"
+      ? ["mpesa_stk", "cash", "card"]
+      : {
+          propertyName: "Org acme",
+          number: "101",
+          floor: null,
+          status: "available",
+          branchName: "Main",
+          location: "CBD",
+          typeName: "Deluxe",
+          capacity: 2,
+          sizeSqm: 24,
+          amenities: ["Wi-Fi"],
+          nightlyCents: 350000n,
+          currency: "KES",
+          checkInTime: "14:00",
+          checkOutTime: "10:00",
+          cancellationNote: null,
+          idRequired: true,
+          available: true,
+          nights: 3,
+          totals: { subtotalCents: 1050000n, taxCents: 168000n, totalCents: 1218000n },
+        },
   useMutation: () => vi.fn(),
 }));
 
 import RoomBookingPage from "./page";
 
-describe("room booking page", () => {
-  it("renders detail (amenities, policy, exact totals) and disables submit until consent", () => {
+describe("room booking stepper", () => {
+  it("step 1 renders detail, amenities, policy, and exact totals", () => {
     render(<RoomBookingPage />);
     expect(screen.getByText(/Deluxe · Room 101/)).toBeInTheDocument();
     expect(screen.getByText(/Wi-Fi/)).toBeInTheDocument();
     expect(screen.getByText(/ID required at check-in/)).toBeInTheDocument();
-    expect(screen.getByText(/3 nights = KES 12,180 incl\. tax/)).toBeInTheDocument();
+    expect(screen.getByText(/KES 12,180/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue to payment/i })).toBeInTheDocument();
+  });
 
-    const submit = screen.getByRole("button", { name: /confirm booking/i });
-    expect(submit).toBeDisabled(); // consent unchecked
+  it("validates guest fields before advancing to Pay", () => {
+    render(<RoomBookingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue to payment/i }));
+    // Validation error shown and we're still on step 1 (continue button present).
+    expect(screen.getByText(/Enter the guest full name/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue to payment/i })).toBeInTheDocument();
+  });
 
-    const consent = screen.getByRole("checkbox", { name: /i consent/i });
-    consent.click();
+  it("on Pay, payment methods render and Confirm stays disabled until consent", () => {
+    render(<RoomBookingPage />);
+    fireEvent.change(screen.getByLabelText(/full name/i), {
+      target: { value: "Ada Guest" },
+    });
+    fireEvent.change(screen.getByLabelText(/^phone$/i), {
+      target: { value: "+254700000001" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /continue to payment/i }));
+
+    expect(screen.getByRole("radio", { name: /m-pesa/i })).toBeInTheDocument();
+    const confirm = screen.getByRole("button", { name: /confirm booking/i });
+    expect(confirm).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /i consent/i }));
+    expect(confirm).not.toBeDisabled();
   });
 });

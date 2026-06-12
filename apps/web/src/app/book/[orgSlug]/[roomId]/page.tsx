@@ -7,13 +7,17 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { formatKes, kesToCents } from "@/lib/money";
-import { Button, Card, CardContent, Input, StatusChip } from "@/components/ui";
+import { Button, Input, StatusChip } from "@/components/ui";
+import { Check, Users, BadgeCheck } from "lucide-react";
 
 /**
- * Room detail + no-account booking (Stories 4.2, 4.4–4.7). Shows amenities,
- * policies, and exact stay pricing; the form collects guest details + required
- * consent, optional ID images (signed upload URLs), and payment-method intent.
- * On success it shows the BK- reference (confirmation).
+ * Room detail + 3-step booking (Stories 4.2, 4.4–4.7), per the prototype's
+ * openBooking flow (ui-samples/fammycomfort_pwa app.js): media header,
+ * Details → Pay → Confirmed stepper, KYC fields (name as on ID, ID number,
+ * optional ID photos), nights×rate total card, payment-method intent step,
+ * and a confirmation with the BK- reference and the FAMMY SMS preview bubble.
+ * Same Convex contract as before — only the presentation changed.
+ * (Real QR pass + room photos are on the gap list.)
  */
 type Confirmation = {
   reference: string;
@@ -22,11 +26,37 @@ type Confirmation = {
   currency: string;
 };
 
-const PAYMENT_METHODS = [
-  { value: "mpesa_stk", label: "M-Pesa" },
-  { value: "cash", label: "Cash at property" },
-  { value: "card", label: "Card" },
-] as const;
+const METHOD_LABELS: Record<string, string> = {
+  mpesa_stk: "M-Pesa",
+  mpesa_manual: "M-Pesa (pay at desk)",
+  cash: "Cash at property",
+  card: "Card",
+};
+
+const photoFor = (key: string) => {
+  const gradients = [
+    "linear-gradient(135deg,#0d9488 0%,#134e4a 60%,#0b1326 100%)",
+    "linear-gradient(135deg,#0ea5e9 0%,#1e3a8a 70%,#0b1326 100%)",
+    "linear-gradient(135deg,#eab308 0%,#92400e 65%,#0b1326 100%)",
+    "linear-gradient(135deg,#f43f5e 0%,#881337 65%,#0b1326 100%)",
+  ];
+  let h = 0;
+  for (const c of key) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return gradients[Math.abs(h) % gradients.length];
+};
+
+function Stepper({ step }: { step: 0 | 1 | 2 }) {
+  return (
+    <div className="stepper mb-6" aria-label={`Booking step ${step + 1} of 3`}>
+      {["Details", "Pay", "Confirmed"].map((label, i) => (
+        <div key={label} className={`step ${i < step ? "done" : i === step ? "current" : ""}`}>
+          <div className="dot">{i < step ? <Check className="size-4" aria-hidden="true" /> : i + 1}</div>
+          <span className="lbl">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function RoomBooking() {
   const { orgSlug, roomId } = useParams<{ orgSlug: string; roomId: string }>();
@@ -41,30 +71,34 @@ function RoomBooking() {
       ? { orgSlug, roomId: roomId as Id<"rooms">, checkIn, checkOut }
       : { orgSlug, roomId: roomId as Id<"rooms"> },
   );
+  const enabledMethods = useQuery(api.paymentMethods.enabledMethods, { orgSlug });
   const createBooking = useMutation(api.guestBookings.create);
   const generateUploadUrl = useMutation(api.guestBookings.generateUploadUrl);
 
-  // Guest form state.
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [idNumber, setIdNumber] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [method, setMethod] =
-    useState<(typeof PAYMENT_METHODS)[number]["value"]>("mpesa_stk");
-  const [deposit, setDeposit] = useState("");
   const [idFront, setIdFront] = useState<File | null>(null);
   const [idBack, setIdBack] = useState<File | null>(null);
+  const [consent, setConsent] = useState(false);
+  const [method, setMethod] = useState("mpesa_stk");
+  const [deposit, setDeposit] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
 
   if (detail === undefined) {
-    return <p className="p-8 text-sm text-fg-muted">Loading room…</p>;
+    return <p className="p-8 text-sm text-text-muted">Loading room…</p>;
   }
   if (detail === null) {
-    return <p className="p-8 text-sm text-fg-muted">Room not found.</p>;
+    return <p className="p-8 text-sm text-text-muted">Room not found.</p>;
   }
+
+  const guestMethods = (enabledMethods ?? ["mpesa_stk", "cash", "card"]).filter(
+    (m) => m !== "mpesa_manual",
+  );
 
   async function uploadDoc(
     file: File,
@@ -81,15 +115,22 @@ function RoomBooking() {
     return { kind, storageId };
   }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  const toPay = () => {
+    setError(null);
+    if (!hasDates) return setError("Pick your check-in and check-out dates.");
+    if (!detail.available) return setError("This room isn't available for those dates.");
+    if (!fullName.trim()) return setError("Enter the guest full name (as on ID).");
+    if (phone.replace(/\D/g, "").length < 9) return setError("Enter a valid phone number.");
+    setStep(1);
+  };
+
+  async function submit() {
     setError(null);
     setSubmitting(true);
     try {
       const documents = [];
       if (idFront) documents.push(await uploadDoc(idFront, "id_front"));
       if (idBack) documents.push(await uploadDoc(idBack, "id_back"));
-
       const res = await createBooking({
         orgSlug,
         roomId: roomId as Id<"rooms">,
@@ -102,13 +143,19 @@ function RoomBooking() {
           idNumber: idNumber || undefined,
         },
         consent,
-        paymentMethod: method,
+        paymentMethod: method as "mpesa_stk" | "mpesa_manual" | "cash" | "card",
         paymentSplits: deposit
-          ? [{ method, amountCents: kesToCents(deposit) }]
+          ? [
+              {
+                method: method as "mpesa_stk" | "mpesa_manual" | "cash" | "card",
+                amountCents: kesToCents(deposit),
+              },
+            ]
           : undefined,
         documents: documents.length ? documents : undefined,
       });
       setConfirmed(res);
+      setStep(2);
     } catch (err) {
       setError(String((err as Error).message ?? err));
     } finally {
@@ -116,192 +163,246 @@ function RoomBooking() {
     }
   }
 
-  if (confirmed) {
-    return (
-      <main className="mx-auto max-w-lg space-y-4 p-4 md:p-8">
-        <Card>
-          <CardContent className="space-y-3 text-center">
-            <StatusChip status="success">Booking received</StatusChip>
-            <h1 className="text-2xl font-semibold">{confirmed.reference}</h1>
-            <p className="text-sm text-fg-muted">
-              {confirmed.nights} nights · {formatKes(confirmed.expectedTotalCents)}{" "}
-              incl. tax · status pending until the property confirms.
-            </p>
-            <p className="text-sm text-fg-muted">
-              Save this reference — you can check your booking anytime with it and
-              your phone number.
-            </p>
-            <Link href={`/book/${orgSlug}/lookup`} className="text-sm underline">
-              Look up my booking
-            </Link>
-          </CardContent>
-        </Card>
-      </main>
-    );
-  }
-
   return (
-    <main className="mx-auto max-w-2xl space-y-6 p-4 md:p-8">
-      <Link href={`/book/${orgSlug}`} className="text-sm text-fg-muted underline">
+    <main className="mx-auto max-w-xl p-4 md:p-8">
+      <Link href={`/book/${orgSlug}`} className="text-sm text-text-muted underline">
         ← All rooms
       </Link>
 
-      <header className="space-y-1">
-        <h1 className="font-display text-2xl font-semibold">
-          {detail.typeName} · Room {detail.number}
-        </h1>
-        <p className="text-sm text-fg-muted">
-          {detail.propertyName} · {detail.branchName}
-          {detail.location ? ` · ${detail.location}` : ""}
-        </p>
-      </header>
-
-      <Card>
-        <CardContent className="space-y-2 text-sm">
-          <p>
-            Sleeps {detail.capacity}
-            {detail.sizeSqm ? ` · ${detail.sizeSqm} m²` : ""}
-            {detail.floor ? ` · floor ${detail.floor}` : ""}
-          </p>
-          {detail.amenities.length > 0 && (
-            <p className="text-fg-muted">{detail.amenities.join(" · ")}</p>
-          )}
-          <p>
-            Check-in {detail.checkInTime ?? "—"} · Check-out{" "}
-            {detail.checkOutTime ?? "—"}
-            {detail.idRequired ? " · ID required at check-in" : ""}
-          </p>
-          {detail.cancellationNote && (
-            <p className="text-fg-muted">{detail.cancellationNote}</p>
-          )}
-          <p className="font-medium">
-            {detail.nightlyCents !== null
-              ? `${formatKes(detail.nightlyCents)}/night`
-              : "Contact property for rates"}
-            {detail.totals &&
-              ` · ${detail.nights} nights = ${formatKes(detail.totals.totalCents)} incl. tax`}
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="space-y-3">
-          <h2 className="font-medium">Book this room</h2>
-          <div className="flex flex-wrap gap-3">
-            <label className="text-sm">
-              <span className="mb-1 block text-fg-muted">Check-in</span>
-              <Input
-                type="date"
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full sm:w-40"
-                required
-              />
-            </label>
-            <label className="text-sm">
-              <span className="mb-1 block text-fg-muted">Check-out</span>
-              <Input
-                type="date"
-                value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full sm:w-40"
-                required
-              />
-            </label>
-          </div>
-
-          {hasDates && !detail.available ? (
-            <p className="text-sm text-warning">
-              This room isn’t available for those dates — try different dates or
-              another room.
+      <div className="card fade-in mt-4 overflow-hidden p-0">
+        {/* Media header (prototype detail-hero) */}
+        <figure
+          className="relative m-0 aspect-[16/9]"
+          style={{ background: photoFor(detail.typeName + detail.number) }}
+        >
+          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,19,38,0.9),transparent_60%)]" />
+          <div className="absolute bottom-4 left-5 right-5">
+            <div className="mb-1.5 flex gap-1.5">
+              <StatusChip status={detail.available ? "success" : "warning"}>
+                {detail.available ? "Available" : "Booked"}
+              </StatusChip>
+            </div>
+            <h1 className="font-display text-headline-md text-white">
+              {detail.typeName} · Room {detail.number}
+            </h1>
+            <p className="font-mono text-sm text-[#cdd6e8]">
+              {detail.propertyName} · {detail.branchName}
+              {detail.location ? ` · ${detail.location}` : ""}
             </p>
-          ) : (
-            <form className="space-y-3" onSubmit={submit}>
-              <Input
-                aria-label="Full name"
-                placeholder="Full name *"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-              />
-              <div className="flex flex-wrap gap-3">
-                <Input
-                  aria-label="Phone"
-                  placeholder="Phone (e.g. +2547…) *"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                  className="w-full sm:w-56"
-                />
-                <Input
-                  aria-label="Email"
-                  type="email"
-                  placeholder="Email (optional)"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full sm:w-64"
-                />
-              </div>
-              <Input
-                aria-label="ID number"
-                placeholder="ID / passport number (optional)"
-                value={idNumber}
-                onChange={(e) => setIdNumber(e.target.value)}
-                className="w-full sm:w-64"
-              />
+          </div>
+        </figure>
 
-              <div className="flex flex-wrap gap-4 text-sm">
-                <label>
-                  <span className="mb-1 block text-fg-muted">ID front (optional)</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setIdFront(e.target.files?.[0] ?? null)}
-                  />
-                </label>
-                <label>
-                  <span className="mb-1 block text-fg-muted">ID back (optional)</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setIdBack(e.target.files?.[0] ?? null)}
-                  />
-                </label>
-              </div>
+        <div className="p-5 md:p-6">
+          <Stepper step={step} />
 
-              <div className="flex flex-wrap items-end gap-3">
-                <label className="text-sm">
-                  <span className="mb-1 block text-fg-muted">I’ll pay by</span>
-                  <select
-                    aria-label="Payment method"
-                    className="rounded-lg border border-border bg-bg-input px-2 py-2 text-sm"
-                    value={method}
-                    onChange={(e) => setMethod(e.target.value as typeof method)}
-                  >
-                    {PAYMENT_METHODS.map((m) => (
-                      <option key={m.value} value={m.value}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="text-sm">
-                  <span className="mb-1 block text-fg-muted">
-                    Deposit now, KES (optional)
+          {step === 0 && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-text-muted">
+                <span className="flex items-center gap-1.5">
+                  <Users className="size-4" aria-hidden="true" /> sleeps {detail.capacity}
+                  {detail.sizeSqm ? ` · ${detail.sizeSqm} m²` : ""}
+                  {detail.floor ? ` · floor ${detail.floor}` : ""}
+                </span>
+                {detail.nightlyCents !== null && (
+                  <span>
+                    <span className="font-mono text-headline-sm text-primary">
+                      {formatKes(detail.nightlyCents)}
+                    </span>
+                    /night
                   </span>
-                  <Input
-                    aria-label="Deposit amount"
-                    value={deposit}
-                    onChange={(e) => setDeposit(e.target.value)}
-                    className="w-full sm:w-32"
-                  />
+                )}
+              </div>
+              {detail.amenities.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {detail.amenities.map((a) => (
+                    <span
+                      key={a}
+                      className="inline-flex items-center gap-1 rounded-full bg-badge-info px-2.5 py-1 text-xs font-semibold text-badge-info-fg"
+                    >
+                      <Check className="size-3" aria-hidden="true" /> {a}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <p className="text-body-md text-text-muted">
+                Check-in {detail.checkInTime ?? "—"} · Check-out {detail.checkOutTime ?? "—"}
+                {detail.idRequired ? " · ID required at check-in" : ""}
+              </p>
+              {detail.cancellationNote && (
+                <p className="text-body-md text-text-muted">{detail.cancellationNote}</p>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                  Check-in
+                  <Input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} required />
+                </label>
+                <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                  Check-out
+                  <Input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} required />
                 </label>
               </div>
-              <p className="text-xs text-fg-muted">
+
+              <p className="text-label-caps uppercase text-text-muted">Guest details</p>
+              <div className="space-y-3">
+                <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                  Full name (as on ID)
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Jane Muthoni"
+                    required
+                  />
+                </label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                    Phone
+                    <Input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+254 7XX XXX XXX"
+                      required
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                    Email (optional)
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                </div>
+                <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                  ID / Passport number (optional)
+                  <Input
+                    value={idNumber}
+                    onChange={(e) => setIdNumber(e.target.value)}
+                    placeholder="e.g. 12345678"
+                  />
+                </label>
+                <div className="flex flex-wrap gap-4 text-xs font-semibold text-text-muted">
+                  <label className="flex flex-col gap-1.5">
+                    ID front (optional)
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setIdFront(e.target.files?.[0] ?? null)}
+                      className="text-text-muted"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    ID back (optional)
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setIdBack(e.target.files?.[0] ?? null)}
+                      className="text-text-muted"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {detail.totals && detail.nightlyCents !== null && (
+                <div className="card card-pad-sm flex items-center justify-between !p-4">
+                  <span className="text-text-muted">
+                    {formatKes(detail.nightlyCents)} × {detail.nights} nights · tax incl.
+                  </span>
+                  <span className="font-mono text-headline-sm text-primary">
+                    {formatKes(detail.totals.totalCents)}
+                  </span>
+                </div>
+              )}
+              {hasDates && !detail.available && (
+                <p className="text-sm text-warning">
+                  This room isn’t available for those dates — try different dates or another
+                  room.
+                </p>
+              )}
+              {error && <p className="text-sm text-danger">{error}</p>}
+              <Button fullWidth onClick={toPay}>
+                Continue to payment →
+              </Button>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="space-y-4">
+              <p className="text-label-caps uppercase text-text-muted">
+                {detail.totals ? `Pay ${formatKes(detail.totals.totalCents)}` : "Payment"}
+              </p>
+
+              <div className="space-y-2" role="radiogroup" aria-label="Payment method">
+                {guestMethods.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="radio"
+                    aria-checked={method === m}
+                    onClick={() => setMethod(m)}
+                    className={`card card-pad-sm flex w-full items-center gap-3 !p-4 text-left transition-colors ${
+                      method === m
+                        ? "!border-[color-mix(in_srgb,var(--primary)_40%,transparent)] !bg-[color-mix(in_srgb,var(--primary)_6%,transparent)]"
+                        : ""
+                    }`}
+                  >
+                    <span className="grid size-10 place-items-center rounded-full bg-badge-success font-extrabold text-badge-success-fg">
+                      {m.startsWith("mpesa") ? "M" : m === "cash" ? "C" : "K"}
+                    </span>
+                    <span className="flex-1">
+                      <span className="block font-bold tracking-wide text-text">
+                        {METHOD_LABELS[m] ?? m}
+                      </span>
+                      {m === "mpesa_stk" && (
+                        <span className="text-body-md text-primary">
+                          STK push after booking — from your portal
+                        </span>
+                      )}
+                    </span>
+                    {method === m && (
+                      <BadgeCheck className="size-5 text-primary" aria-hidden="true" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <div className="card card-pad-sm space-y-1.5 !p-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Guest</span>
+                  <span className="text-text">{fullName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Room</span>
+                  <span className="font-mono text-text">
+                    {detail.typeName} · {detail.number}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Stay</span>
+                  <span className="text-text">
+                    {checkIn} → {checkOut}
+                  </span>
+                </div>
+                {detail.totals && (
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">Amount</span>
+                    <span className="font-mono font-semibold text-primary">
+                      {formatKes(detail.totals.totalCents)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                Deposit now, KES (optional)
+                <Input value={deposit} onChange={(e) => setDeposit(e.target.value)} className="w-36" />
+              </label>
+              <p className="text-xs text-text-muted">
                 No charge is made now — payment is settled with the property.
               </p>
 
-              <label className="flex items-start gap-2 text-sm">
+              <label className="flex items-start gap-2.5 text-sm text-text">
                 <input
                   type="checkbox"
                   checked={consent}
@@ -309,19 +410,62 @@ function RoomBooking() {
                   className="mt-0.5"
                 />
                 <span>
-                  I consent to {detail.propertyName} storing my details to manage
-                  this booking. *
+                  I consent to {detail.propertyName} storing my details to manage this
+                  booking. *
                 </span>
               </label>
 
               {error && <p className="text-sm text-danger">{error}</p>}
-              <Button type="submit" disabled={!consent || !hasDates || submitting}>
-                {submitting ? "Booking…" : "Confirm booking"}
-              </Button>
-            </form>
+              <div className="flex gap-2.5">
+                <Button variant="ghost" onClick={() => setStep(0)}>
+                  ← Back
+                </Button>
+                <Button className="flex-1" disabled={!consent || submitting} onClick={submit}>
+                  {submitting ? "Booking…" : "Confirm booking"}
+                </Button>
+              </div>
+            </div>
           )}
-        </CardContent>
-      </Card>
+
+          {step === 2 && confirmed && (
+            <div className="space-y-4 text-center">
+              <span className="mx-auto grid size-16 place-items-center rounded-full bg-badge-success">
+                <Check className="size-8 text-badge-success-fg" aria-hidden="true" />
+              </span>
+              <div>
+                <h2 className="font-display text-headline-md text-text">Booking confirmed!</h2>
+                <p className="mt-1 font-mono text-headline-sm text-primary">
+                  {confirmed.reference}
+                </p>
+                <p className="mt-1 text-body-md text-text-muted">
+                  {fullName} · {confirmed.nights} nights ·{" "}
+                  {formatKes(confirmed.expectedTotalCents)} incl. tax
+                </p>
+              </div>
+              <div className="card card-pad-sm !p-4 text-left">
+                <p className="sms-sender">FAMMY</p>
+                <div className="sms-bubble text-text">
+                  Hi {fullName.split(" ")[0]}, booking {confirmed.reference} for{" "}
+                  {detail.typeName} (Room {detail.number}) is RECEIVED. Check-in {checkIn}.
+                  Total {formatKes(confirmed.expectedTotalCents)}. Karibu!
+                </div>
+              </div>
+              <p className="text-body-md text-text-muted">
+                Save this reference — check your booking anytime with it and your phone
+                number{method === "mpesa_stk" ? ", and pay via M-Pesa from your portal" : ""}.
+              </p>
+              <div className="flex gap-2.5">
+                <Link href={`/book/${orgSlug}/lookup`} className="btn btn-ghost flex-1">
+                  Open my portal
+                </Link>
+                <Link href={`/book/${orgSlug}`} className="btn btn-primary flex-1">
+                  Done
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </main>
   );
 }
