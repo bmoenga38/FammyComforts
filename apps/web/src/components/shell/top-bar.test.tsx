@@ -4,6 +4,11 @@ import { render, screen } from "@testing-library/react";
 const nav = vi.hoisted(() => ({ pathname: "/front-desk" }));
 
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
+// The bell inside the top bar queries the notification feed.
+vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
+  api: { notificationsFeed: { feed: "notificationsFeed.feed" } },
+}));
+vi.mock("convex/react", () => ({ useQuery: () => ({ count: 0, items: [] }) }));
 
 import { TopBar } from "./top-bar";
 

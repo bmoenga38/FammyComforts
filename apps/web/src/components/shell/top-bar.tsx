@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Menu, Search, Bell } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { workspaceForPathname } from "@/lib/workspaces";
+import { NotificationsBell } from "./notifications-bell";
 
 /**
  * The app-shell top bar, styled per the UI prototype (62px glass bar over the
@@ -50,13 +51,7 @@ export function TopBar({
             className="w-48 bg-transparent text-text placeholder:text-text-muted focus:outline-none"
           />
         </label>
-        <button type="button" aria-label="Notifications" className="icon-btn relative">
-          <Bell className="size-5" aria-hidden="true" />
-          <span
-            aria-hidden="true"
-            className="absolute right-2 top-2 size-2 rounded-full bg-danger shadow-[0_0_8px_var(--red)]"
-          />
-        </button>
+        <NotificationsBell />
       </div>
     </header>
   );

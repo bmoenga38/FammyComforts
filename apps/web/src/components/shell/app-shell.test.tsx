@@ -5,6 +5,11 @@ import { render, screen, fireEvent } from "@testing-library/react";
 const nav = vi.hoisted(() => ({ pathname: "/guest" }));
 
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
+// The top bar's notification bell queries the feed.
+vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
+  api: { notificationsFeed: { feed: "notificationsFeed.feed" } },
+}));
+vi.mock("convex/react", () => ({ useQuery: () => ({ count: 0, items: [] }) }));
 vi.mock("next/link", () => ({
   default: ({
     href,

@@ -33,6 +33,7 @@ import type * as lib_mpesa from "../lib/mpesa.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as mpesa from "../mpesa.js";
 import type * as notifications from "../notifications.js";
+import type * as notificationsFeed from "../notificationsFeed.js";
 import type * as paymentMethods from "../paymentMethods.js";
 import type * as payments from "../payments.js";
 import type * as property from "../property.js";
@@ -76,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   "lib/permissions": typeof lib_permissions;
   mpesa: typeof mpesa;
   notifications: typeof notifications;
+  notificationsFeed: typeof notificationsFeed;
   paymentMethods: typeof paymentMethods;
   payments: typeof payments;
   property: typeof property;
