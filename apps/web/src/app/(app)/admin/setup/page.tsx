@@ -495,7 +495,7 @@ function RoomsSection({ canManage }: { canManage: boolean }) {
               placeholder="Room number"
               value={number}
               onChange={(e) => setNumber(e.target.value)}
-              className="w-32"
+              className="w-full sm:w-32"
             />
             <select
               aria-label="Branch"
@@ -623,7 +623,7 @@ function RatesSection({ canManage }: { canManage: boolean }) {
                 value={planName}
                 onChange={(e) => setPlanName(e.target.value)}
                 required
-                className="w-40"
+                className="w-full sm:w-40"
               />
               <select
                 aria-label="Plan room type"
@@ -643,7 +643,7 @@ function RatesSection({ canManage }: { canManage: boolean }) {
                 placeholder="KES / night"
                 value={nightly}
                 onChange={(e) => setNightly(e.target.value)}
-                className="w-32"
+                className="w-full sm:w-32"
               />
               <Button type="submit">Add plan</Button>
             </form>
@@ -681,7 +681,7 @@ function RatesSection({ canManage }: { canManage: boolean }) {
                 aria-label="Tax name"
                 value={taxName}
                 onChange={(e) => setTaxName(e.target.value)}
-                className="w-32"
+                className="w-full sm:w-32"
               />
               <Input
                 aria-label="Tax percent"

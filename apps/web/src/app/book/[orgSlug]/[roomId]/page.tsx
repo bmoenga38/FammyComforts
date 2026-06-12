@@ -194,7 +194,7 @@ function RoomBooking() {
                 type="date"
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
-                className="w-40"
+                className="w-full sm:w-40"
                 required
               />
             </label>
@@ -204,7 +204,7 @@ function RoomBooking() {
                 type="date"
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
-                className="w-40"
+                className="w-full sm:w-40"
                 required
               />
             </label>
@@ -231,7 +231,7 @@ function RoomBooking() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
-                  className="w-56"
+                  className="w-full sm:w-56"
                 />
                 <Input
                   aria-label="Email"
@@ -239,7 +239,7 @@ function RoomBooking() {
                   placeholder="Email (optional)"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-64"
+                  className="w-full sm:w-64"
                 />
               </div>
               <Input
@@ -247,7 +247,7 @@ function RoomBooking() {
                 placeholder="ID / passport number (optional)"
                 value={idNumber}
                 onChange={(e) => setIdNumber(e.target.value)}
-                className="w-64"
+                className="w-full sm:w-64"
               />
 
               <div className="flex flex-wrap gap-4 text-sm">
@@ -293,7 +293,7 @@ function RoomBooking() {
                     aria-label="Deposit amount"
                     value={deposit}
                     onChange={(e) => setDeposit(e.target.value)}
-                    className="w-32"
+                    className="w-full sm:w-32"
                   />
                 </label>
               </div>

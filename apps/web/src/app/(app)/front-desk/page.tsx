@@ -110,7 +110,7 @@ function TodayBoard({ canWrite, canPay }: { canWrite: boolean; canPay: boolean }
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-44"
+          className="w-full sm:w-44"
         />
       </label>
       {sections.map((s) => (
@@ -263,7 +263,7 @@ function BookingCard({
                   placeholder="KES"
                   value={payAmount}
                   onChange={(e) => setPayAmount(e.target.value)}
-                  className="w-28"
+                  className="w-full sm:w-28"
                 />
                 {payMethod === "mpesa_manual" && (
                   <Input
@@ -271,7 +271,7 @@ function BookingCard({
                     placeholder="Receipt code"
                     value={payReceipt}
                     onChange={(e) => setPayReceipt(e.target.value)}
-                    className="w-36"
+                    className="w-full sm:w-36"
                   />
                 )}
                 <Button
@@ -310,14 +310,14 @@ function BookingCard({
                       placeholder="Damage notes"
                       value={damageNotes}
                       onChange={(e) => setDamageNotes(e.target.value)}
-                      className="w-52"
+                      className="w-full sm:w-52"
                     />
                     <Input
                       aria-label="Damage charge KES"
                       placeholder="Charge KES"
                       value={damageAmount}
                       onChange={(e) => setDamageAmount(e.target.value)}
-                      className="w-28"
+                      className="w-full sm:w-28"
                     />
                   </div>
                 )}
@@ -379,7 +379,7 @@ function BookingCard({
                     aria-label="New check-out date"
                     value={extendDate}
                     onChange={(e) => setExtendDate(e.target.value)}
-                    className="w-40"
+                    className="w-full sm:w-40"
                   />
                 </label>
                 <Button
@@ -411,7 +411,7 @@ function BookingCard({
                       placeholder="Refund KES"
                       value={refundAmount}
                       onChange={(e) => setRefundAmount(e.target.value)}
-                      className="w-28"
+                      className="w-full sm:w-28"
                     />
                     <Button
                       variant="ghost"
@@ -485,7 +485,7 @@ function CalendarGrid() {
           type="date"
           value={from}
           onChange={(e) => setFrom(e.target.value)}
-          className="w-44"
+          className="w-full sm:w-44"
         />
       </label>
       <div className="overflow-x-auto">
@@ -601,14 +601,14 @@ function NewBooking() {
                   placeholder="Guest name"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-48"
+                  className="w-full sm:w-48"
                 />
                 <Input
                   aria-label="Guest phone"
                   placeholder="Phone"
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </>
             )}
@@ -633,14 +633,14 @@ function NewBooking() {
               aria-label="Check-in"
               value={checkIn}
               onChange={(e) => setCheckIn(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
             <Input
               type="date"
               aria-label="Check-out"
               value={checkOut}
               onChange={(e) => setCheckOut(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
             <select
               aria-label="Source"
@@ -716,14 +716,14 @@ function GuestsSection({ canWrite }: { canWrite: boolean }) {
               placeholder="New guest name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-48"
+              className="w-full sm:w-48"
             />
             <Input
               aria-label="New guest phone"
               placeholder="Phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
             <Button type="submit" disabled={!name || !phone}>
               Add guest

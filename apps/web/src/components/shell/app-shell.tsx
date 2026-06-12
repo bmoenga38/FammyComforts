@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           order and a11y tree; `lg:visible` keeps it active on desktop. */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 transition-transform duration-200 ease-out lg:visible lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-[280px] transition-transform duration-200 ease-out lg:visible lg:translate-x-0",
           menuOpen ? "visible translate-x-0" : "invisible -translate-x-full",
         )}
       >
@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
       ) : null}
 
-      <div className="flex min-h-full flex-col lg:pl-64">
+      <div className="flex min-h-full flex-col lg:pl-[280px]">
         <TopBar menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} />
         <main
           id="main-content"

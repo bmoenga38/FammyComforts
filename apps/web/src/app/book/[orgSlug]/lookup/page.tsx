@@ -111,14 +111,14 @@ export default function PortalPage() {
                     placeholder="07XX XXX XXX"
                     value={payPhone}
                     onChange={(e) => setPayPhone(e.target.value)}
-                    className="w-44"
+                    className="w-full sm:w-44"
                   />
                   <Input
                     aria-label="Amount KES"
                     placeholder="Amount (KES)"
                     value={payAmount}
                     onChange={(e) => setPayAmount(e.target.value)}
-                    className="w-36"
+                    className="w-full sm:w-36"
                   />
                   <Button
                     disabled={busy || !payPhone || !payAmount}

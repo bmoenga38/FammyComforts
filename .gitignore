@@ -20,3 +20,4 @@ coverage/
 .agents/
 .claude/
 .codex/
+.vercel

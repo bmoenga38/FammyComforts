@@ -5,10 +5,9 @@ import { Menu, Search, Bell } from "lucide-react";
 import { workspaceForPathname } from "@/lib/workspaces";
 
 /**
- * The app-shell top bar: a mobile menu button (opens the sidebar drawer), the
- * active workspace title (the page `<h1>`, derived from the route to match the
- * prototype's `pageTitle`), and static search + notifications affordances. The
- * search/notifications behavior is intentionally non-functional in Story 1.7.
+ * The app-shell top bar, styled per the UI prototype (62px glass bar over the
+ * mesh backdrop): mobile menu button, workspace title (Space Grotesk) with a
+ * muted subtitle, search + notifications affordances.
  */
 export function TopBar({
   menuOpen,
@@ -21,26 +20,28 @@ export function TopBar({
   const workspace = workspaceForPathname(pathname);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-bg/80 px-4 py-3 backdrop-blur lg:px-6">
+    <header className="glass-bar sticky top-0 z-30 flex h-[62px] items-center gap-3 border-b border-[var(--hairline)] px-4 lg:px-6">
       <button
         type="button"
         onClick={onOpenMenu}
         aria-label="Open navigation menu"
         aria-expanded={menuOpen}
-        className="grid size-11 shrink-0 place-items-center rounded-lg text-text-dim hover:bg-bg-input hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus lg:hidden"
+        className="icon-btn lg:hidden"
       >
         <Menu className="size-5" aria-hidden="true" />
       </button>
 
       <div className="flex min-w-0 flex-col leading-tight">
-        <p className="font-mono text-xs text-text-muted">Rental operations suite</p>
-        <h1 className="truncate font-display text-lg font-semibold text-text">
+        <h1 className="truncate font-display text-headline-sm text-text">
           {workspace?.title ?? "Fammy Comforts"}
         </h1>
+        <p className="hidden text-body-md text-text-muted sm:block">
+          Rental operations suite
+        </p>
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
-        <label className="hidden items-center gap-2 rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-dim sm:flex">
+      <div className="ml-auto flex items-center gap-1">
+        <label className="hidden items-center gap-2 rounded-ctrl border border-border bg-bg-input px-3 py-2 text-sm text-text-muted sm:flex">
           <Search className="size-4 shrink-0" aria-hidden="true" />
           <span className="sr-only">Search bookings, guests, rooms</span>
           <input
@@ -49,15 +50,11 @@ export function TopBar({
             className="w-48 bg-transparent text-text placeholder:text-text-muted focus:outline-none"
           />
         </label>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative grid size-11 shrink-0 place-items-center rounded-lg text-text-dim hover:bg-bg-input hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
-        >
+        <button type="button" aria-label="Notifications" className="icon-btn relative">
           <Bell className="size-5" aria-hidden="true" />
           <span
             aria-hidden="true"
-            className="absolute right-2.5 top-2.5 size-2 rounded-full bg-badge-danger-fg"
+            className="absolute right-2 top-2 size-2 rounded-full bg-danger shadow-[0_0_8px_var(--red)]"
           />
         </button>
       </div>

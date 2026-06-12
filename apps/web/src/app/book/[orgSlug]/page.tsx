@@ -56,7 +56,7 @@ function Catalog() {
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            className="w-40"
+            className="w-full sm:w-40"
           />
         </label>
         <label className="text-sm">
@@ -65,7 +65,7 @@ function Catalog() {
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="w-40"
+            className="w-full sm:w-40"
           />
         </label>
         <Button type="submit">Search dates</Button>
