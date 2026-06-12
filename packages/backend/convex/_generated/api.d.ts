@@ -50,6 +50,7 @@ import type * as payments from "../payments.js";
 import type * as property from "../property.js";
 import type * as rates from "../rates.js";
 import type * as rbac from "../rbac.js";
+import type * as restaurant from "../restaurant.js";
 import type * as roles from "../roles.js";
 import type * as roomTypes from "../roomTypes.js";
 import type * as rooms from "../rooms.js";
@@ -105,6 +106,7 @@ declare const fullApi: ApiFromModules<{
   property: typeof property;
   rates: typeof rates;
   rbac: typeof rbac;
+  restaurant: typeof restaurant;
   roles: typeof roles;
   roomTypes: typeof roomTypes;
   rooms: typeof rooms;
