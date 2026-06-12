@@ -60,11 +60,18 @@ export default defineSchema({
     name: v.string(),
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
-    // Raw role string from the SSO payload. Granular RBAC (the tables below +
-    // `requirePermission`) is Story 2.3 — this is the seed it refines.
+    // Raw role string from the SSO payload (or the demo role: customer/
+    // reception/operations/assistant/admin). Granular RBAC refines it.
     role: v.string(),
     // Server-authoritative active gate (Story 2.4 deactivate builds on this).
     isActive: v.boolean(),
+    // Demo/loyalty profile fields (optional — prototype parity; loyalty engine
+    // itself is gap-listed).
+    tier: v.optional(v.string()),
+    points: v.optional(v.number()),
+    stays: v.optional(v.number()),
+    vip: v.optional(v.boolean()),
+    shift: v.optional(v.string()),
   })
     .index("by_org", ["orgId"])
     .index("by_bytebazaar_user", ["bytebazaarUserId"]),

@@ -1,6 +1,11 @@
 import { convexAuth } from "@convex-dev/auth/server";
 import { ConvexCredentials } from "@convex-dev/auth/providers/ConvexCredentials";
 import { resolveHandoff } from "./sso";
+import { internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
+
+// Convex injects `process.env` at runtime; the backend tsconfig has no Node types.
+declare const process: { env: Record<string, string | undefined> };
 
 /**
  * Convex Auth (Epic 2, Story 2.1 — session minting).
@@ -27,6 +32,58 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         }
         const { userId } = await resolveHandoff(ctx, token);
         return { userId };
+      },
+    }),
+
+    /**
+     * DEMO phone + OTP (prototype parity, dev/demo tenants only). The OTP is
+     * the fixed code in DEMO_OTP_CODE; providing `name` switches to the
+     * registration flow (new customer, Bronze, +100 welcome points). Admins
+     * are never reachable via phone (enforced in demoAuth.lookupByPhone).
+     * Disabled entirely when DEMO_OTP_CODE is unset.
+     */
+    ConvexCredentials({
+      id: "demo-otp",
+      authorize: async (credentials, ctx) => {
+        const code = process.env.DEMO_OTP_CODE;
+        const { phone, otp, name, email } = credentials as {
+          phone?: string;
+          otp?: string;
+          name?: string;
+          email?: string;
+        };
+        if (!code || !phone || otp !== code) return null;
+        if (name && name.trim().length > 0) {
+          const res = (await ctx.runMutation(internal.demoAuth.registerCustomer, {
+            name,
+            phone,
+            email,
+          })) as { userId: Id<"users"> };
+          return { userId: res.userId };
+        }
+        const res = (await ctx.runMutation(internal.demoAuth.lookupByPhone, {
+          phone,
+        })) as { found: boolean; userId?: Id<"users"> };
+        if (!res.found || !res.userId) return null;
+        return { userId: res.userId };
+      },
+    }),
+
+    /**
+     * DEMO admin email + password (DEMO_ADMIN_PASSWORD). Admin workspaces are
+     * only reachable through this provider (or real SSO) — never phone OTP.
+     */
+    ConvexCredentials({
+      id: "demo-admin",
+      authorize: async (credentials, ctx) => {
+        const pass = process.env.DEMO_ADMIN_PASSWORD;
+        const { email, password } = credentials as { email?: string; password?: string };
+        if (!pass || !email || password !== pass) return null;
+        const res = (await ctx.runMutation(internal.demoAuth.lookupAdmin, {
+          email,
+        })) as { found: boolean; userId?: Id<"users"> };
+        if (!res.found || !res.userId) return null;
+        return { userId: res.userId };
       },
     }),
   ],
