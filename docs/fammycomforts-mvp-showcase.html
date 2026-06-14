@@ -5,12 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Fammy Comforts — MVP Complete &amp; Live</title>
 <meta name="description" content="Fammy Comforts — the all-in-one hotel operations platform. MVP delivered, tested, and live in production." />
+<!-- Fonts: Syne · Space Grotesk · Inter · JetBrains Mono — same set as the product (DESIGN_SYSTEM.md / prototype). -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 <style>
   /* ============================================================
      Fammy Comforts — Project Completion / MVP Showcase
      Client-facing landing page. Standalone: HTML + CSS + JS.
-     Tokens from the project's DESIGN_SYSTEM.md (dark + light).
-     No frameworks, no CDN, no external fonts.
+     Tokens + fonts from the project's DESIGN_SYSTEM.md / prototype (dark + light).
+     Fonts: Syne (hero) · Space Grotesk (headings) · Inter (body) · JetBrains Mono.
      ============================================================ */
 
   :root, [data-theme="dark"] {
@@ -34,7 +38,7 @@
   * { box-sizing:border-box; margin:0; padding:0; }
   html { scroll-behavior:smooth; }
   body {
-    font-family:"Space Grotesk","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
     background:var(--bg); color:var(--text); font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
     transition:background .45s ease,color .45s ease; overflow-x:hidden;
   }
@@ -45,7 +49,10 @@
       radial-gradient(720px 460px at 94% 2%,var(--accent-dim),transparent 60%);
     transition:opacity .45s ease;
   }
-  h1,h2,h3,h4 { color:var(--heading); font-weight:700; letter-spacing:-.02em; line-height:1.14; }
+  h1,h2,h3,h4 { color:var(--heading); font-family:"Space Grotesk","Inter",sans-serif; font-weight:700; letter-spacing:-.02em; line-height:1.14; }
+  .hero h1, .verdict h2 { font-family:"Syne","Space Grotesk",sans-serif; font-weight:800; }
+  .brand { font-family:"Syne","Space Grotesk",sans-serif; }
+  .brand small { font-family:"Inter",sans-serif; }
   .mono { font-family:"JetBrains Mono","Cascadia Code",Consolas,monospace; }
   a { color:var(--primary); text-decoration:none; }
   .wrap { max-width:1180px; margin:0 auto; padding:0 24px; }
@@ -249,7 +256,7 @@
   <section class="hero reveal">
     <span class="eyebrow">✦ Project Delivery · MVP Complete</span>
     <h1>The all-in-one hotel operations platform</h1>
-    <p class="lede">From a guest's first booking to checkout, housekeeping, the kitchen, payments and the owner's reports — Fammy Comforts runs the whole property in one installable app. Built, tested, and live in production.</p>
+    <p class="lede">One installable app that runs the whole property — booking, front desk, housekeeping, kitchen, payments and reports. Built, tested, and live.</p>
     <div class="hero-cta">
       <a class="btn btn-primary" href="https://fammycomforts.vercel.app" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M21 3l-9 9M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg>
@@ -273,7 +280,7 @@
     <div class="sec-head reveal">
       <div class="kicker">Where guests stay the night</div>
       <h2>A lounge built for comfort</h2>
-      <p>Boutique rooms and suites guests browse, book and pay for online — each with live availability, nightly rates in KES and instant confirmation.</p>
+      <p>Rooms guests browse, book and pay for online — live availability, KES rates, instant confirmation.</p>
     </div>
     <div class="gallery stagger">
       <figure><img loading="lazy" alt="Savannah Executive Suite" src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&q=70&auto=format&fit=crop" onerror="this.style.display='none'"/><figcaption>Savannah Executive Suite <span class="price">KES 8,500</span></figcaption></figure>
@@ -290,7 +297,7 @@
     <div class="sec-head reveal">
       <div class="kicker">One platform · Six roles</div>
       <h2>Every team, one connected system</h2>
-      <p>Guests, reception, operations, housekeeping, the kitchen and management each get a workspace tailored to their job — sharing one live source of truth.</p>
+      <p>Six role-based workspaces, one live source of truth.</p>
     </div>
     <div class="ws-row stagger">
       <div class="card ws"><div class="ic" style="background:linear-gradient(135deg,var(--primary),var(--cyan))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8V4h12"/></svg></div><h4>Guest</h4><p>Book &amp; pay online</p></div>
@@ -307,7 +314,7 @@
     <div class="sec-head reveal">
       <div class="kicker">Capabilities</div>
       <h2>Everything a property needs — end to end</h2>
-      <p>Seven connected capability areas covering the full guest and operational lifecycle, all delivered and working today.</p>
+      <p>Seven connected areas across the full guest and operations lifecycle — all delivered.</p>
     </div>
     <div class="cap-grid stagger" id="capGrid"></div>
   </section>
@@ -317,7 +324,7 @@
     <div class="sec-head reveal">
       <div class="kicker">Build journey · Start to finish</div>
       <h2>Ten modules delivered, in order</h2>
-      <p>The platform was built foundation-first, then layered feature by feature. Every module below is complete, tested, and deployed.</p>
+      <p>Built foundation-first, then layered feature by feature. Every module is complete and deployed.</p>
     </div>
     <div class="release-tabs reveal" id="relTabs">
       <button class="rt active" data-r="all">All releases</button>
@@ -343,7 +350,7 @@
     <div class="sec-head reveal">
       <div class="kicker">Where we are</div>
       <h2>MVP complete &amp; live in production</h2>
-      <p>The full product is built and deployed. A short, transparent list of final go-live verification steps remains before the public launch push.</p>
+      <p>Built and deployed. Two final integration checks remain before the public launch.</p>
     </div>
     <div class="ready-split">
       <div class="card ready-card reveal">
@@ -368,7 +375,7 @@
     <div class="verdict reveal">
       <span class="eyebrow">✓ Ready for guests</span>
       <h2>This is a complete, working MVP</h2>
-      <p>Ten modules, sixty-nine delivered stories, one hundred and seventy-four passing tests, and zero production incidents — a property can be configured, booked, paid, operated, and reported on, today.</p>
+      <p>Configure, book, pay, operate and report on a property — today. 10 modules · 69 stories · 174 tests · zero incidents.</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="https://fammycomforts.vercel.app" target="_blank" rel="noopener">Open the live app →</a>
         <button class="btn" id="printBtn">Save as PDF</button>
@@ -380,9 +387,9 @@
 
 <footer>
   <div class="wrap">
-    <strong style="color:var(--text-muted)">Fammy Comforts</strong> · Hotel &amp; Hospitality Management Platform ·
+    <strong style="color:var(--text-muted)">Fammy Comforts</strong> ·
     Live at <a href="https://fammycomforts.vercel.app" target="_blank" rel="noopener">fammycomforts.vercel.app</a><br/>
-    <span style="opacity:.8">Project completion overview · Prepared for client review · June 2026</span>
+    <span style="opacity:.85">Powered by <a href="https://bytebazaar-plane.vercel.app" target="_blank" rel="noopener" style="color:var(--primary)">Bytebazaar</a></span>
   </div>
 </footer>
 

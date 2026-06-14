@@ -34,7 +34,8 @@ describe("sign-in screen", () => {
     render(<SignInPage />);
     fireEvent.click(screen.getByRole("tab", { name: /admin/i }));
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument(); // exact: not the "Show password" toggle
+    expect(screen.getByRole("button", { name: /show password/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sign in to dashboard/i })).toBeInTheDocument();
   });
 
