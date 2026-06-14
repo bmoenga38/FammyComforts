@@ -40,7 +40,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04
-last_updated: 2026-06-08
+last_updated: 2026-06-14
 project: Fammy Comforts
 project_key: NOKEY
 tracking_system: file-system
@@ -116,42 +116,42 @@ development_status:
   6-8-partial-and-split-payment-recording: done # via Epic 5 ledger engine
   epic-6-retrospective: optional
 
-  # ===== Epic 7: Operations & Housekeeping (R2) =====
-  epic-7: backlog
-  7-1-mobile-daily-operations-dashboard: backlog
-  7-2-room-readiness-board: backlog
-  7-3-housekeeping-task-queue-and-assignment: backlog
-  7-4-housekeeping-task-execution-with-checklists: backlog
-  7-5-photo-proof-and-offline-task-updates: backlog
-  7-6-maintenance-and-damage-reporting: backlog
-  7-7-per-room-asset-checklist-and-checkout-verification: backlog
-  7-8-operational-escalations: backlog
+  # ===== Epic 7: Operations & Housekeeping (R2) ===== DONE (commit 87913af)
+  epic-7: done
+  7-1-mobile-daily-operations-dashboard: done # ops summary + outstanding/late/escalations KPIs
+  7-2-room-readiness-board: done # room statuses live; HK completion frees rooms (realtime)
+  7-3-housekeeping-task-queue-and-assignment: done # create/assign/priority + assignment notice queued
+  7-4-housekeeping-task-execution-with-checklists: done # room-type templates snapshot on start; ticking
+  7-5-photo-proof-and-offline-task-updates: done # signed-URL photo proof (offline queue = PWA scope)
+  7-6-maintenance-and-damage-reporting: done # issues + photos + ledger damage charges + room blocking
+  7-7-per-room-asset-checklist-and-checkout-verification: done # asset registry + per-asset checkout verify
+  7-8-operational-escalations: done # event triggers + hourly sweep (SLA, unpaid), feed + ops queue
   epic-7-retrospective: optional
 
-  # ===== Epic 8: Inventory & Procurement (R2) =====
-  epic-8: backlog
-  8-1-product-catalog: backlog
-  8-2-suppliers-and-purchase-orders: backlog
-  8-3-stock-movements-audit-trail: backlog
-  8-4-stocktake: backlog
-  8-5-low-stock-alerts-and-usage-tracking: backlog
+  # ===== Epic 8: Inventory & Procurement (R2) ===== DONE (commit a674a8d)
+  epic-8: done
+  8-1-product-catalog: done # products w/ unit/category/cost/price (int64), active, search/sort
+  8-2-suppliers-and-purchase-orders: done # PO create + receive-restock + cancel; double-receive blocked
+  8-3-stock-movements-audit-trail: done # single lib/stock gateway; every change auditable
+  8-4-stocktake: done # counted quantities post variances; on-hand corrected
+  8-5-low-stock-alerts-and-usage-tracking: done # usage decrements + low-stock escalation on crossing
   epic-8-retrospective: optional
 
-  # ===== Epic 9: Restaurant & Kitchen (R3) =====
-  epic-9: backlog
-  9-1-inventory-linked-menu: backlog
-  9-2-order-creation-across-channels: backlog
-  9-3-kitchen-display-with-status-lanes: backlog
-  9-4-charge-to-room-or-pay-separately: backlog
-  9-5-restaurant-revenue-and-top-sellers: backlog
+  # ===== Epic 9: Restaurant & Kitchen (R3) ===== DONE (commit 5b7ff59)
+  epic-9: done
+  9-1-inventory-linked-menu: done # menu items with optional ingredient links (qty/serving)
+  9-2-order-creation-across-channels: done # room_service/dine_in/takeaway/bar, snapshot lines, ORD-
+  9-3-kitchen-display-with-status-lanes: done # forward-only lanes, realtime; serving posts usage
+  9-4-charge-to-room-or-pay-separately: done # ledger charge to checked-in booking OR standalone payment
+  9-5-restaurant-revenue-and-top-sellers: done # revenue + top sellers by channel/date range
   epic-9-retrospective: optional
 
-  # ===== Epic 10: Reporting, Exports & Notifications (R3) =====
-  epic-10: backlog
-  10-1-admin-kpi-dashboard-and-action-queue: backlog
-  10-2-revenue-occupancy-and-balances-reports: backlog
-  10-3-profit-loss-and-inventory-reports: backlog
-  10-4-guest-analytics-tax-vat-and-asset-reports: backlog
-  10-5-pdf-and-csv-excel-export: backlog
-  10-6-multi-channel-notifications: backlog
+  # ===== Epic 10: Reporting, Exports & Notifications (R3) ===== DONE (commit 25912a9)
+  epic-10: done
+  10-1-admin-kpi-dashboard-and-action-queue: done # restaurant/outstanding KPIs + daily action queue
+  10-2-revenue-occupancy-and-balances-reports: done # revenue by day/method/source, occupancy+ALOS, balances
+  10-3-profit-loss-and-inventory-reports: done # P&L (revenue − received POs) + inventory report
+  10-4-guest-analytics-tax-vat-and-asset-reports: done # returning/top-spenders, VAT decomposition, assets
+  10-5-pdf-and-csv-excel-export: done # client-side CSV per table + print-pipeline PDF
+  10-6-multi-channel-notifications: done # cron-drained queue, push in-app, SMS via own gateway, 3-retry
   epic-10-retrospective: optional
