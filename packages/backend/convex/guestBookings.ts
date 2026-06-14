@@ -12,6 +12,7 @@ import {
 } from "./lib/bookingDomain";
 import { postLedgerEntry, bookingBalanceCents } from "./lib/ledger";
 import { enabledMethodsFor } from "./paymentMethods";
+import { userError } from "./lib/errors";
 
 /**
  * PUBLIC no-account booking (Stories 4.4–4.8). The tenant comes from the org
@@ -29,6 +30,11 @@ const PAYMENT_METHOD = v.union(
 
 // Unambiguous reference alphabet (no 0/O/1/I).
 const REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+/** Format int64 cents as "KES 7,308" for user-facing messages. */
+function formatKesCents(cents: bigint): string {
+  return `KES ${(Number(cents) / 100).toLocaleString("en-KE")}`;
+}
 
 async function uniqueReference(ctx: MutationCtx): Promise<string> {
   for (let attempt = 0; attempt < 8; attempt++) {
@@ -85,35 +91,41 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const org = await orgBySlug(ctx, args.orgSlug);
 
-    // Required consent + identity basics (Story 4.4 negative AC).
-    if (!args.consent) throw new Error("Consent is required to book.");
-    if (!args.guest.fullName.trim()) throw new Error("Full name is required.");
-    if (!args.guest.phone.trim()) throw new Error("Phone number is required.");
+    // Required consent + identity basics (Story 4.4 negative AC). Phone AND an
+    // ID/passport number are mandatory for an online booking.
+    if (!args.consent) userError("Please tick consent to continue.");
+    if (!args.guest.fullName.trim()) userError("Full name is required.");
+    if (args.guest.phone.replace(/\D/g, "").length < 9) {
+      userError("A valid phone number is required.");
+    }
+    if (!args.guest.idNumber?.trim()) {
+      userError("An ID or passport number is required.");
+    }
 
     // Dates: valid range, and online bookings cannot start in the past.
     assertDateRange(args.checkInDate, args.checkOutDate);
     const todayUtc = new Date().toISOString().slice(0, 10);
     if (args.checkInDate < todayUtc) {
-      throw new Error("Check-in date cannot be in the past.");
+      userError("Check-in date cannot be in the past.");
     }
 
     // Payment-method intent must be one the property enabled (Story 5.1).
     if (!(await enabledMethodsFor(ctx, org._id)).includes(args.paymentMethod)) {
-      throw new Error("That payment method is not available at this property.");
+      userError("That payment method is not available at this property.");
     }
 
     // Room must be this tenant's, operational, and priced.
     const room = await ctx.db.get(args.roomId);
-    if (!room || room.orgId !== org._id) throw new Error("Room not found.");
+    if (!room || room.orgId !== org._id) userError("Room not found.");
     if (room.status === "maintenance" || room.status === "blocked") {
-      throw new Error("This room is not currently bookable.");
+      userError("This room is not currently bookable.");
     }
     const plan = await activeRatePlan(ctx, org._id, room.roomTypeId);
-    if (!plan) throw new Error("This room is not currently bookable online.");
+    if (!plan) userError("This room is not currently bookable online.");
 
     // Transactional availability re-check (race-safe under Convex).
     if (await hasConflict(ctx, args.roomId, args.checkInDate, args.checkOutDate)) {
-      throw new Error("This room is no longer available for those dates.");
+      userError("This room is no longer available for those dates.");
     }
 
     // Exact integer-cents pricing (NFR14).
@@ -128,11 +140,13 @@ export const create = mutation({
     if (args.paymentSplits) {
       let sum = 0n;
       for (const s of args.paymentSplits) {
-        if (s.amountCents <= 0n) throw new Error("Split amounts must be positive.");
+        if (s.amountCents <= 0n) userError("The deposit amount must be positive.");
         sum += s.amountCents;
       }
       if (sum > totalCents) {
-        throw new Error("Split amounts exceed the booking total.");
+        userError(
+          `The deposit can't exceed the booking total of ${formatKesCents(totalCents)}.`,
+        );
       }
     }
 

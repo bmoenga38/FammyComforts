@@ -44,7 +44,7 @@ async function seedOrgWithBooking(t: ReturnType<typeof convexTest>, slug: string
     roomId,
     checkInDate: IN,
     checkOutDate: OUT,
-    guest: { fullName: "Ada", phone: "+254700000001", email: "ada@g.test" },
+    guest: { fullName: "Ada", phone: "+254700000001", email: "ada@g.test", idNumber: "12345678" },
     consent: true,
     paymentMethod: "mpesa_stk",
   });
@@ -82,7 +82,7 @@ describe("ledger init + method config (5.1, 5.2)", () => {
         roomId: s.roomId,
         checkInDate: "2099-05-01",
         checkOutDate: "2099-05-02",
-        guest: { fullName: "Ben", phone: "+254700000002" },
+        guest: { fullName: "Ben", phone: "+254700000002", idNumber: "87654321" },
         consent: true,
         paymentMethod: "card",
       }),

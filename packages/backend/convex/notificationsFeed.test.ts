@@ -44,7 +44,7 @@ async function seedOrgWithPendingBooking(t: ReturnType<typeof convexTest>, slug:
     roomId,
     checkInDate: IN,
     checkOutDate: OUT,
-    guest: { fullName: "Ada Guest", phone: "+254700000001", email: "ada@g.test" },
+    guest: { fullName: "Ada Guest", phone: "+254700000001", email: "ada@g.test", idNumber: "12345678" },
     consent: true,
     paymentMethod: "mpesa_stk",
   });

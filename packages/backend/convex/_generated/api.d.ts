@@ -34,6 +34,7 @@ import type * as invoices from "../invoices.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bookingDomain from "../lib/bookingDomain.js";
 import type * as lib_demoPhone from "../lib/demoPhone.js";
+import type * as lib_errors from "../lib/errors.js";
 import type * as lib_escalate from "../lib/escalate.js";
 import type * as lib_ledger from "../lib/ledger.js";
 import type * as lib_mpesa from "../lib/mpesa.js";
@@ -91,6 +92,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/bookingDomain": typeof lib_bookingDomain;
   "lib/demoPhone": typeof lib_demoPhone;
+  "lib/errors": typeof lib_errors;
   "lib/escalate": typeof lib_escalate;
   "lib/ledger": typeof lib_ledger;
   "lib/mpesa": typeof lib_mpesa;

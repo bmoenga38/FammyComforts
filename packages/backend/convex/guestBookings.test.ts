@@ -71,6 +71,7 @@ const GUEST = {
   fullName: "Ada Guest",
   phone: "+254700000001",
   email: "ada@guest.test",
+  idNumber: "12345678", // ID/passport is mandatory for online bookings
 };
 
 describe("catalog (4.1–4.3)", () => {
@@ -208,13 +209,19 @@ describe("booking create (4.4–4.7)", () => {
 
     await expect(
       t.mutation(api.guestBookings.create, { ...base, consent: false }),
-    ).rejects.toThrow(/Consent/);
+    ).rejects.toThrow(/consent/i);
     await expect(
       t.mutation(api.guestBookings.create, {
         ...base,
         guest: { ...GUEST, phone: "  " },
       }),
-    ).rejects.toThrow(/Phone/);
+    ).rejects.toThrow(/phone/i);
+    await expect(
+      t.mutation(api.guestBookings.create, {
+        ...base,
+        guest: { ...GUEST, idNumber: "" },
+      }),
+    ).rejects.toThrow(/ID or passport/i);
     await expect(
       t.mutation(api.guestBookings.create, {
         ...base,

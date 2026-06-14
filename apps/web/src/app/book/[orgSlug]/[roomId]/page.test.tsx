@@ -77,6 +77,9 @@ describe("room booking stepper", () => {
     fireEvent.change(screen.getByLabelText(/^phone$/i), {
       target: { value: "+254700000001" },
     });
+    fireEvent.change(screen.getByLabelText(/passport number/i), {
+      target: { value: "12345678" },
+    });
     // ID front + back are required before advancing (idRequired property).
     const idFile = new File(["x"], "id.jpg", { type: "image/jpeg" });
     fireEvent.change(screen.getByLabelText(/front of id/i), {

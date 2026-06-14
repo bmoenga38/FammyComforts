@@ -7,6 +7,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { formatKes, kesToCents } from "@/lib/money";
+import { errorMessage } from "@/lib/error-message";
 import { roomImage, roomGradient } from "@/lib/room-images";
 import { Button, Input, StatusChip } from "@/components/ui";
 import { Check, Users, BadgeCheck, Upload } from "lucide-react";
@@ -154,6 +155,7 @@ function RoomBooking() {
     if (!detail.available) return setError("This room isn't available for those dates.");
     if (!fullName.trim()) return setError("Enter the guest full name (as on ID).");
     if (phone.replace(/\D/g, "").length < 9) return setError("Enter a valid phone number.");
+    if (!idNumber.trim()) return setError("Enter your ID or passport number.");
     if (!idFront) return setError("Upload a photo of the front of your ID.");
     if (!idBack) return setError("Upload a photo of the back of your ID.");
     setStep(1);
@@ -161,6 +163,15 @@ function RoomBooking() {
 
   async function submit() {
     setError(null);
+    // Client-side guard so the deposit can't exceed the total (the server also
+    // enforces this; catching it here gives instant feedback).
+    if (deposit.trim() && detail?.totals) {
+      if (kesToCents(deposit) > detail.totals.totalCents) {
+        return setError(
+          `The deposit can't exceed the total of ${formatKes(detail.totals.totalCents)}.`,
+        );
+      }
+    }
     setSubmitting(true);
     try {
       const documents = [];
@@ -192,7 +203,7 @@ function RoomBooking() {
       setConfirmed(res);
       setStep(2);
     } catch (err) {
-      setError(String((err as Error).message ?? err));
+      setError(errorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -319,11 +330,14 @@ function RoomBooking() {
                   </label>
                 </div>
                 <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
-                  ID / Passport number (optional)
+                  <span>
+                    ID / Passport number <span className="text-danger">*</span>
+                  </span>
                   <Input
                     value={idNumber}
                     onChange={(e) => setIdNumber(e.target.value)}
                     placeholder="e.g. 12345678"
+                    required
                   />
                 </label>
                 <div className="space-y-2 text-xs font-semibold text-text-muted">

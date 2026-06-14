@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { formatKes, kesToCents } from "@/lib/money";
+import { errorMessage } from "@/lib/error-message";
 import { Button, Input, StatusChip } from "@/components/ui";
 import {
   ArrowLeft,
@@ -199,7 +200,7 @@ export default function PortalPage() {
                     });
                     setPayNote(res.customerMessage);
                   } catch (err) {
-                    setPayNote(String((err as Error).message ?? err));
+                    setPayNote(errorMessage(err));
                   } finally {
                     setBusy(false);
                   }
@@ -308,7 +309,7 @@ export default function PortalPage() {
                   setMessage("");
                   setRequestNote("Sent — the team will follow up.");
                 } catch (err) {
-                  setRequestNote(String((err as Error).message ?? err));
+                  setRequestNote(errorMessage(err));
                 }
               }}
             >

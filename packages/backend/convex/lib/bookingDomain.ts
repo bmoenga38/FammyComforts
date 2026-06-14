@@ -1,5 +1,6 @@
 import type { QueryCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
+import { userError } from "./errors";
 
 /**
  * Shared guest-booking domain logic (Epic 4) — used by both the public catalog
@@ -19,14 +20,14 @@ export function assertDateRange(checkIn: string, checkOut: string): void {
     ["checkOutDate", checkOut],
   ] as const) {
     if (!DATE_RE.test(d) || Number.isNaN(Date.parse(`${d}T00:00:00Z`))) {
-      throw new Error(`${label} must be a valid "YYYY-MM-DD" date.`);
+      userError(`Please choose a valid ${label === "checkInDate" ? "check-in" : "check-out"} date.`);
     }
   }
   if (checkIn >= checkOut) {
-    throw new Error("checkOutDate must be after checkInDate.");
+    userError("Check-out must be after check-in.");
   }
   if (nightsBetween(checkIn, checkOut) > 90) {
-    throw new Error("Stays longer than 90 nights are not bookable online.");
+    userError("Stays longer than 90 nights can't be booked online.");
   }
 }
 
@@ -74,7 +75,7 @@ export async function orgBySlug(
     .query("organizations")
     .withIndex("by_slug", (q) => q.eq("slug", slug))
     .unique();
-  if (!org) throw new Error("Unknown property.");
+  if (!org) userError("We couldn't find that property.");
   return org;
 }
 
