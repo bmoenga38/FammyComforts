@@ -6,6 +6,11 @@ import {
   Wrench,
   Brush,
   ChefHat,
+  Home,
+  Search,
+  Luggage,
+  Award,
+  UserRound,
 } from "lucide-react";
 
 /**
@@ -109,6 +114,27 @@ export const WORKSPACES: readonly Workspace[] = [
   },
 ] as const;
 
+/**
+ * Customer-facing nav (prototype customer role: Home · Book · Trips · Rewards ·
+ * Profile). Shown instead of the staff workspaces when the signed-in user is a
+ * customer. "Book" leaves the shell for the public catalog.
+ */
+export interface NavItem {
+  slug: string;
+  href: string;
+  navLabel: string;
+  bottomLabel: string;
+  icon: LucideIcon;
+}
+
+export const CUSTOMER_NAV: readonly NavItem[] = [
+  { slug: "home", href: "/guest", navLabel: "Home", bottomLabel: "Home", icon: Home },
+  { slug: "book", href: "/book", navLabel: "Book", bottomLabel: "Book", icon: Search },
+  { slug: "trips", href: "/trips", navLabel: "Trips", bottomLabel: "Trips", icon: Luggage },
+  { slug: "rewards", href: "/rewards", navLabel: "Rewards", bottomLabel: "Rewards", icon: Award },
+  { slug: "profile", href: "/profile", navLabel: "Profile", bottomLabel: "Profile", icon: UserRound },
+] as const;
+
 /** The default workspace `/` lands on. */
 export const DEFAULT_WORKSPACE: Workspace = WORKSPACES[0];
 
@@ -117,9 +143,9 @@ export const WORKSPACE_BY_SLUG = Object.fromEntries(
   WORKSPACES.map((w) => [w.slug, w]),
 ) as Record<WorkspaceSlug, Workspace>;
 
-/** True when `pathname` is the workspace route or a child of it. */
-export function isWorkspaceActive(workspace: Workspace, pathname: string): boolean {
-  return pathname === workspace.href || pathname.startsWith(`${workspace.href}/`);
+/** True when `pathname` is the item's route or a child of it. */
+export function isWorkspaceActive(item: { href: string }, pathname: string): boolean {
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
 /** The workspace matching the current pathname, if any. */

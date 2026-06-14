@@ -5,9 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
-import { WORKSPACES, isWorkspaceActive } from "@/lib/workspaces";
+import { WORKSPACES, CUSTOMER_NAV, isWorkspaceActive } from "@/lib/workspaces";
 import { usePermissions } from "@/lib/use-permissions";
 import { roleLabel, initialsOf } from "@/lib/roles";
+import { isCustomerRole } from "@/lib/home-route";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { cn } from "@/lib/cn";
@@ -29,11 +30,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { can, isLoading } = usePermissions();
   const { signOut } = useAuthActions();
 
-  // Show every item while permissions load (avoids an empty-nav flash), then
-  // narrow to what this role can read. Items without an `area` are always shown.
-  const visible = WORKSPACES.filter(
-    (w) => !w.area || isLoading || can(w.area, "read"),
-  );
+  // Customers get the guest nav (Home/Book/Trips/Rewards/Profile); staff get
+  // their workspaces, gated by permission (everything shows while perms load).
+  const visible = isCustomerRole(me?.role)
+    ? CUSTOMER_NAV
+    : WORKSPACES.filter((w) => !w.area || isLoading || can(w.area, "read"));
 
   const handleSignOut = async () => {
     onNavigate?.();
@@ -44,7 +45,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="glass-bar flex h-full flex-col gap-5 border-r border-[var(--hairline)] px-4 py-5">
       <Link
-        href="/guest"
+        href="/"
         onClick={onNavigate}
         className="flex items-center gap-3 rounded-ctrl px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
       >

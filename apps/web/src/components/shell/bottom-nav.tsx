@@ -2,22 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { WORKSPACES, isWorkspaceActive } from "@/lib/workspaces";
+import { useQuery } from "convex/react";
+import { api } from "@fammycomforts/backend/convex/_generated/api";
+import { WORKSPACES, CUSTOMER_NAV, isWorkspaceActive } from "@/lib/workspaces";
 import { usePermissions } from "@/lib/use-permissions";
+import { isCustomerRole } from "@/lib/home-route";
 import { cn } from "@/lib/cn";
 
 /**
  * Fixed mobile bottom nav (64px glass bar per the prototype — max 5 items;
  * active item glows teal). Hidden on desktop where the sidebar takes over.
- * Items are gated by the signed-in role's permissions (matching the sidebar).
- * Padded for the iOS home indicator via `safe-area-inset-bottom`.
+ * Customers get the guest nav; staff get permission-gated workspaces (matching
+ * the sidebar). Padded for the iOS home indicator via `safe-area-inset-bottom`.
  */
 export function BottomNav() {
   const pathname = usePathname();
+  const me = useQuery(api.identity.me);
   const { can, isLoading } = usePermissions();
-  const items = WORKSPACES.filter(
-    (w) => w.inBottomNav && (!w.area || isLoading || can(w.area, "read")),
-  );
+  const items = isCustomerRole(me?.role)
+    ? CUSTOMER_NAV
+    : WORKSPACES.filter(
+        (w) => w.inBottomNav && (!w.area || isLoading || can(w.area, "read")),
+      );
 
   return (
     <nav

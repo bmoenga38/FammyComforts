@@ -5,6 +5,8 @@ import { render, screen } from "@testing-library/react";
 const nav = vi.hoisted(() => ({ pathname: "/guest" }));
 
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
+// Staff session → bottom nav uses the workspace set this test asserts.
+vi.mock("convex/react", () => ({ useQuery: () => ({ role: "admin" }) }));
 vi.mock("@/lib/use-permissions", () => ({
   usePermissions: () => ({ can: () => true, isLoading: false, perms: [] }),
 }));
