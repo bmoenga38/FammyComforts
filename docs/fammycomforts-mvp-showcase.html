@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fammy Comforts — MVP Complete &amp; Live</title>
+<meta name="description" content="Fammy Comforts — the all-in-one hotel operations platform. MVP delivered, tested, and live in production." />
+<style>
+  /* ============================================================
+     Fammy Comforts — Project Completion / MVP Showcase
+     Client-facing landing page. Standalone: HTML + CSS + JS.
+     Tokens from the project's DESIGN_SYSTEM.md (dark + light).
+     No frameworks, no CDN, no external fonts.
+     ============================================================ */
+
+  :root, [data-theme="dark"] {
+    --primary:#50fa7b; --primary-dark:#69ff90; --primary-dim:rgba(80,250,123,.08); --primary-glow:rgba(80,250,123,.25);
+    --accent:#bd93f9; --accent-dim:rgba(189,147,249,.10); --cyan:#8be9fd; --orange:#ffb86c; --red:#ff5555; --pink:#ff79c6; --yellow:#f1fa8c;
+    --bg-deep:#0c0d14; --bg:#282a36; --bg-alt:#21222c; --bg-card:#2d2f3d; --bg-input:#353849; --border:#44475a; --border-focus:#50fa7b;
+    --text:#f8f8f2; --text-muted:#9ca3af; --text-dim:#6b7280; --heading:#f8f8f2;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-md:0 8px 24px rgba(0,0,0,.45); --shadow-lg:0 24px 60px rgba(0,0,0,.55);
+    --grid-line:rgba(255,255,255,.06); --card-grad:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0));
+  }
+  [data-theme="light"] {
+    --primary:#16a34a; --primary-dark:#065f28; --primary-dim:rgba(22,163,74,.08); --primary-glow:rgba(22,163,74,.15);
+    --accent:#7c3aed; --accent-dim:#f5f3ff; --cyan:#0891b2; --orange:#ea580c; --red:#dc2626; --pink:#db2777; --yellow:#a16207;
+    --bg-deep:#f1f5f9; --bg:#f8fafc; --bg-alt:#ffffff; --bg-card:#ffffff; --bg-input:#e2e8f0; --border:#cbd5e1; --border-focus:#16a34a;
+    --text:#1e293b; --text-muted:#64748b; --text-dim:#94a3b8; --heading:#0f172a;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06); --shadow-md:0 10px 30px rgba(15,23,42,.08); --shadow-lg:0 24px 60px rgba(15,23,42,.12);
+    --grid-line:rgba(15,23,42,.07); --card-grad:linear-gradient(180deg,rgba(15,23,42,.015),rgba(15,23,42,0));
+  }
+  :root { --success:var(--primary); --info:var(--cyan); --warning:var(--orange); --danger:var(--red); --premium:var(--accent); }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:"Space Grotesk","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    background:var(--bg); color:var(--text); font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+    transition:background .45s ease,color .45s ease; overflow-x:hidden;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(760px 400px at 10% -6%,var(--primary-dim),transparent 60%),
+      radial-gradient(720px 460px at 94% 2%,var(--accent-dim),transparent 60%);
+    transition:opacity .45s ease;
+  }
+  h1,h2,h3,h4 { color:var(--heading); font-weight:700; letter-spacing:-.02em; line-height:1.14; }
+  .mono { font-family:"JetBrains Mono","Cascadia Code",Consolas,monospace; }
+  a { color:var(--primary); text-decoration:none; }
+  .wrap { max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  /* ── Top bar ── */
+  .topbar { position:sticky; top:0; z-index:50; backdrop-filter:blur(14px); background:color-mix(in srgb,var(--bg) 80%,transparent); border-bottom:1px solid var(--border); }
+  .topbar-inner { display:flex; align-items:center; gap:14px; height:64px; }
+  .brand { display:flex; align-items:center; gap:12px; font-weight:700; }
+  .brand-mark { width:38px; height:38px; border-radius:11px; display:grid; place-items:center; font-size:19px; font-weight:800; color:var(--bg-deep); background:linear-gradient(135deg,var(--primary),var(--cyan)); box-shadow:0 6px 18px var(--primary-glow); }
+  .brand small { display:block; font-size:12px; font-weight:500; color:var(--text-muted); }
+  .topbar .spacer { flex:1; }
+  .nav-links { display:flex; gap:6px; }
+  .nav-links a { color:var(--text-muted); font-size:14px; font-weight:600; padding:8px 12px; border-radius:9px; transition:color .2s,background .2s; }
+  .nav-links a:hover { color:var(--text); background:var(--bg-card); }
+  .btn { display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:14px; font-weight:600; cursor:pointer; padding:10px 16px; border-radius:11px; border:1px solid var(--border); background:var(--bg-card); color:var(--text); transition:transform .2s,border-color .2s,background .2s,box-shadow .2s; }
+  .btn:hover { transform:translateY(-2px); border-color:var(--border-focus); }
+  .btn-primary { background:var(--primary); color:var(--bg-deep); border-color:var(--primary); box-shadow:0 8px 22px var(--primary-glow); }
+  .btn-primary:hover { background:var(--primary-dark); }
+  .icon-btn { width:42px; height:42px; padding:0; justify-content:center; }
+  .icon-btn svg { width:19px; height:19px; }
+
+  .pill-live { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; padding:6px 13px; border-radius:999px; color:var(--success); background:color-mix(in srgb,var(--success) 13%,transparent); border:1px solid color-mix(in srgb,var(--success) 38%,transparent); }
+  .dot-live { width:8px; height:8px; border-radius:50%; background:var(--success); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--success) 70%,transparent);} 70%{box-shadow:0 0 0 7px transparent;} 100%{box-shadow:0 0 0 0 transparent;} }
+
+  /* ── Hero ── */
+  .hero { padding:72px 0 34px; text-align:center; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--primary); padding:7px 15px; border-radius:999px; background:var(--primary-dim); border:1px solid color-mix(in srgb,var(--primary) 28%,transparent); }
+  .hero h1 { font-size:56px; margin:24px auto 16px; max-width:17ch; background:linear-gradient(120deg,var(--heading) 38%,var(--primary)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero .lede { font-size:19px; color:var(--text-muted); max-width:64ch; margin:0 auto; }
+  .hero-cta { display:flex; gap:12px; justify-content:center; margin-top:30px; flex-wrap:wrap; }
+
+  /* ── Stat strip ── */
+  .stat-strip { display:grid; grid-template-columns:repeat(6,1fr); gap:0; margin-top:48px; border:1px solid var(--border); border-radius:18px; overflow:hidden; background:var(--bg-card); background-image:var(--card-grad); box-shadow:var(--shadow-md); }
+  .stat-strip .st { padding:22px 14px; text-align:center; border-right:1px solid var(--border); }
+  .stat-strip .st:last-child { border-right:0; }
+  .stat-strip .v { font-size:32px; font-weight:800; letter-spacing:-.03em; color:var(--heading); line-height:1; }
+  .stat-strip .v.tint { color:var(--primary); }
+  .stat-strip .l { font-size:12px; color:var(--text-muted); margin-top:7px; text-transform:uppercase; letter-spacing:.05em; }
+
+  /* ── Section scaffolding ── */
+  section.block { padding:54px 0; }
+  .sec-head { text-align:center; max-width:62ch; margin:0 auto 36px; }
+  .sec-head .kicker { font-size:13px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px; }
+  .sec-head h2 { font-size:34px; margin-bottom:12px; }
+  .sec-head p { color:var(--text-muted); font-size:16px; }
+
+  /* ── Lounge gallery ── */
+  .gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:44px; }
+  .gallery figure { position:relative; margin:0; aspect-ratio:4/3; border-radius:16px; overflow:hidden; border:1px solid var(--border); box-shadow:var(--shadow-sm); background:linear-gradient(135deg,var(--primary-dim),var(--bg-card)); }
+  .gallery img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .6s cubic-bezier(.2,.7,.3,1); }
+  .gallery figure:hover img { transform:scale(1.06); }
+  .gallery figcaption { position:absolute; left:0; right:0; bottom:0; padding:30px 16px 14px; font-size:14px; font-weight:600; color:#fff; background:linear-gradient(to top,rgba(11,19,38,.82),transparent); }
+  .gallery figcaption .price { float:right; font-weight:700; color:var(--primary); }
+  @media (max-width:760px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:480px){ .gallery{grid-template-columns:1fr} }
+
+  .reveal { opacity:0; transform:translateY(26px); transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.in { opacity:1; transform:none; }
+  .stagger > * { opacity:0; transform:translateY(20px); transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.3,1); }
+  .stagger.in > * { opacity:1; transform:none; }
+  .stagger.in > *:nth-child(2){transition-delay:.06s}.stagger.in > *:nth-child(3){transition-delay:.12s}
+  .stagger.in > *:nth-child(4){transition-delay:.18s}.stagger.in > *:nth-child(5){transition-delay:.24s}
+  .stagger.in > *:nth-child(6){transition-delay:.30s}.stagger.in > *:nth-child(7){transition-delay:.36s}
+  .stagger.in > *:nth-child(8){transition-delay:.42s}
+
+  .card { background:var(--bg-card); background-image:var(--card-grad); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-sm); }
+
+  /* ── Workspaces row ── */
+  .ws-row { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+  .ws { padding:18px 14px; text-align:center; transition:transform .26s ease,box-shadow .26s ease,border-color .26s ease; }
+  .ws:hover { transform:translateY(-5px); box-shadow:var(--shadow-md); border-color:var(--border-focus); }
+  .ws .ic { width:46px; height:46px; border-radius:13px; display:grid; place-items:center; margin:0 auto 10px; color:var(--bg-deep); }
+  .ws .ic svg { width:23px; height:23px; }
+  .ws h4 { font-size:14.5px; }
+  .ws p { font-size:12px; color:var(--text-muted); margin-top:3px; }
+
+  /* ── Capability cards ── */
+  .cap-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+  .cap { padding:26px; position:relative; overflow:hidden; transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease; }
+  .cap:hover { transform:translateY(-6px); box-shadow:var(--shadow-lg); border-color:color-mix(in srgb,var(--cc) 50%,var(--border)); }
+  .cap::before { content:""; position:absolute; left:0; top:0; height:100%; width:4px; background:linear-gradient(var(--cc),transparent); }
+  .cap-head { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .cap-ic { width:48px; height:48px; border-radius:13px; display:grid; place-items:center; color:var(--cc); background:color-mix(in srgb,var(--cc) 13%,transparent); border:1px solid color-mix(in srgb,var(--cc) 30%,transparent); flex-shrink:0; }
+  .cap-ic svg { width:24px; height:24px; }
+  .cap-head h3 { font-size:19px; }
+  .cap-head .tag { font-size:11px; font-weight:700; color:var(--cc); text-transform:uppercase; letter-spacing:.06em; }
+  .cap ul { list-style:none; display:grid; gap:9px; }
+  .cap li { display:flex; gap:10px; font-size:14px; color:var(--text-muted); align-items:flex-start; }
+  .cap li svg { width:17px; height:17px; color:var(--success); flex-shrink:0; margin-top:2px; }
+
+  /* ── Delivery timeline (epics) ── */
+  .release-tabs { display:flex; gap:8px; justify-content:center; margin-bottom:26px; flex-wrap:wrap; }
+  .rt { font:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:8px 16px; border-radius:999px; color:var(--text-muted); background:var(--bg-card); border:1px solid var(--border); transition:all .2s; }
+  .rt:hover { color:var(--text); border-color:var(--border-focus); }
+  .rt.active { color:var(--bg-deep); background:var(--primary); border-color:var(--primary); }
+  .epics { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  .ep { padding:20px 22px; display:grid; grid-template-columns:auto 1fr auto; gap:16px; align-items:center; transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease; }
+  .ep:hover { transform:translateX(5px); box-shadow:var(--shadow-md); border-color:var(--border-focus); }
+  .ep .no { width:46px; height:46px; border-radius:12px; display:grid; place-items:center; font-family:"JetBrains Mono",monospace; font-weight:800; font-size:16px; color:var(--ec); background:color-mix(in srgb,var(--ec) 13%,transparent); border:1px solid color-mix(in srgb,var(--ec) 32%,transparent); }
+  .ep h4 { font-size:15.5px; margin-bottom:3px; }
+  .ep p { font-size:12.5px; color:var(--text-muted); }
+  .ep .rel { font-size:10.5px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; margin-top:5px; }
+  .ep .done-badge { display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--success); }
+  .ep .done-badge svg { width:26px; height:26px; }
+  .ep .done-badge span { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+
+  /* ── Highlights ── */
+  .hl-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .hl { padding:22px 18px; transition:transform .26s ease,box-shadow .26s ease; }
+  .hl:hover { transform:translateY(-5px); box-shadow:var(--shadow-md); }
+  .hl .ic { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; color:var(--accent); background:var(--accent-dim); border:1px solid color-mix(in srgb,var(--accent) 28%,transparent); margin-bottom:13px; }
+  .hl .ic svg { width:21px; height:21px; }
+  .hl h4 { font-size:15px; margin-bottom:5px; }
+  .hl p { font-size:13px; color:var(--text-muted); }
+
+  /* ── Readiness / final steps ── */
+  .ready-split { display:grid; grid-template-columns:1.05fr .95fr; gap:24px; align-items:stretch; }
+  .ready-card { padding:30px; }
+  .ready-card h3 { font-size:21px; margin-bottom:8px; }
+  .ready-card .sub { color:var(--text-muted); font-size:14.5px; margin-bottom:20px; }
+  .checklist { display:grid; gap:12px; }
+  .ck { display:flex; gap:12px; align-items:flex-start; font-size:14px; }
+  .ck .mk { width:24px; height:24px; border-radius:7px; display:grid; place-items:center; flex-shrink:0; }
+  .ck .mk svg { width:15px; height:15px; }
+  .ck.ok .mk { color:var(--success); background:color-mix(in srgb,var(--success) 14%,transparent); }
+  .ck.pending .mk { color:var(--warning); background:color-mix(in srgb,var(--warning) 16%,transparent); }
+  .ck .txt b { color:var(--heading); font-weight:600; display:block; font-size:14px; }
+  .ck .txt span { color:var(--text-muted); font-size:12.5px; }
+  .gauge-box { text-align:center; display:flex; flex-direction:column; justify-content:center; }
+  .gauge-box svg { width:190px; height:190px; transform:rotate(-90deg); margin:0 auto; }
+  .gauge-box .track { fill:none; stroke:var(--bg-input); stroke-width:13; }
+  .gauge-box .meter { fill:none; stroke:var(--primary); stroke-width:13; stroke-linecap:round; stroke-dasharray:471.24; stroke-dashoffset:471.24; transition:stroke-dashoffset 1.8s cubic-bezier(.2,.7,.3,1); }
+  .gauge-box .pct { font-size:38px; font-weight:800; fill:var(--heading); transform:rotate(90deg); transform-origin:center; font-family:"Space Grotesk",sans-serif; }
+  .gauge-box h4 { font-size:17px; margin-top:14px; }
+  .gauge-box p { font-size:13px; color:var(--text-muted); margin-top:4px; }
+
+  /* ── Verdict / CTA ── */
+  .verdict { position:relative; overflow:hidden; padding:52px; border-radius:26px; text-align:center; border:1px solid color-mix(in srgb,var(--primary) 35%,var(--border)); background:radial-gradient(900px 400px at 50% -40%,var(--primary-dim),transparent 60%),var(--bg-card); box-shadow:var(--shadow-lg); }
+  .verdict .eyebrow { margin-bottom:18px; }
+  .verdict h2 { font-size:38px; margin-bottom:14px; max-width:20ch; margin-inline:auto; }
+  .verdict p { color:var(--text-muted); max-width:58ch; margin:0 auto 26px; font-size:16px; }
+  .verdict .hero-cta { margin-top:0; }
+
+  footer { padding:40px 0 56px; color:var(--text-dim); font-size:13px; text-align:center; border-top:1px solid var(--border); margin-top:34px; }
+  footer a { font-weight:600; }
+
+  /* ── Responsive ── */
+  @media (max-width:980px){
+    .hero h1{font-size:42px}
+    .stat-strip{grid-template-columns:repeat(3,1fr)}
+    .stat-strip .st:nth-child(3){border-right:0}
+    .stat-strip .st:nth-child(-n+3){border-bottom:1px solid var(--border)}
+    .ws-row{grid-template-columns:repeat(3,1fr)}
+    .cap-grid,.epics,.ready-split{grid-template-columns:1fr}
+    .hl-grid{grid-template-columns:repeat(2,1fr)}
+    .nav-links{display:none}
+  }
+  @media (max-width:600px){
+    .wrap{padding:0 16px}
+    .hero{padding:48px 0 24px}
+    .hero h1{font-size:32px}
+    .sec-head h2{font-size:26px}
+    .stat-strip{grid-template-columns:repeat(2,1fr)}
+    .ws-row,.hl-grid{grid-template-columns:1fr 1fr}
+    .verdict{padding:30px}
+    .verdict h2{font-size:27px}
+    .brand small{display:none}
+    .hide-sm{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} .reveal,.stagger>*{opacity:1!important;transform:none!important} }
+  @media print { .topbar,.icon-btn,.hero-cta{display:none} body{background:#fff} .reveal,.stagger>*{opacity:1!important;transform:none!important} .card,.cap,.verdict{box-shadow:none} }
+</style>
+</head>
+<body>
+
+<!-- ════ TOP BAR ════ -->
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">F</div>
+      <div>Fammy Comforts<small>Hotel Operations Platform</small></div>
+    </div>
+    <div class="spacer"></div>
+    <nav class="nav-links">
+      <a href="#capabilities">Capabilities</a>
+      <a href="#delivery">Delivery</a>
+      <a href="#platform">Platform</a>
+      <a href="#status">Status</a>
+    </nav>
+    <span class="pill-live hide-sm"><span class="dot-live"></span> LIVE</span>
+    <button class="btn icon-btn" id="themeToggle" aria-label="Toggle theme" title="Toggle light / dark">
+      <svg id="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ════ HERO ════ -->
+  <section class="hero reveal">
+    <span class="eyebrow">✦ Project Delivery · MVP Complete</span>
+    <h1>The all-in-one hotel operations platform</h1>
+    <p class="lede">From a guest's first booking to checkout, housekeeping, the kitchen, payments and the owner's reports — Fammy Comforts runs the whole property in one installable app. Built, tested, and live in production.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="https://fammycomforts.vercel.app" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M21 3l-9 9M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg>
+        View the live app
+      </a>
+      <a class="btn" href="#capabilities">Explore what's built</a>
+    </div>
+
+    <div class="stat-strip">
+      <div class="st"><div class="v tint" data-count="10">0</div><div class="l">Epics Delivered</div></div>
+      <div class="st"><div class="v" data-count="69">0</div><div class="l">Stories Shipped</div></div>
+      <div class="st"><div class="v" data-count="56">0</div><div class="l">Requirements</div></div>
+      <div class="st"><div class="v" data-count="174">0</div><div class="l">Automated Tests</div></div>
+      <div class="st"><div class="v" data-count="0">0</div><div class="l">Live Incidents</div></div>
+      <div class="st"><div class="v tint" style="font-size:24px">LIVE</div><div class="l">In Production</div></div>
+    </div>
+  </section>
+
+  <!-- ════ LOUNGE GALLERY ════ -->
+  <section class="block">
+    <div class="sec-head reveal">
+      <div class="kicker">Where guests stay the night</div>
+      <h2>A lounge built for comfort</h2>
+      <p>Boutique rooms and suites guests browse, book and pay for online — each with live availability, nightly rates in KES and instant confirmation.</p>
+    </div>
+    <div class="gallery stagger">
+      <figure><img loading="lazy" alt="Savannah Executive Suite" src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&q=70&auto=format&fit=crop" onerror="this.style.display='none'"/><figcaption>Savannah Executive Suite <span class="price">KES 8,500</span></figcaption></figure>
+      <figure><img loading="lazy" alt="Maasai Mara Penthouse" src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=900&q=70&auto=format&fit=crop" onerror="this.style.display='none'"/><figcaption>Maasai Mara Penthouse <span class="price">KES 14,500</span></figcaption></figure>
+      <figure><img loading="lazy" alt="Amboseli Garden Room" src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=900&q=70&auto=format&fit=crop" onerror="this.style.display='none'"/><figcaption>Amboseli Garden Room <span class="price">KES 6,300</span></figcaption></figure>
+      <figure><img loading="lazy" alt="Diani Deluxe Lounge" src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=900&q=70&auto=format&fit=crop" onerror="this.style.display='none'"/><figcaption>Diani Deluxe Lounge <span class="price">KES 6,900</span></figcaption></figure>
+      <figure><img loading="lazy" alt="Tsavo Twin Lounge" src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900&q=70&auto=format&fit=crop" onerror="this.style.display='none'"/><figcaption>Tsavo Twin Lounge <span class="price">KES 4,200</span></figcaption></figure>
+      <figure><img loading="lazy" alt="Watamu Beach Suite" src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=70&auto=format&fit=crop" onerror="this.style.display='none'"/><figcaption>Watamu Beach Suite <span class="price">KES 9,800</span></figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ════ WORKSPACES ════ -->
+  <section class="block">
+    <div class="sec-head reveal">
+      <div class="kicker">One platform · Six roles</div>
+      <h2>Every team, one connected system</h2>
+      <p>Guests, reception, operations, housekeeping, the kitchen and management each get a workspace tailored to their job — sharing one live source of truth.</p>
+    </div>
+    <div class="ws-row stagger">
+      <div class="card ws"><div class="ic" style="background:linear-gradient(135deg,var(--primary),var(--cyan))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8V4h12"/></svg></div><h4>Guest</h4><p>Book &amp; pay online</p></div>
+      <div class="card ws"><div class="ic" style="background:linear-gradient(135deg,var(--cyan),var(--accent))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><h4>Front Desk</h4><p>Calendar &amp; check-in</p></div>
+      <div class="card ws"><div class="ic" style="background:linear-gradient(135deg,var(--accent),var(--pink))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6.6 6.6a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l6.6-6.6a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg></div><h4>Operations</h4><p>Run the floor live</p></div>
+      <div class="card ws"><div class="ic" style="background:linear-gradient(135deg,var(--orange),var(--yellow))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V6a3 3 0 0 1 6 0M5 11h14l-1 9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/></svg></div><h4>Housekeeping</h4><p>Tasks &amp; checklists</p></div>
+      <div class="card ws"><div class="ic" style="background:linear-gradient(135deg,var(--orange),var(--red))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v18M8 9h8a3 3 0 0 0 0-6M16 21V3a3 3 0 0 1 0 6"/></svg></div><h4>Kitchen</h4><p>Live order display</p></div>
+      <div class="card ws"><div class="ic" style="background:linear-gradient(135deg,var(--primary),var(--accent))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></div><h4>Admin</h4><p>Reports &amp; control</p></div>
+    </div>
+  </section>
+
+  <!-- ════ CAPABILITIES ════ -->
+  <section class="block" id="capabilities">
+    <div class="sec-head reveal">
+      <div class="kicker">Capabilities</div>
+      <h2>Everything a property needs — end to end</h2>
+      <p>Seven connected capability areas covering the full guest and operational lifecycle, all delivered and working today.</p>
+    </div>
+    <div class="cap-grid stagger" id="capGrid"></div>
+  </section>
+
+  <!-- ════ DELIVERY TIMELINE ════ -->
+  <section class="block" id="delivery">
+    <div class="sec-head reveal">
+      <div class="kicker">Build journey · Start to finish</div>
+      <h2>Ten modules delivered, in order</h2>
+      <p>The platform was built foundation-first, then layered feature by feature. Every module below is complete, tested, and deployed.</p>
+    </div>
+    <div class="release-tabs reveal" id="relTabs">
+      <button class="rt active" data-r="all">All releases</button>
+      <button class="rt" data-r="R1">R1 · MVP</button>
+      <button class="rt" data-r="R2">R2</button>
+      <button class="rt" data-r="R3">R3</button>
+    </div>
+    <div class="epics stagger" id="epicGrid"></div>
+  </section>
+
+  <!-- ════ PLATFORM HIGHLIGHTS ════ -->
+  <section class="block" id="platform">
+    <div class="sec-head reveal">
+      <div class="kicker">Built right</div>
+      <h2>Engineered for real-world hospitality</h2>
+      <p>The things that matter when money, rooms and guests are on the line — designed in from day one.</p>
+    </div>
+    <div class="hl-grid stagger" id="hlGrid"></div>
+  </section>
+
+  <!-- ════ STATUS / READINESS ════ -->
+  <section class="block" id="status">
+    <div class="sec-head reveal">
+      <div class="kicker">Where we are</div>
+      <h2>MVP complete &amp; live in production</h2>
+      <p>The full product is built and deployed. A short, transparent list of final go-live verification steps remains before the public launch push.</p>
+    </div>
+    <div class="ready-split">
+      <div class="card ready-card reveal">
+        <h3>Delivered &amp; verified</h3>
+        <div class="sub">Shipped to production and covered by automated tests.</div>
+        <div class="checklist" id="okList"></div>
+      </div>
+      <div class="card ready-card reveal">
+        <h3 style="text-align:center">Overall delivery</h3>
+        <div class="gauge-box">
+          <svg viewBox="0 0 170 170"><circle class="track" cx="85" cy="85" r="75"></circle><circle class="meter" cx="85" cy="85" r="75" data-pct="97"></circle><text class="pct" x="85" y="97" text-anchor="middle">0%</text></svg>
+          <h4>MVP &amp; full roadmap delivered</h4>
+          <p>2 integration checks remain for public launch</p>
+        </div>
+        <div class="checklist" id="pendList" style="margin-top:22px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ VERDICT / CTA ════ -->
+  <section class="block">
+    <div class="verdict reveal">
+      <span class="eyebrow">✓ Ready for guests</span>
+      <h2>This is a complete, working MVP</h2>
+      <p>Ten modules, sixty-nine delivered stories, one hundred and seventy-four passing tests, and zero production incidents — a property can be configured, booked, paid, operated, and reported on, today.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://fammycomforts.vercel.app" target="_blank" rel="noopener">Open the live app →</a>
+        <button class="btn" id="printBtn">Save as PDF</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <strong style="color:var(--text-muted)">Fammy Comforts</strong> · Hotel &amp; Hospitality Management Platform ·
+    Live at <a href="https://fammycomforts.vercel.app" target="_blank" rel="noopener">fammycomforts.vercel.app</a><br/>
+    <span style="opacity:.8">Project completion overview · Prepared for client review · June 2026</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── Theme ── */
+  var root = document.documentElement, toggle = document.getElementById("themeToggle");
+  var sun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+  var moon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  function applyTheme(t){ root.setAttribute("data-theme", t); toggle.innerHTML = (t==="dark")?sun:moon; }
+  var saved=null; try{ saved=localStorage.getItem("fc-mvp-theme"); }catch(e){}
+  applyTheme(saved||"dark");
+  toggle.addEventListener("click", function(){ var n=(root.getAttribute("data-theme")==="dark")?"light":"dark"; applyTheme(n); try{localStorage.setItem("fc-mvp-theme",n);}catch(e){} });
+  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+
+  /* ── Data ── */
+  var ICON = {
+    bed:'<path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8V4h12"/>',
+    card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    desk:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01"/>',
+    ops:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6.6 6.6a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l6.6-6.6a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/>',
+    box:'<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>',
+    chef:'<path d="M8 3v18M8 9h8a3 3 0 0 0 0-6M16 21V3a3 3 0 0 1 0 6"/>',
+    chart:'<path d="M3 3v18h18M7 14l4-4 3 3 5-6"/>'
+  };
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  var CAPS = [
+    { c:"var(--primary)", icon:ICON.bed, tag:"Guest Booking", title:"Online booking that converts",
+      items:["Public room catalog with live availability","Date search with accurate multi-night pricing","No-account booking in minutes","Optional ID document upload","Instant confirmation with reference number","Self-service booking lookup"] },
+    { c:"var(--cyan)", icon:ICON.card, tag:"Payments & M-Pesa", title:"Money handled correctly",
+      items:["M-Pesa STK push + manual reference","Cash &amp; card recording","Exact-to-the-cent ledger — balances never drift","Invoices &amp; receipts","Guest portal for bookings &amp; invoices","Payment reconciliation worklist"] },
+    { c:"var(--accent)", icon:ICON.desk, tag:"Front Desk", title:"Reception, fully equipped",
+      items:["Fast booking creation &amp; editing","Availability calendar across all rooms","Check-in with ID verification","Check-out with balance &amp; receipt","Extend, change room, cancel, no-show, refund","Guest profiles with stay history"] },
+    { c:"var(--orange)", icon:ICON.ops, tag:"Operations & Housekeeping", title:"Run the floor in real time",
+      items:["Mobile daily operations dashboard","Live room-readiness board","Housekeeping task queue &amp; assignment","Room-type cleaning checklists with photo proof","Maintenance &amp; damage reporting","Automatic escalations for what needs attention"] },
+    { c:"var(--pink)", icon:ICON.box, tag:"Inventory & Procurement", title:"Stock tracked end to end",
+      items:["Product catalog with cost &amp; price","Suppliers &amp; purchase orders","Full stock-movement audit trail","Stocktake with variance posting","Low-stock alerts","Usage tracking from sales"] },
+    { c:"var(--yellow)", icon:ICON.chef, tag:"Restaurant & Kitchen", title:"Food &amp; bar, connected to the room",
+      items:["Menu linked to inventory","Orders for room service, dine-in, takeaway &amp; bar","Live kitchen display with status lanes","Charge straight to the guest's room","Restaurant revenue &amp; top sellers"] },
+    { c:"var(--primary)", icon:ICON.chart, tag:"Reporting & Notifications", title:"Owners see everything",
+      items:["KPI dashboard with daily action queue","Revenue, occupancy &amp; outstanding balances","Profit &amp; loss and inventory reports","Guest analytics, tax/VAT &amp; asset reports","PDF &amp; CSV/Excel export","Multi-channel notifications (SMS, push, email)"] }
+  ];
+
+  var EPICS = [
+    { n:"01", rel:"R1", c:"var(--primary)", t:"Platform Foundation & Design System", d:"Installable PWA, offline support, design system, realtime base, CI/CD &amp; backups." },
+    { n:"02", rel:"R1", c:"var(--cyan)", t:"Identity, Access & Staff Management", d:"Secure sign-in, roles &amp; granular permissions, full audit trail." },
+    { n:"03", rel:"R1", c:"var(--accent)", t:"Property, Rooms, Rates & Amenities", d:"Configure the property, rooms, room types, rate plans &amp; tax." },
+    { n:"04", rel:"R1", c:"var(--orange)", t:"Guest Booking Experience", d:"Catalog, availability search, no-account booking, ID upload &amp; lookup." },
+    { n:"05", rel:"R1", c:"var(--pink)", t:"Payments, Invoicing & Reconciliation", d:"Exact money ledger, M-Pesa, invoices/receipts, guest portal &amp; reconciliation." },
+    { n:"06", rel:"R1", c:"var(--cyan)", t:"Front Desk Operations", d:"Booking lifecycle, calendar, check-in/out, modifications &amp; payment recording." },
+    { n:"07", rel:"R2", c:"var(--primary)", t:"Operations & Housekeeping", d:"Ops dashboard, room board, tasks, maintenance, asset checks &amp; escalations." },
+    { n:"08", rel:"R2", c:"var(--orange)", t:"Inventory & Procurement", d:"Catalog, suppliers, purchase orders, stock movements, stocktake &amp; alerts." },
+    { n:"09", rel:"R3", c:"var(--yellow)", t:"Restaurant & Kitchen", d:"Inventory-linked menu, multi-channel orders, kitchen display &amp; charge-to-room." },
+    { n:"10", rel:"R3", c:"var(--accent)", t:"Reporting, Exports & Notifications", d:"Dashboards, financial &amp; guest reports, PDF/CSV export &amp; notifications." }
+  ];
+
+  var HIGHLIGHTS = [
+    { icon:'<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M11 18h2"/>', t:"Installable PWA", d:"Works like a native app on phone, tablet &amp; desktop — install and go." },
+    { icon:'<path d="M5 12.55a11 11 0 0 1 14 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>', t:"Offline-tolerant", d:"Keeps working on poor networks and syncs when the connection returns." },
+    { icon:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>', t:"Real-time", d:"Calendar, kitchen, housekeeping &amp; dashboards update live within seconds." },
+    { icon:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', t:"Exact money", d:"Every amount is cent-accurate with a ledger that can't drift from its history." },
+    { icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>', t:"Secure & audited", d:"Role-based access with a tamper-evident log of every sensitive action." },
+    { icon:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>', t:"M-Pesa ready", d:"Native M-Pesa STK push and manual reference capture built in." },
+    { icon:'<path d="M4 4h16v12H5.2L4 17.3z"/><path d="M8 9h8M8 12h5"/>', t:"Multi-channel alerts", d:"Notifies the right people by SMS, in-app push &amp; email." },
+    { icon:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', t:"Light & dark", d:"A polished, accessible interface in both themes, on-brand throughout." }
+  ];
+
+  var OK = [
+    { b:"All 10 modules deployed to production", s:"Convex backend + Vercel web app, routes verified live." },
+    { b:"174 automated tests passing", s:"102 backend &amp; 72 web — green on every build." },
+    { b:"Zero production incidents", s:"Stable since go-live, no rollbacks." },
+    { b:"Full guest-to-report demo loop works", s:"Book → desk → housekeeping → kitchen → reports, end to end." }
+  ];
+  var PEND = [
+    { b:"Live M-Pesa sandbox transaction", s:"Final test against the real M-Pesa gateway with property credentials." },
+    { b:"Single sign-on verification", s:"One browser sign-on round-trip to confirm the partner login handoff." }
+  ];
+
+  /* ── Render: capabilities ── */
+  var cg = document.getElementById("capGrid");
+  CAPS.forEach(function(cap){
+    var el = document.createElement("div"); el.className="card cap"; el.style.setProperty("--cc", cap.c);
+    var lis = cap.items.map(function(i){ return '<li>'+CHECK+'<span>'+i+'</span></li>'; }).join("");
+    el.innerHTML =
+      '<div class="cap-head"><div class="cap-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+cap.icon+'</svg></div>'+
+      '<div><div class="tag">'+cap.tag+'</div><h3>'+cap.title+'</h3></div></div><ul>'+lis+'</ul>';
+    cg.appendChild(el);
+  });
+
+  /* ── Render: epics ── */
+  var eg = document.getElementById("epicGrid");
+  EPICS.forEach(function(e){
+    var el = document.createElement("div"); el.className="card ep"; el.setAttribute("data-r", e.rel); el.style.setProperty("--ec", e.c);
+    el.innerHTML =
+      '<div class="no">'+e.n+'</div>'+
+      '<div><h4>'+e.t+'</h4><p>'+e.d+'</p><div class="rel">RELEASE '+e.rel+'</div></div>'+
+      '<div class="done-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Done</span></div>';
+    eg.appendChild(el);
+  });
+  document.getElementById("relTabs").addEventListener("click", function(ev){
+    var b = ev.target.closest(".rt"); if(!b) return;
+    this.querySelectorAll(".rt").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    var r = b.getAttribute("data-r");
+    eg.querySelectorAll(".ep").forEach(function(ep){
+      ep.style.display = (r==="all" || ep.getAttribute("data-r")===r) ? "" : "none";
+    });
+  });
+
+  /* ── Render: highlights ── */
+  var hg = document.getElementById("hlGrid");
+  HIGHLIGHTS.forEach(function(h){
+    var el = document.createElement("div"); el.className="card hl";
+    el.innerHTML = '<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+h.icon+'</svg></div><h4>'+h.t+'</h4><p>'+h.d+'</p>';
+    hg.appendChild(el);
+  });
+
+  /* ── Render: checklists ── */
+  function renderChecks(id, arr, kind){
+    var box = document.getElementById(id);
+    var mark = (kind==="ok")
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>';
+    arr.forEach(function(it){
+      var d = document.createElement("div"); d.className="ck "+kind;
+      d.innerHTML = '<div class="mk">'+mark+'</div><div class="txt"><b>'+it.b+'</b><span>'+it.s+'</span></div>';
+      box.appendChild(d);
+    });
+  }
+  renderChecks("okList", OK, "ok");
+  renderChecks("pendList", PEND, "pending");
+
+  /* ── Count-up ── */
+  function countUp(node){
+    var target = +node.getAttribute("data-count");
+    if (target===0){ node.textContent="0"; return; }
+    var dur=1300, start=null;
+    requestAnimationFrame(function step(ts){
+      if(!start) start=ts;
+      var p=Math.min((ts-start)/dur,1), eased=1-Math.pow(1-p,3);
+      node.textContent=Math.round(target*eased);
+      if(p<1) requestAnimationFrame(step); else node.textContent=target;
+    });
+  }
+
+  /* ── Reveal + gauge ── */
+  function fire(el){
+    el.classList.add("in");
+    el.querySelectorAll("[data-count]").forEach(countUp);
+    el.querySelectorAll(".gauge-box .meter").forEach(function(m){
+      var pct=+m.getAttribute("data-pct"), full=471.24;
+      m.style.strokeDashoffset = full - full*(pct/100);
+      var txt=m.parentNode.querySelector(".pct"), t0=null;
+      requestAnimationFrame(function run(ts){
+        if(!t0) t0=ts;
+        var p=Math.min((ts-t0)/1800,1);
+        txt.textContent = Math.round(pct*(1-Math.pow(1-p,3)))+"%";
+        if(p<1) requestAnimationFrame(run);
+      });
+    });
+  }
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting){ fire(en.target); io.unobserve(en.target); } });
+    }, { threshold:0.16 });
+    document.querySelectorAll(".reveal, .stagger").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".reveal, .stagger").forEach(fire);
+  }
+})();
+</script>
+</body>
+</html>

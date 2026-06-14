@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { formatKes } from "@/lib/money";
+import { roomImage, roomGradient } from "@/lib/room-images";
 import { Button, Input, StatusChip, EmptyState } from "@/components/ui";
 import { Users } from "lucide-react";
 
@@ -30,18 +31,6 @@ type RoomCardData = {
   available: boolean;
   nights: number | null;
   totals: { totalCents: bigint } | null;
-};
-
-const PHOTO_GRADIENTS = [
-  "linear-gradient(135deg,#0d9488 0%,#134e4a 60%,#0b1326 100%)",
-  "linear-gradient(135deg,#0ea5e9 0%,#1e3a8a 70%,#0b1326 100%)",
-  "linear-gradient(135deg,#eab308 0%,#92400e 65%,#0b1326 100%)",
-  "linear-gradient(135deg,#f43f5e 0%,#881337 65%,#0b1326 100%)",
-];
-const photoFor = (key: string) => {
-  let h = 0;
-  for (const c of key) h = (h * 31 + c.charCodeAt(0)) | 0;
-  return PHOTO_GRADIENTS[Math.abs(h) % PHOTO_GRADIENTS.length];
 };
 
 function chipFor(
@@ -169,12 +158,23 @@ function Catalog() {
                 >
                   <figure
                     className="relative m-0 aspect-[16/10] overflow-hidden"
-                    style={{ background: photoFor(r.typeName + r.number) }}
+                    style={{ background: roomGradient(r.typeName + r.number) }}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={roomImage(r.typeName + r.number)}
+                      alt={`${r.typeName} room`}
+                      loading="lazy"
+                      className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,19,38,0.55),transparent_55%)]" />
                     <span className="absolute right-3 top-3">
                       <StatusChip status={chip.tone}>{chip.label}</StatusChip>
                     </span>
-                    <span className="absolute bottom-2 left-4 font-hero text-4xl font-extrabold text-white/20 transition-transform duration-500 group-hover:scale-110">
+                    <span className="absolute bottom-2 left-4 font-hero text-4xl font-extrabold text-white/30 transition-transform duration-500 group-hover:scale-110">
                       {r.typeName.slice(0, 1)}
                     </span>
                   </figure>

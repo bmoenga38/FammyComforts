@@ -7,6 +7,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { formatKes, kesToCents } from "@/lib/money";
+import { roomImage, roomGradient } from "@/lib/room-images";
 import { Button, Input, StatusChip } from "@/components/ui";
 import { Check, Users, BadgeCheck } from "lucide-react";
 
@@ -33,17 +34,6 @@ const METHOD_LABELS: Record<string, string> = {
   card: "Card",
 };
 
-const photoFor = (key: string) => {
-  const gradients = [
-    "linear-gradient(135deg,#0d9488 0%,#134e4a 60%,#0b1326 100%)",
-    "linear-gradient(135deg,#0ea5e9 0%,#1e3a8a 70%,#0b1326 100%)",
-    "linear-gradient(135deg,#eab308 0%,#92400e 65%,#0b1326 100%)",
-    "linear-gradient(135deg,#f43f5e 0%,#881337 65%,#0b1326 100%)",
-  ];
-  let h = 0;
-  for (const c of key) h = (h * 31 + c.charCodeAt(0)) | 0;
-  return gradients[Math.abs(h) % gradients.length];
-};
 
 function Stepper({ step }: { step: 0 | 1 | 2 }) {
   return (
@@ -173,8 +163,17 @@ function RoomBooking() {
         {/* Media header (prototype detail-hero) */}
         <figure
           className="relative m-0 aspect-[16/9]"
-          style={{ background: photoFor(detail.typeName + detail.number) }}
+          style={{ background: roomGradient(detail.typeName + detail.number) }}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={roomImage(detail.typeName + detail.number)}
+            alt={`${detail.typeName} room`}
+            className="absolute inset-0 size-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
           <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,19,38,0.9),transparent_60%)]" />
           <div className="absolute bottom-4 left-5 right-5">
             <div className="mb-1.5 flex gap-1.5">
