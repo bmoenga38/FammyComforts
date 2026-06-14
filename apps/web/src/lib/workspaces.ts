@@ -38,6 +38,12 @@ export interface Workspace {
   icon: LucideIcon;
   /** Whether this workspace appears in the mobile bottom nav (prototype: 5 of 6). */
   inBottomNav: boolean;
+  /**
+   * Permission area gating sidebar/bottom-nav visibility (RBAC, Epic 2). A role
+   * sees a workspace only if it has `read` on this area. `undefined` = always
+   * visible (the guest booking quick link is open to every staff member).
+   */
+  area?: string;
 }
 
 export const WORKSPACES: readonly Workspace[] = [
@@ -49,6 +55,7 @@ export const WORKSPACES: readonly Workspace[] = [
     title: "Guest Booking",
     icon: BedDouble,
     inBottomNav: true,
+    // No area: the public booking quick link is open to every signed-in member.
   },
   {
     slug: "admin",
@@ -58,6 +65,7 @@ export const WORKSPACES: readonly Workspace[] = [
     title: "Admin Dashboard",
     icon: LayoutDashboard,
     inBottomNav: true,
+    area: "Settings",
   },
   {
     slug: "front-desk",
@@ -67,6 +75,7 @@ export const WORKSPACES: readonly Workspace[] = [
     title: "Front Desk Calendar",
     icon: CalendarDays,
     inBottomNav: true,
+    area: "Bookings",
   },
   {
     slug: "operations",
@@ -76,6 +85,7 @@ export const WORKSPACES: readonly Workspace[] = [
     title: "Operations Manager",
     icon: Wrench,
     inBottomNav: false,
+    area: "Dashboard",
   },
   {
     slug: "housekeeping",
@@ -85,6 +95,7 @@ export const WORKSPACES: readonly Workspace[] = [
     title: "Housekeeping Tasks",
     icon: Brush,
     inBottomNav: true,
+    area: "Housekeeping",
   },
   {
     slug: "kitchen",
@@ -94,6 +105,7 @@ export const WORKSPACES: readonly Workspace[] = [
     title: "Kitchen Display",
     icon: ChefHat,
     inBottomNav: true,
+    area: "Restaurant",
   },
 ] as const;
 

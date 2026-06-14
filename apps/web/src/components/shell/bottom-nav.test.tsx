@@ -5,6 +5,9 @@ import { render, screen } from "@testing-library/react";
 const nav = vi.hoisted(() => ({ pathname: "/guest" }));
 
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
+vi.mock("@/lib/use-permissions", () => ({
+  usePermissions: () => ({ can: () => true, isLoading: false, perms: [] }),
+}));
 vi.mock("next/link", () => ({
   default: ({
     href,

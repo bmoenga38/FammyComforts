@@ -4,12 +4,24 @@ import { render, screen, fireEvent } from "@testing-library/react";
 
 const nav = vi.hoisted(() => ({ pathname: "/guest" }));
 
-vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
-// The top bar's notification bell queries the feed.
+vi.mock("next/navigation", () => ({
+  usePathname: () => nav.pathname,
+  useRouter: () => ({ push: vi.fn() }),
+}));
+// The top bar's notification bell queries the feed; the sidebar queries identity.me.
 vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
-  api: { notificationsFeed: { feed: "notificationsFeed.feed" } },
+  api: {
+    notificationsFeed: { feed: "notificationsFeed.feed" },
+    identity: { me: "identity.me" },
+  },
 }));
 vi.mock("convex/react", () => ({ useQuery: () => ({ count: 0, items: [] }) }));
+vi.mock("@/lib/use-permissions", () => ({
+  usePermissions: () => ({ can: () => true, isLoading: false, perms: [] }),
+}));
+vi.mock("@convex-dev/auth/react", () => ({
+  useAuthActions: () => ({ signOut: vi.fn() }),
+}));
 vi.mock("next/link", () => ({
   default: ({
     href,

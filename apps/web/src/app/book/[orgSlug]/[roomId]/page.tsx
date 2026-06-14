@@ -9,7 +9,7 @@ import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { formatKes, kesToCents } from "@/lib/money";
 import { roomImage, roomGradient } from "@/lib/room-images";
 import { Button, Input, StatusChip } from "@/components/ui";
-import { Check, Users, BadgeCheck } from "lucide-react";
+import { Check, Users, BadgeCheck, Upload } from "lucide-react";
 
 /**
  * Room detail + 3-step booking (Stories 4.2, 4.4–4.7), per the prototype's
@@ -45,6 +45,49 @@ function Stepper({ step }: { step: 0 | 1 | 2 }) {
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * A styled, tappable ID-photo upload tile. The native file input is visually
+ * hidden (still focusable/clickable via the wrapping label); the tile shows an
+ * upload prompt, then flips to a check + filename once a photo is chosen.
+ */
+function IdUploadTile({
+  label,
+  file,
+  onSelect,
+}: {
+  label: string;
+  file: File | null;
+  onSelect: (file: File | null) => void;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-3 py-5 text-center transition-colors ${
+        file
+          ? "border-primary bg-primary/10 text-primary"
+          : "border-border bg-bg-input text-text-muted hover:border-border-focus hover:text-text"
+      }`}
+    >
+      <input
+        type="file"
+        accept="image/*"
+        required
+        onChange={(e) => onSelect(e.target.files?.[0] ?? null)}
+        className="sr-only"
+        aria-label={`${label} (required)`}
+      />
+      {file ? (
+        <Check className="size-5" aria-hidden="true" />
+      ) : (
+        <Upload className="size-5" aria-hidden="true" />
+      )}
+      <span className="text-[13px] font-semibold">{label}</span>
+      <span className="max-w-full truncate text-[11px] font-normal opacity-80">
+        {file ? file.name : "Tap to upload"}
+      </span>
+    </label>
   );
 }
 
@@ -111,6 +154,8 @@ function RoomBooking() {
     if (!detail.available) return setError("This room isn't available for those dates.");
     if (!fullName.trim()) return setError("Enter the guest full name (as on ID).");
     if (phone.replace(/\D/g, "").length < 9) return setError("Enter a valid phone number.");
+    if (!idFront) return setError("Upload a photo of the front of your ID.");
+    if (!idBack) return setError("Upload a photo of the back of your ID.");
     setStep(1);
   };
 
@@ -281,25 +326,15 @@ function RoomBooking() {
                     placeholder="e.g. 12345678"
                   />
                 </label>
-                <div className="flex flex-wrap gap-4 text-xs font-semibold text-text-muted">
-                  <label className="flex flex-col gap-1.5">
-                    ID front (optional)
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setIdFront(e.target.files?.[0] ?? null)}
-                      className="text-text-muted"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    ID back (optional)
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setIdBack(e.target.files?.[0] ?? null)}
-                      className="text-text-muted"
-                    />
-                  </label>
+                <div className="space-y-2 text-xs font-semibold text-text-muted">
+                  <span className="block">
+                    Photo ID <span className="text-danger">*</span>
+                    <span className="font-normal"> — front &amp; back required</span>
+                  </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <IdUploadTile label="Front of ID" file={idFront} onSelect={setIdFront} />
+                    <IdUploadTile label="Back of ID" file={idBack} onSelect={setIdBack} />
+                  </div>
                 </div>
               </div>
 

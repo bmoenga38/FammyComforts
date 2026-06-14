@@ -3,16 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { WORKSPACES, isWorkspaceActive } from "@/lib/workspaces";
+import { usePermissions } from "@/lib/use-permissions";
 import { cn } from "@/lib/cn";
 
 /**
  * Fixed mobile bottom nav (64px glass bar per the prototype — max 5 items;
  * active item glows teal). Hidden on desktop where the sidebar takes over.
+ * Items are gated by the signed-in role's permissions (matching the sidebar).
  * Padded for the iOS home indicator via `safe-area-inset-bottom`.
  */
 export function BottomNav() {
   const pathname = usePathname();
-  const items = WORKSPACES.filter((w) => w.inBottomNav);
+  const { can, isLoading } = usePermissions();
+  const items = WORKSPACES.filter(
+    (w) => w.inBottomNav && (!w.area || isLoading || can(w.area, "read")),
+  );
 
   return (
     <nav
