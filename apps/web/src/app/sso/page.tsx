@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { DEFAULT_WORKSPACE } from "@/lib/workspaces";
 
 /**
  * SSO landing route (Epic 2, Story 2.1). BytePlane's ByteStay tile opens
@@ -25,7 +24,7 @@ function SsoHandoff() {
     if (!token || started.current) return; // one attempt (tokens are single-use)
     started.current = true;
     signIn("sso-handoff", { token })
-      .then(() => router.replace(DEFAULT_WORKSPACE.href))
+      .then(() => router.replace("/")) // root resolver routes to the role's home
       .catch(() => setFailed(true)); // async result — set in the promise callback
   }, [token, signIn, router]);
 

@@ -39,18 +39,13 @@ describe("Sidebar", () => {
     nav.pathname = "/guest";
   });
 
-  it("renders a link for each of the six workspaces", () => {
+  it("renders a link for each staff workspace (admin = full access, no customer Book)", () => {
     render(<Sidebar />);
-    for (const label of [
-      "Guest Booking",
-      "Admin",
-      "Front Desk",
-      "Operations",
-      "Housekeeping",
-      "Kitchen",
-    ]) {
+    for (const label of ["Admin", "Front Desk", "Operations", "Housekeeping", "Kitchen"]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
+    // The customer "Guest Booking" entry must NOT appear for staff/admin.
+    expect(screen.queryByRole("link", { name: "Guest Booking" })).toBeNull();
   });
 
   it("shows the signed-in user's name + role and a sign-out control", () => {

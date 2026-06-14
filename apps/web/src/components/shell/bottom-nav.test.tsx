@@ -29,12 +29,13 @@ describe("BottomNav", () => {
     nav.pathname = "/guest";
   });
 
-  it("renders the five primary workspaces (operations excluded)", () => {
+  it("renders the primary staff workspaces (operations + customer Book excluded)", () => {
     render(<BottomNav />);
-    for (const label of ["Book", "Admin", "Desk", "Clean", "Kitchen"]) {
+    for (const label of ["Admin", "Desk", "Clean", "Kitchen"]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
     expect(screen.queryByRole("link", { name: "Ops" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Book" })).toBeNull();
   });
 
   it("marks the active workspace with aria-current=page from the pathname", () => {
@@ -44,7 +45,7 @@ describe("BottomNav", () => {
       "aria-current",
       "page",
     );
-    expect(screen.getByRole("link", { name: "Book" })).not.toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Admin" })).not.toHaveAttribute(
       "aria-current",
     );
   });

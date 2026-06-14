@@ -8,9 +8,8 @@ import {
 } from "./workspaces";
 
 describe("workspaces", () => {
-  it("defines the six role workspaces in order", () => {
+  it("defines the staff role workspaces in order (no customer entry)", () => {
     expect(WORKSPACES.map((w) => w.slug)).toEqual([
-      "guest",
       "admin",
       "front-desk",
       "operations",
@@ -19,9 +18,9 @@ describe("workspaces", () => {
     ]);
   });
 
-  it("defaults to the guest workspace", () => {
-    expect(DEFAULT_WORKSPACE.slug).toBe("guest");
-    expect(DEFAULT_WORKSPACE.href).toBe("/guest");
+  it("defaults to the admin workspace", () => {
+    expect(DEFAULT_WORKSPACE.slug).toBe("admin");
+    expect(DEFAULT_WORKSPACE.href).toBe("/admin");
   });
 
   it("matches the active workspace by pathname (exact and nested, not prefix-bleed)", () => {
@@ -37,9 +36,8 @@ describe("workspaces", () => {
     expect(workspaceForPathname("/unknown")).toBeUndefined();
   });
 
-  it("exposes five primary workspaces in the bottom nav (operations excluded)", () => {
+  it("exposes the primary staff workspaces in the bottom nav (operations excluded)", () => {
     expect(WORKSPACES.filter((w) => w.inBottomNav).map((w) => w.slug)).toEqual([
-      "guest",
       "admin",
       "front-desk",
       "housekeeping",

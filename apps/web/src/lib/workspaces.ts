@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  BedDouble,
   LayoutDashboard,
   CalendarDays,
   Wrench,
@@ -23,7 +22,6 @@ import {
  * and `inBottomNav` / nav visibility gated by permission.
  */
 export type WorkspaceSlug =
-  | "guest"
   | "admin"
   | "front-desk"
   | "operations"
@@ -52,16 +50,6 @@ export interface Workspace {
 }
 
 export const WORKSPACES: readonly Workspace[] = [
-  {
-    slug: "guest",
-    href: "/guest",
-    navLabel: "Guest Booking",
-    bottomLabel: "Book",
-    title: "Guest Booking",
-    icon: BedDouble,
-    inBottomNav: true,
-    // No area: the public booking quick link is open to every signed-in member.
-  },
   {
     slug: "admin",
     href: "/admin",
