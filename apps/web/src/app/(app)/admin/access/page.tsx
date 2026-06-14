@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   CardContent,
+  Input,
   Table,
   THead,
   TBody,
@@ -163,10 +164,13 @@ function StaffSection({ canManage }: { canManage: boolean }) {
   const setActive = useMutation(api.staff.setActive);
 
   if (staff === undefined) return <p className="text-sm text-fg-muted">Loading staff…</p>;
-  if (staff.length === 0)
-    return <EmptyState title="No staff" description="No staff in this organization yet." />;
 
   return (
+    <div className="space-y-4">
+      {canManage && <AddStaffForm />}
+      {staff.length === 0 ? (
+        <EmptyState title="No staff" description="No staff in this organization yet." />
+      ) : (
     <Card>
       <CardContent>
         <Table>
@@ -205,6 +209,99 @@ function StaffSection({ canManage }: { canManage: boolean }) {
             ))}
           </TBody>
         </Table>
+      </CardContent>
+    </Card>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Provision a new staff member: name + phone (the login identity) + role. The
+ * account starts with NO password — the user sets it on their first sign-in.
+ */
+function AddStaffForm() {
+  const roles = useQuery(api.roles.list);
+  const createStaff = useMutation(api.staff.create);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [roleId, setRoleId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+
+  const reset = () => {
+    setName(""); setPhone(""); setEmail(""); setRoleId(""); setError(null);
+  };
+
+  const submit = async () => {
+    setError(null);
+    setDone(null);
+    setBusy(true);
+    try {
+      await createStaff({
+        name,
+        phone,
+        email: email || undefined,
+        roleId: roleId ? (roleId as Parameters<typeof createStaff>[0]["roleId"]) : undefined,
+      });
+      setDone(`${name.trim()} added — they set their password on first sign-in.`);
+      reset();
+      setOpen(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not add staff member.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <div className="flex items-center gap-3">
+        <Button onClick={() => { setOpen(true); setDone(null); }}>+ Add staff</Button>
+        {done && <p className="text-sm text-success">{done}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="space-y-3">
+        <h2 className="text-sm font-semibold">Add staff member</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5 text-xs font-semibold text-fg-muted">
+            Full name
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Grace Achieng" />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs font-semibold text-fg-muted">
+            Phone number
+            <Input inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254 7XX XXX XXX" />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs font-semibold text-fg-muted">
+            Email <span className="font-normal opacity-60">(optional)</span>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs font-semibold text-fg-muted">
+            Role
+            <select
+              value={roleId}
+              onChange={(e) => setRoleId(e.target.value)}
+              className="h-10 rounded-ctrl border border-border bg-bg-input px-3 text-sm text-fg"
+            >
+              <option value="">No role yet</option>
+              {(roles ?? []).map((r) => (
+                <option key={r._id} value={r._id}>{r.name}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {error && <p className="text-sm text-danger">{error}</p>}
+        <div className="flex gap-2">
+          <Button disabled={busy} onClick={submit}>{busy ? "Adding…" : "Add staff"}</Button>
+          <Button variant="ghost" onClick={() => { setOpen(false); reset(); }}>Cancel</Button>
+        </div>
       </CardContent>
     </Card>
   );

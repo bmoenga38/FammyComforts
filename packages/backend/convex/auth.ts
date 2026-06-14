@@ -3,6 +3,7 @@ import { ConvexCredentials } from "@convex-dev/auth/providers/ConvexCredentials"
 import { resolveHandoff } from "./sso";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { hashPassword, verifyPassword, assertPasswordStrength } from "./lib/password";
 
 // Convex injects `process.env` at runtime; the backend tsconfig has no Node types.
 declare const process: { env: Record<string, string | undefined> };
@@ -36,36 +37,63 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     }),
 
     /**
-     * DEMO phone + OTP (prototype parity, dev/demo tenants only). The OTP is
-     * the fixed code in DEMO_OTP_CODE; providing `name` switches to the
-     * registration flow (new customer, Bronze, +100 welcome points). Admins
-     * are never reachable via phone (enforced in demoAuth.lookupByPhone).
-     * Disabled entirely when DEMO_OTP_CODE is unset.
+     * Phone + password (staff & customers). The phone number is the identity —
+     * no usernames. Three modes (the client picks one after `accounts.phoneStatus`):
+     *   - "login":        existing account → verify password.
+     *   - "set-password": existing account with no password yet (phone-only
+     *                     FIRST login) → set the chosen password, then sign in.
+     *   - "register":     unknown phone → create a customer, set password, sign in.
+     * Admins are never reachable here (enforced in accounts.lookupForAuth /
+     * createCustomer); they use the `demo-admin` email + password provider.
      */
     ConvexCredentials({
-      id: "demo-otp",
+      id: "phone-password",
       authorize: async (credentials, ctx) => {
-        const code = process.env.DEMO_OTP_CODE;
-        const { phone, otp, name, email } = credentials as {
+        const { mode, phone, password, name, email } = credentials as {
+          mode?: "login" | "set-password" | "register";
           phone?: string;
-          otp?: string;
+          password?: string;
           name?: string;
           email?: string;
         };
-        if (!code || !phone || otp !== code) return null;
-        if (name && name.trim().length > 0) {
-          const res = (await ctx.runMutation(internal.demoAuth.registerCustomer, {
-            name,
+        if (!phone || !password) return null;
+
+        if (mode === "register") {
+          assertPasswordStrength(password);
+          const res = (await ctx.runMutation(internal.accounts.createCustomer, {
+            name: name ?? "",
             phone,
             email,
-          })) as { userId: Id<"users"> };
+          })) as { userId: Id<"users">; created: boolean };
+          const passwordHash = await hashPassword(password);
+          await ctx.runMutation(internal.accounts.storePasswordHash, {
+            userId: res.userId,
+            passwordHash,
+          });
           return { userId: res.userId };
         }
-        const res = (await ctx.runMutation(internal.demoAuth.lookupByPhone, {
+
+        const record = (await ctx.runQuery(internal.accounts.lookupForAuth, {
           phone,
-        })) as { found: boolean; userId?: Id<"users"> };
-        if (!res.found || !res.userId) return null;
-        return { userId: res.userId };
+        })) as { userId: Id<"users">; hasPassword: boolean; passwordHash: string | null } | null;
+        if (!record) return null;
+
+        if (mode === "set-password") {
+          // First login only — refuse if a password already exists.
+          if (record.hasPassword) return null;
+          assertPasswordStrength(password);
+          const passwordHash = await hashPassword(password);
+          await ctx.runMutation(internal.accounts.storePasswordHash, {
+            userId: record.userId,
+            passwordHash,
+          });
+          return { userId: record.userId };
+        }
+
+        // Default: normal login.
+        if (!record.passwordHash) return null;
+        const ok = await verifyPassword(password, record.passwordHash);
+        return ok ? { userId: record.userId } : null;
       },
     }),
 

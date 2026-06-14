@@ -6,12 +6,15 @@ import { normPhone } from "./lib/demoPhone";
 import { ensureOrgRoles } from "./rbac";
 
 /**
- * DEV/DEMO authentication backing (mirrors the prototype's login exactly):
- * customers & staff sign in with phone + a fixed demo OTP; admins with email +
- * the demo password; unknown phones must register (→ customer, Bronze, +100
- * welcome points). All demo users live in the org with slug "demo". These are
- * internal mutations consumed by the `demo-otp` / `demo-admin` credentials
- * providers in convex/auth.ts. The production ByteAuth SSO path is untouched.
+ * DEV/DEMO authentication backing. `lookupAdmin` powers the `demo-admin` (email
+ * + password) provider, and `seedDemoUsers` seeds the 12 demo testers (staff +
+ * customers) into the "demo" org. Seeded users start with NO password and set
+ * one on their first sign-in (phone-only first login — see accounts.ts).
+ *
+ * NOTE: `lookupByPhone` / `registerCustomer` are LEGACY (the old fixed-OTP
+ * provider). Live phone auth now goes through the `phone-password` provider
+ * backed by `accounts.ts`. They are kept only for their existing tests; the
+ * production ByteAuth SSO path is untouched.
  */
 
 async function demoOrg(ctx: MutationCtx): Promise<Doc<"organizations">> {

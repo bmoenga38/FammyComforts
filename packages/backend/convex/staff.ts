@@ -3,6 +3,7 @@ import { query, mutation } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requirePermission } from "./lib/auth";
+import { normPhone } from "./lib/demoPhone";
 
 /**
  * Staff management (Story 2.4) — org-scoped. Reads require `Employees:read`,
@@ -47,6 +48,70 @@ export const list = query({
         roles: await roleNamesFor(ctx, u._id),
       })),
     );
+  },
+});
+
+/**
+ * Provision a new staff member (Employees:manage). Identity is the PHONE number
+ * (no username); the account starts with NO password — the user sets it on their
+ * first login (phone-only first login). An optional `roleId` is assigned in the
+ * same transaction. Phone must be unique within the org.
+ */
+export const create = mutation({
+  args: {
+    name: v.string(),
+    phone: v.string(),
+    email: v.optional(v.string()),
+    roleId: v.optional(v.id("roles")),
+  },
+  handler: async (ctx, { name, phone, email, roleId }) => {
+    const { user: actor, orgId } = await requirePermission(
+      ctx,
+      "Employees",
+      "manage",
+    );
+    if (name.trim().length < 3) throw new Error("Enter the staff member's full name.");
+    const needle = normPhone(phone);
+    if (!needle) throw new Error("Enter a valid phone number.");
+
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+    if (existing.some((u) => u.phone && normPhone(u.phone) === needle)) {
+      throw new Error("A user with that phone number already exists.");
+    }
+
+    let roleName: string | undefined;
+    if (roleId) {
+      const role = await ctx.db.get(roleId);
+      if (!role || role.orgId !== orgId) {
+        throw new Error("Role not found in this organization.");
+      }
+      roleName = role.name;
+    }
+
+    const userId = await ctx.db.insert("users", {
+      orgId,
+      bytebazaarUserId: `local:${needle}`,
+      name: name.trim(),
+      phone,
+      email: email?.trim() || undefined,
+      role: roleName ?? "staff",
+      isActive: true,
+    });
+    if (roleId) {
+      await ctx.db.insert("userRoles", { orgId, userId, roleId });
+    }
+    await ctx.db.insert("auditLogs", {
+      orgId,
+      actorId: actor._id,
+      action: "staff.create",
+      entityType: "user",
+      entityId: userId,
+      after: { name: name.trim(), phone, role: roleName },
+    });
+    return { userId };
   },
 });
 

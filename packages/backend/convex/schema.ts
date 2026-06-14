@@ -63,6 +63,12 @@ export default defineSchema({
     // Raw role string from the SSO payload (or the demo role: customer/
     // reception/operations/assistant/admin). Granular RBAC refines it.
     role: v.string(),
+    // Phone + password auth: PBKDF2 stored form (`pbkdf2$iter$salt$hash`) set by
+    // the user on first login (or self-registration). Absent => no password yet
+    // (admin-provisioned account awaiting first-login setup). Never returned to
+    // clients. SSO users never have one (they authenticate via the handoff).
+    passwordHash: v.optional(v.string()),
+    passwordSetAt: v.optional(v.number()), // ms epoch the password was last set
     // Server-authoritative active gate (Story 2.4 deactivate builds on this).
     isActive: v.boolean(),
     // Demo/loyalty profile fields (optional — prototype parity; loyalty engine

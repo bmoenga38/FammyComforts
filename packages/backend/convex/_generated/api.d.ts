@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as accounts from "../accounts.js";
 import type * as amenities from "../amenities.js";
 import type * as assets from "../assets.js";
 import type * as audit from "../audit.js";
@@ -39,6 +40,7 @@ import type * as lib_errors from "../lib/errors.js";
 import type * as lib_escalate from "../lib/escalate.js";
 import type * as lib_ledger from "../lib/ledger.js";
 import type * as lib_mpesa from "../lib/mpesa.js";
+import type * as lib_password from "../lib/password.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_stock from "../lib/stock.js";
 import type * as maintenance from "../maintenance.js";
@@ -67,6 +69,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  accounts: typeof accounts;
   amenities: typeof amenities;
   assets: typeof assets;
   audit: typeof audit;
@@ -98,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   "lib/escalate": typeof lib_escalate;
   "lib/ledger": typeof lib_ledger;
   "lib/mpesa": typeof lib_mpesa;
+  "lib/password": typeof lib_password;
   "lib/permissions": typeof lib_permissions;
   "lib/stock": typeof lib_stock;
   maintenance: typeof maintenance;

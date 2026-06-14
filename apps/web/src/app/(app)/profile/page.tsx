@@ -1,16 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { initialsOf } from "@/lib/roles";
-import { Button } from "@/components/ui";
-import { Phone, Mail, Award, CalendarClock, Luggage, LogOut } from "lucide-react";
+import { Button, Input } from "@/components/ui";
+import { Phone, Mail, Award, CalendarClock, Luggage, LogOut, UserCog, KeyRound } from "lucide-react";
 
 /**
- * Customer Profile (prototype V.profile): the signed-in customer's account —
- * identity, tier, and stay stats from customerPortal.profile, plus sign-out.
+ * Profile (prototype V.profile): the signed-in user's account — identity, tier,
+ * and stay stats from customerPortal.profile, an editable profile + password
+ * section (any role), plus sign-out.
  */
 export default function ProfilePage() {
   const me = useQuery(api.customerPortal.profile);
@@ -70,6 +72,10 @@ export default function ProfilePage() {
         })}
       </div>
 
+      {/* Account settings — editable for any role */}
+      <EditProfile name={me.name} email={me.email} phone={me.phone} />
+      <ChangePassword />
+
       <Button
         variant="ghost"
         fullWidth
@@ -82,5 +88,142 @@ export default function ProfilePage() {
         <LogOut className="size-4" aria-hidden="true" /> Sign out
       </Button>
     </section>
+  );
+}
+
+/** Edit your own name / email / phone. */
+function EditProfile({
+  name,
+  email,
+  phone,
+}: {
+  name: string;
+  email: string | null;
+  phone: string | null;
+}) {
+  const updateProfile = useMutation(api.accounts.updateProfile);
+  const [open, setOpen] = useState(false);
+  const [n, setN] = useState(name);
+  const [e, setE] = useState(email ?? "");
+  const [p, setP] = useState(phone ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState(false);
+
+  const save = async () => {
+    setError(null);
+    setOk(false);
+    setBusy(true);
+    try {
+      await updateProfile({ name: n, email: e, phone: p });
+      setOk(true);
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save changes.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" onClick={() => { setOpen(true); setOk(false); }}>
+          <UserCog className="size-4" aria-hidden="true" /> Edit profile
+        </Button>
+        {ok && <p className="text-sm text-success">Profile updated.</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="card space-y-3">
+      <h2 className="font-display text-headline-sm text-text">Edit profile</h2>
+      <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+        Full name
+        <Input value={n} onChange={(ev) => setN(ev.target.value)} />
+      </label>
+      <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+        Email
+        <Input type="email" value={e} onChange={(ev) => setE(ev.target.value)} placeholder="name@example.com" />
+      </label>
+      <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+        Phone number
+        <Input inputMode="tel" value={p} onChange={(ev) => setP(ev.target.value)} placeholder="+254 7XX XXX XXX" />
+      </label>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <div className="flex gap-2">
+        <Button disabled={busy} onClick={save}>{busy ? "Saving…" : "Save changes"}</Button>
+        <Button variant="ghost" onClick={() => { setOpen(false); setN(name); setE(email ?? ""); setP(phone ?? ""); setError(null); }}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** Change your own password (verifies the current one when set). */
+function ChangePassword() {
+  const changePassword = useAction(api.accounts.changePassword);
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState(false);
+
+  const reset = () => { setCurrent(""); setNext(""); setConfirm(""); setError(null); };
+
+  const save = async () => {
+    setError(null);
+    setOk(false);
+    if (next.length < 8) return setError("New password must be at least 8 characters.");
+    if (next !== confirm) return setError("Passwords do not match.");
+    setBusy(true);
+    try {
+      await changePassword({ currentPassword: current || undefined, newPassword: next });
+      setOk(true);
+      reset();
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not change password.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" onClick={() => { setOpen(true); setOk(false); }}>
+          <KeyRound className="size-4" aria-hidden="true" /> Change password
+        </Button>
+        {ok && <p className="text-sm text-success">Password changed.</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="card space-y-3">
+      <h2 className="font-display text-headline-sm text-text">Change password</h2>
+      <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+        Current password
+        <Input type="password" value={current} onChange={(ev) => setCurrent(ev.target.value)} placeholder="Leave blank if you never set one" />
+      </label>
+      <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+        New password
+        <Input type="password" value={next} onChange={(ev) => setNext(ev.target.value)} placeholder="At least 8 characters" />
+      </label>
+      <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+        Confirm new password
+        <Input type="password" value={confirm} onChange={(ev) => setConfirm(ev.target.value)} />
+      </label>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <div className="flex gap-2">
+        <Button disabled={busy} onClick={save}>{busy ? "Saving…" : "Update password"}</Button>
+        <Button variant="ghost" onClick={() => { setOpen(false); reset(); }}>Cancel</Button>
+      </div>
+    </div>
   );
 }

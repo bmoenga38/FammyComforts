@@ -2,17 +2,23 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 /**
- * Prototype login gate: Phone OTP tab (default) with the demo SMS preview,
- * Admin tab with email+password, and the demo-otp signIn contract.
+ * Sign-in gate: Phone tab (default, phone + password — two steps via
+ * `accounts.phoneStatus`), Admin tab with email + password, and the
+ * `phone-password` / `demo-admin` signIn contracts.
  */
 const signIn = vi.fn();
 const replace = vi.fn();
+const query = vi.fn();
 
+vi.mock("convex/react", () => ({ useConvex: () => ({ query }) }));
 vi.mock("@convex-dev/auth/react", () => ({
   useAuthActions: () => ({ signIn }),
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
+}));
+vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
+  api: { accounts: { phoneStatus: "accounts.phoneStatus" } },
 }));
 
 import SignInPage from "./page";
@@ -20,58 +26,84 @@ import SignInPage from "./page";
 beforeEach(() => {
   signIn.mockReset();
   replace.mockReset();
+  query.mockReset();
 });
 
+/** Type a phone and click Continue (step 1 → step 2). */
+async function continueWithPhone(value: string) {
+  fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value } });
+  fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+}
+
 describe("sign-in screen", () => {
-  it("defaults to the Phone OTP tab with a phone field", () => {
+  it("defaults to the Phone tab with a phone field + Continue", () => {
     render(<SignInPage />);
-    expect(screen.getByRole("tab", { name: /phone otp/i })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /^phone$/i })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /send otp/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
   });
 
   it("switching to Admin shows email + password", () => {
     render(<SignInPage />);
     fireEvent.click(screen.getByRole("tab", { name: /admin/i }));
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument(); // exact: not the "Show password" toggle
-    expect(screen.getByRole("button", { name: /show password/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sign in to dashboard/i })).toBeInTheDocument();
   });
 
-  it("Send OTP advances to the code step with the FammyComfort demo SMS bubble", () => {
-    render(<SignInPage />);
-    fireEvent.change(screen.getByLabelText(/phone number/i), {
-      target: { value: "0711203040" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /send otp/i }));
-    expect(screen.getByText("FammyComfort")).toBeInTheDocument();
-    expect(screen.getByText("123456")).toBeInTheDocument();
-    expect(screen.getByLabelText(/one-time code/i)).toBeInTheDocument();
-  });
-
-  it("verify calls signIn('demo-otp') with the phone + code", async () => {
+  it("a returning phone advances to the password step and signs in", async () => {
+    query.mockResolvedValue({ status: "login", name: "Grace Achieng" });
     signIn.mockResolvedValue({ signingIn: true });
     render(<SignInPage />);
-    fireEvent.change(screen.getByLabelText(/phone number/i), {
-      target: { value: "0711203040" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /send otp/i }));
-    fireEvent.change(screen.getByLabelText(/one-time code/i), {
-      target: { value: "123456" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /verify & sign in/i }));
+    await continueWithPhone("0711203040");
+
+    expect(query).toHaveBeenCalledWith("accounts.phoneStatus", { phone: "0711203040" });
+    const pwd = await screen.findByLabelText("Password");
+    fireEvent.change(pwd, { target: { value: "sup3rsecret" } });
+    fireEvent.click(screen.getByRole("button", { name: /^sign in$/i }));
+
     expect(signIn).toHaveBeenCalledWith(
-      "demo-otp",
-      expect.objectContaining({ phone: "0711203040", otp: "123456" }),
+      "phone-password",
+      expect.objectContaining({ mode: "login", phone: "0711203040", password: "sup3rsecret" }),
     );
   });
 
-  it("registration mode collects name + optional email", () => {
+  it("first login (no password yet) asks the user to set one", async () => {
+    query.mockResolvedValue({ status: "set-password", name: "Dennis" });
+    signIn.mockResolvedValue({ signingIn: true });
     render(<SignInPage />);
-    fireEvent.click(screen.getByRole("button", { name: /create an account/i }));
-    expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /register & send otp/i })).toBeInTheDocument();
+    await continueWithPhone("0733407080");
+
+    const pwd = await screen.findByLabelText(/create a password/i);
+    fireEvent.change(pwd, { target: { value: "brandnewpass" } });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), {
+      target: { value: "brandnewpass" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /set password & sign in/i }));
+
+    expect(signIn).toHaveBeenCalledWith(
+      "phone-password",
+      expect.objectContaining({ mode: "set-password", phone: "0733407080", password: "brandnewpass" }),
+    );
+  });
+
+  it("an unknown phone collects name + password to register", async () => {
+    query.mockResolvedValue({ status: "register" });
+    render(<SignInPage />);
+    await continueWithPhone("0700000000");
+
+    expect(await screen.findByLabelText(/full name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/create a password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /create account & sign in/i })).toBeInTheDocument();
+  });
+
+  it("a blocked phone (admin/deactivated) shows a guidance message", async () => {
+    query.mockResolvedValue({ status: "blocked" });
+    render(<SignInPage />);
+    await continueWithPhone("0786975525");
+
+    expect(await screen.findByText(/admins use the admin tab/i)).toBeInTheDocument();
+    expect(signIn).not.toHaveBeenCalled();
   });
 });
