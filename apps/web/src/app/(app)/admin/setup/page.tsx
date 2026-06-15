@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { usePermissions } from "@/lib/use-permissions";
 import { kesToCents, formatKes } from "@/lib/money";
@@ -18,6 +19,8 @@ import {
   TD,
   StatusChip,
   EmptyState,
+  Modal,
+  ConfirmDialog,
 } from "@/components/ui";
 
 /**
@@ -551,13 +554,171 @@ const STATUS_CHIP: Record<RoomStatus, "success" | "info" | "warning" | "danger">
   blocked: "danger",
 };
 
+type RoomRow = FunctionReturnType<typeof api.rooms.list>[number];
+type RoomTypeRow = FunctionReturnType<typeof api.roomTypes.list>[number];
+
+/** Edit/Update a room — specs, status, cover image, and description. */
+function EditRoomModal({
+  room,
+  types,
+  onClose,
+}: {
+  room: RoomRow;
+  types: RoomTypeRow[];
+  onClose: () => void;
+}) {
+  const update = useMutation(api.rooms.update);
+  const remove = useMutation(api.rooms.remove);
+  const [number, setNumber] = useState(room.number);
+  const [floor, setFloor] = useState(room.floor ?? "");
+  const [roomTypeId, setRoomTypeId] = useState<string>(room.roomTypeId);
+  const [status, setStatus] = useState<RoomStatus>(room.status as RoomStatus);
+  const [imageUrl, setImageUrl] = useState(room.imageUrl ?? "");
+  const [description, setDescription] = useState(room.description ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const save = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      await update({
+        roomId: room._id,
+        number,
+        floor: floor.trim() || undefined,
+        roomTypeId: roomTypeId as RoomTypeRow["_id"],
+        status,
+        imageUrl: imageUrl.trim() || undefined,
+        description: description.trim() || undefined,
+      });
+      onClose();
+    } catch (e) {
+      setError(String((e as Error).message ?? e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`Edit room ${room.number}`}
+      footer={
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => setConfirmDelete(true)}
+            className="!text-danger hover:!border-danger"
+          >
+            Delete room
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Saving…" : "Save changes"}
+            </Button>
+          </div>
+        </div>
+      }
+    >
+      <div className="space-y-3 text-sm">
+        {imageUrl.trim() && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl}
+            alt="Room preview"
+            className="h-36 w-full rounded-card object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        )}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1">
+            <span className="text-text-muted">Room number</span>
+            <Input value={number} onChange={(e) => setNumber(e.target.value)} />
+          </label>
+          <label className="space-y-1">
+            <span className="text-text-muted">Floor</span>
+            <Input value={floor} onChange={(e) => setFloor(e.target.value)} placeholder="e.g. 2" />
+          </label>
+          <label className="space-y-1">
+            <span className="text-text-muted">Room type</span>
+            <select
+              className="w-full rounded-lg border border-border bg-bg-input px-2 py-2"
+              value={roomTypeId}
+              onChange={(e) => setRoomTypeId(e.target.value)}
+            >
+              {types.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-1">
+            <span className="text-text-muted">Status</span>
+            <select
+              className="w-full rounded-lg border border-border bg-bg-input px-2 py-2"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as RoomStatus)}
+            >
+              {ROOM_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label className="block space-y-1">
+          <span className="text-text-muted">Image URL</span>
+          <Input
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://…"
+          />
+        </label>
+        <label className="block space-y-1">
+          <span className="text-text-muted">Description</span>
+          <textarea
+            className="w-full rounded-lg border border-border bg-bg-input px-3 py-2"
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Room highlights, view, amenities…"
+          />
+        </label>
+        {error && <p className="text-danger">{error}</p>}
+      </div>
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          remove({ roomId: room._id })
+            .then(onClose)
+            .catch((e) => setError(String((e as Error).message ?? e)));
+          setConfirmDelete(false);
+        }}
+        title={`Delete room ${room.number}?`}
+        message="This removes the room so it can no longer be booked. Past booking history is kept."
+        confirmLabel="Delete room"
+        danger
+      />
+    </Modal>
+  );
+}
+
 function RoomsSection({ canManage }: { canManage: boolean }) {
   const rooms = useQuery(api.rooms.list, {});
   const branches = useQuery(api.branches.list, {});
   const types = useQuery(api.roomTypes.list);
   const createRoom = useMutation(api.rooms.create);
-  const setStatus = useMutation(api.rooms.setStatus);
-  const removeRoom = useMutation(api.rooms.remove);
+  const [editing, setEditing] = useState<RoomRow | null>(null);
 
   const [number, setNumber] = useState("");
   const [branchId, setBranchId] = useState("");
@@ -569,6 +730,7 @@ function RoomsSection({ canManage }: { canManage: boolean }) {
   }
 
   return (
+    <>
     <Card>
       <CardContent className="space-y-3">
         {rooms.length === 0 ? (
@@ -600,28 +762,9 @@ function RoomsSection({ canManage }: { canManage: boolean }) {
                   </TD>
                   {canManage && (
                     <TD>
-                      <div className="flex items-center gap-2">
-                        <select
-                          aria-label={`Status of room ${r.number}`}
-                          className="rounded-lg border border-border bg-bg-input px-2 py-1 text-sm"
-                          value={r.status}
-                          onChange={(e) =>
-                            setStatus({
-                              roomId: r._id,
-                              status: e.target.value as RoomStatus,
-                            })
-                          }
-                        >
-                          {ROOM_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                        <Button variant="ghost" onClick={() => removeRoom({ roomId: r._id })}>
-                          Remove
-                        </Button>
-                      </div>
+                      <Button variant="ghost" onClick={() => setEditing(r)}>
+                        Edit
+                      </Button>
                     </TD>
                   )}
                 </TR>
@@ -684,6 +827,10 @@ function RoomsSection({ canManage }: { canManage: boolean }) {
         {error && <p className="text-sm text-danger">{error}</p>}
       </CardContent>
     </Card>
+      {editing && (
+        <EditRoomModal room={editing} types={types} onClose={() => setEditing(null)} />
+      )}
+    </>
   );
 }
 

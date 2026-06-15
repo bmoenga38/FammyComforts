@@ -147,6 +147,55 @@ export const setActive = mutation({
   },
 });
 
+/** Edit a staff member's profile — name / phone / email (Employees:manage). */
+export const update = mutation({
+  args: {
+    userId: v.id("users"),
+    name: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+  },
+  handler: async (ctx, { userId, name, phone, email }) => {
+    const { user: actor, orgId } = await requirePermission(ctx, "Employees", "manage");
+    const target = await ctx.db.get(userId);
+    if (!target || target.orgId !== orgId) {
+      throw new Error("User not found in this organization.");
+    }
+    const patch: { name?: string; phone?: string; email?: string | undefined } = {};
+    if (name !== undefined) {
+      if (name.trim().length < 3) throw new Error("Enter the staff member's full name.");
+      patch.name = name.trim();
+    }
+    if (phone !== undefined) {
+      const needle = normPhone(phone);
+      if (!needle) throw new Error("Enter a valid phone number.");
+      const existing = await ctx.db
+        .query("users")
+        .withIndex("by_org", (q) => q.eq("orgId", orgId))
+        .collect();
+      if (
+        existing.some((u) => u._id !== userId && u.phone && normPhone(u.phone) === needle)
+      ) {
+        throw new Error("A user with that phone number already exists.");
+      }
+      patch.phone = phone;
+    }
+    if (email !== undefined) {
+      patch.email = email.trim() || undefined;
+    }
+    await ctx.db.patch(userId, patch);
+    await ctx.db.insert("auditLogs", {
+      orgId,
+      actorId: actor._id,
+      action: "staff.update",
+      entityType: "user",
+      entityId: userId,
+      after: patch,
+    });
+    return { changed: true };
+  },
+});
+
 /** Assign an org role to a staff member (idempotent, audited). */
 export const assignRole = mutation({
   args: { userId: v.id("users"), roleId: v.id("roles") },

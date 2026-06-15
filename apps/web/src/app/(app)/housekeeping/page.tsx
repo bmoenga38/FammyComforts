@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { usePermissions } from "@/lib/use-permissions";
-import { Button, EmptyState, Input, StatusChip } from "@/components/ui";
+import { Button, EmptyState, Input, StatusChip, Modal } from "@/components/ui";
 import {
   Play,
   Check,
@@ -253,8 +253,12 @@ function TaskRow({
         </div>
       </button>
 
-      {expanded && (
-        <div className="mb-2 space-y-3 rounded-card bg-bg-input/50 p-3">
+      <Modal
+        open={expanded}
+        onClose={onToggle}
+        title={`Cleaning · Rm ${t.roomNumber}`}
+      >
+        <div className="space-y-3">
           {/* Checklist (snapshotted from the room-type template on start) */}
           {t.checklist && t.checklist.length > 0 && (
             <div className="space-y-1.5">
@@ -360,7 +364,7 @@ function TaskRow({
             </label>
           )}
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

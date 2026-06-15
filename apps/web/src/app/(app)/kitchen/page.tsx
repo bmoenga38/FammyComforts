@@ -6,7 +6,7 @@ import { api } from "@fammycomforts/backend/convex/_generated/api";
 import type { FunctionReturnType } from "convex/server";
 import { usePermissions } from "@/lib/use-permissions";
 import { kesToCents, formatKes } from "@/lib/money";
-import { Button, EmptyState, Input, StatusChip } from "@/components/ui";
+import { Button, EmptyState, Input, StatusChip, Modal } from "@/components/ui";
 import { ChefHat, Plus, UtensilsCrossed, BanknoteIcon } from "lucide-react";
 
 /**
@@ -231,13 +231,12 @@ function OrderComposer() {
         <h2 className="flex items-center gap-2 font-display text-headline-sm text-text">
           <UtensilsCrossed className="size-4" aria-hidden="true" /> New order
         </h2>
-        <Button size="sm" variant={openForm ? "ghost" : "primary"} onClick={() => setOpenForm(!openForm)}>
-          <Plus className="size-4" aria-hidden="true" /> {openForm ? "Close" : "Take order"}
+        <Button size="sm" onClick={() => setOpenForm(true)}>
+          <Plus className="size-4" aria-hidden="true" /> Take order
         </Button>
       </div>
       {note && !openForm && <p className="text-body-md text-primary">{note}</p>}
-      {openForm && (
-        <>
+      <Modal open={openForm} onClose={() => setOpenForm(false)} title="New order">
           <div className="flex flex-wrap gap-2">
             <div className="seg" role="tablist" aria-label="Order channel">
               {CHANNELS.map((c) => (
@@ -289,8 +288,7 @@ function OrderComposer() {
               Place order
             </Button>
           </div>
-        </>
-      )}
+        </Modal>
     </div>
   );
 }

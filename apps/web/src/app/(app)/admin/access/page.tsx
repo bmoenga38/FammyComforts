@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { usePermissions } from "@/lib/use-permissions";
 import { PERMISSION_AREAS, ACTIONS } from "@/lib/permissions";
@@ -18,6 +19,7 @@ import {
   TD,
   StatusChip,
   EmptyState,
+  Modal,
 } from "@/components/ui";
 
 /**
@@ -159,9 +161,75 @@ function RolesSection({ canManage }: { canManage: boolean }) {
   );
 }
 
+type StaffRow = FunctionReturnType<typeof api.staff.list>[number];
+
+/** Edit a staff member's name / phone / email. */
+function EditStaffModal({ staff, onClose }: { staff: StaffRow; onClose: () => void }) {
+  const update = useMutation(api.staff.update);
+  const [name, setName] = useState(staff.name);
+  const [phone, setPhone] = useState(staff.phone ?? "");
+  const [email, setEmail] = useState(staff.email ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      await update({ userId: staff._id, name, phone, email: email.trim() || undefined });
+      onClose();
+    } catch (e) {
+      setError(String((e as Error).message ?? e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`Edit ${staff.name}`}
+      size="sm"
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save changes"}
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-3 text-sm">
+        <label className="block space-y-1">
+          <span className="text-fg-muted">Full name</span>
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
+        <label className="block space-y-1">
+          <span className="text-fg-muted">Phone</span>
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254 7XX XXX XXX" />
+        </label>
+        <label className="block space-y-1">
+          <span className="text-fg-muted">Email (optional)</span>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@example.com"
+          />
+        </label>
+        {error && <p className="text-danger">{error}</p>}
+      </div>
+    </Modal>
+  );
+}
+
 function StaffSection({ canManage }: { canManage: boolean }) {
   const staff = useQuery(api.staff.list);
   const setActive = useMutation(api.staff.setActive);
+  const [editing, setEditing] = useState<StaffRow | null>(null);
 
   if (staff === undefined) return <p className="text-sm text-fg-muted">Loading staff…</p>;
 
@@ -197,12 +265,17 @@ function StaffSection({ canManage }: { canManage: boolean }) {
                 </TD>
                 {canManage && (
                   <TD>
-                    <Button
-                      variant="ghost"
-                      onClick={() => setActive({ userId: s._id, isActive: !s.isActive })}
-                    >
-                      {s.isActive ? "Deactivate" : "Activate"}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" onClick={() => setEditing(s)}>
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setActive({ userId: s._id, isActive: !s.isActive })}
+                      >
+                        {s.isActive ? "Deactivate" : "Activate"}
+                      </Button>
+                    </div>
                   </TD>
                 )}
               </TR>
@@ -212,6 +285,7 @@ function StaffSection({ canManage }: { canManage: boolean }) {
       </CardContent>
     </Card>
       )}
+      {editing && <EditStaffModal staff={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }

@@ -7,7 +7,8 @@ import { useQuery } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { formatKes } from "@/lib/money";
 import { roomImage, roomGradient } from "@/lib/room-images";
-import { Button, Input, StatusChip, EmptyState } from "@/components/ui";
+import { Button, Input, StatusChip, EmptyState , Modal } from "@/components/ui";
+import { RoomBooking } from "./[roomId]/room-booking";
 import { Users, Search, LogIn } from "lucide-react";
 
 /**
@@ -53,6 +54,7 @@ function Catalog() {
     sp.get("in") && sp.get("out") ? { in: sp.get("in")!, out: sp.get("out")! } : null,
   );
   const [type, setType] = useState("All");
+  const [booking, setBooking] = useState<RoomCardData | null>(null);
 
   const data = useQuery(
     api.catalog.rooms,
@@ -66,7 +68,6 @@ function Catalog() {
   const rooms = ((data?.rooms ?? []) as RoomCardData[]).filter(
     (r) => type === "All" || r.typeName === type,
   );
-  const dateQuery = applied ? `?in=${applied.in}&out=${applied.out}` : "";
 
   return (
     <main className="mx-auto max-w-6xl p-4 md:p-8">
@@ -155,10 +156,11 @@ function Catalog() {
             {rooms.map((r) => {
               const chip = chipFor(r, !!applied);
               return (
-                <Link
+                <button
+                  type="button"
                   key={r.roomId}
-                  href={`/book/${orgSlug}/${r.roomId}${dateQuery}`}
-                  className="card card-hover group block overflow-hidden p-0"
+                  onClick={() => setBooking(r)}
+                  className="card card-hover group block w-full overflow-hidden p-0 text-left"
                 >
                   <figure
                     className="relative m-0 aspect-[16/10] overflow-hidden"
@@ -215,10 +217,26 @@ function Catalog() {
                       <span className="btn btn-primary px-3.5 py-2">Book</span>
                     </div>
                   </div>
-                </Link>
+                </button>
               );
             })}
           </div>
+        )}
+        {booking && (
+          <Modal
+            open={!!booking}
+            onClose={() => setBooking(null)}
+            title={`Book · ${booking.typeName}`}
+            size="lg"
+          >
+            <RoomBooking
+              asModal
+              orgSlug={orgSlug}
+              roomId={booking.roomId}
+              initialCheckIn={applied?.in}
+              initialCheckOut={applied?.out}
+            />
+          </Modal>
         )}
       </section>
     </main>

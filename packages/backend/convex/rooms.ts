@@ -98,6 +98,9 @@ export const update = mutation({
     number: v.optional(v.string()),
     floor: v.optional(v.string()),
     roomTypeId: v.optional(v.id("roomTypes")),
+    status: v.optional(STATUS),
+    imageUrl: v.optional(v.string()),
+    description: v.optional(v.string()),
   },
   handler: async (ctx, { roomId, ...patch }) => {
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");

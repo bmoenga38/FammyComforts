@@ -187,6 +187,9 @@ export default defineSchema({
       v.literal("maintenance"),
       v.literal("blocked"),
     ),
+    // Presentation (Story 3.3 edit): optional cover image URL + room description.
+    imageUrl: v.optional(v.string()),
+    description: v.optional(v.string()),
   })
     .index("by_org", ["orgId"])
     .index("by_branch", ["branchId"])
