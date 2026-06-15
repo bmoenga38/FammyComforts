@@ -6,7 +6,7 @@ import { api } from "@fammycomforts/backend/convex/_generated/api";
 import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { usePermissions } from "@/lib/use-permissions";
 import { formatKes, kesToCents } from "@/lib/money";
-import { Button, Input, StatusChip, EmptyState } from "@/components/ui";
+import { Button, Input, StatusChip, EmptyState, Modal, ConfirmDialog } from "@/components/ui";
 import {
   LogIn,
   LogOut,
@@ -260,7 +260,7 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
-  const confirm = useMutation(api.deskBookings.confirm);
+  const confirmBooking = useMutation(api.deskBookings.confirm);
   const checkIn = useMutation(api.deskBookings.checkIn);
   const checkOut = useMutation(api.deskBookings.checkOut);
   const extend = useMutation(api.deskBookings.extend);
@@ -280,6 +280,7 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
   const [exceptionReason, setExceptionReason] = useState("");
   const [extendDate, setExtendDate] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
+  const [confirmAction, setConfirmAction] = useState<null | "cancel" | "noshow" | "refund">(null);
 
   const run = (p: Promise<unknown>, ok: string) => {
     setNote(null);
@@ -314,17 +315,26 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
             {formatKes(b.balanceCents)}
           </span>
           {canWrite && (
-            <Button variant="ghost" size="sm" onClick={() => setOpen(!open)}>
-              {open ? "Close" : "Actions"}
+            <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+              Actions
             </Button>
           )}
         </div>
       </div>
 
-      {open && canWrite && (
-        <div className="mb-2 ml-12 space-y-3 rounded-ctrl border border-[var(--hairline)] bg-bg-subtle p-3 text-sm">
+      {canWrite && (
+        <Modal
+          open={open}
+          onClose={() => setOpen(false)}
+          title={`${b.guestName} · ${b.reference}`}
+        >
+          <div className="space-y-3 text-sm">
+            <p className="font-mono text-body-md text-text-muted">
+              Rm {b.roomNumber} · {b.checkInDate} → {b.checkOutDate} · Balance{" "}
+              {formatKes(b.balanceCents)}
+            </p>
           {b.status === "pending" && (
-            <Button size="sm" onClick={() => run(confirm({ bookingId: b.bookingId }), "Confirmed.")}>
+            <Button size="sm" onClick={() => run(confirmBooking({ bookingId: b.bookingId }), "Confirmed.")}>
               Confirm booking
             </Button>
           )}
@@ -337,7 +347,7 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
               <Button size="sm" onClick={() => run(checkIn({ bookingId: b.bookingId, idVerified }), "Checked in.")}>
                 <LogIn className="size-4" aria-hidden="true" /> Check in
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => run(markNoShow({ bookingId: b.bookingId }), "Marked no-show.")}>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmAction("noshow")}>
                 No-show
               </Button>
             </div>
@@ -442,7 +452,7 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
               <Button variant="ghost" size="sm" onClick={() => run(extend({ bookingId: b.bookingId, newCheckOutDate: extendDate }), "Extended — charge posted.")}>
                 Extend
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => run(cancel({ bookingId: b.bookingId, reason: "Desk cancellation" }), "Cancelled.")}>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmAction("cancel")}>
                 Cancel booking
               </Button>
               {canPay && (
@@ -451,12 +461,7 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      run(
-                        refund({ bookingId: b.bookingId, amountCents: kesToCents(refundAmount), reason: "Desk refund" }),
-                        "Refund recorded (settle out-of-band).",
-                      )
-                    }
+                    onClick={() => setConfirmAction("refund")}
                   >
                     Refund
                   </Button>
@@ -464,8 +469,49 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
               )}
             </div>
           )}
-          {note && <p className="text-text-muted">{note}</p>}
-        </div>
+            {note && <p className="text-text-muted">{note}</p>}
+          </div>
+          <ConfirmDialog
+            open={confirmAction === "cancel"}
+            onClose={() => setConfirmAction(null)}
+            onConfirm={() => {
+              run(cancel({ bookingId: b.bookingId, reason: "Desk cancellation" }), "Cancelled.");
+              setConfirmAction(null);
+            }}
+            title="Cancel this booking?"
+            message={`This cancels ${b.guestName}'s booking (${b.reference}) and can't be undone.`}
+            confirmLabel="Cancel booking"
+            cancelLabel="Keep it"
+            danger
+          />
+          <ConfirmDialog
+            open={confirmAction === "noshow"}
+            onClose={() => setConfirmAction(null)}
+            onConfirm={() => {
+              run(markNoShow({ bookingId: b.bookingId }), "Marked no-show.");
+              setConfirmAction(null);
+            }}
+            title="Mark as no-show?"
+            message={`${b.guestName} (${b.reference}) will be recorded as a no-show.`}
+            confirmLabel="Mark no-show"
+            danger
+          />
+          <ConfirmDialog
+            open={confirmAction === "refund"}
+            onClose={() => setConfirmAction(null)}
+            onConfirm={() => {
+              run(
+                refund({ bookingId: b.bookingId, amountCents: kesToCents(refundAmount), reason: "Desk refund" }),
+                "Refund recorded (settle out-of-band).",
+              );
+              setConfirmAction(null);
+            }}
+            title="Record this refund?"
+            message={`Refund ${refundAmount ? formatKes(kesToCents(refundAmount)) : "—"} to ${b.guestName}; settle the money out-of-band.`}
+            confirmLabel="Record refund"
+            danger
+          />
+        </Modal>
       )}
     </div>
   );

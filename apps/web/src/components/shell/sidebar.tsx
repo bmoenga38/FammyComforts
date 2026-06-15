@@ -8,7 +8,7 @@ import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { WORKSPACES, CUSTOMER_NAV, isWorkspaceActive } from "@/lib/workspaces";
 import { usePermissions } from "@/lib/use-permissions";
 import { roleLabel, initialsOf } from "@/lib/roles";
-import { isCustomerRole } from "@/lib/home-route";
+import { isCustomerRole, isAdminRole } from "@/lib/home-route";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { cn } from "@/lib/cn";
@@ -30,11 +30,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { can, isLoading } = usePermissions();
   const { signOut } = useAuthActions();
 
-  // Customers get the guest nav (Home/Book/Trips/Rewards/Profile); staff get
-  // their workspaces, gated by permission (everything shows while perms load).
+  // Customers get the guest nav (Home/Book/Trips/Rewards/Profile); admins get
+  // the FULL workspace nav (god mode); other staff get their workspaces gated
+  // by permission (everything shows while perms load).
   const visible = isCustomerRole(me?.role)
     ? CUSTOMER_NAV
-    : WORKSPACES.filter((w) => !w.area || isLoading || can(w.area, "read"));
+    : isAdminRole(me?.role)
+      ? WORKSPACES
+      : WORKSPACES.filter((w) => !w.area || isLoading || can(w.area, "read"));
 
   const handleSignOut = async () => {
     onNavigate?.();

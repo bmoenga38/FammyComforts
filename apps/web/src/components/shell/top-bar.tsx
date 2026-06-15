@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import { workspaceForPathname } from "@/lib/workspaces";
 import { NotificationsBell } from "./notifications-bell";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * The app-shell top bar, styled per the UI prototype (62px glass bar over the
@@ -53,7 +52,6 @@ export function TopBar({
           />
         </label>
         <NotificationsBell />
-        <ThemeToggle variant="icon" />
       </div>
     </header>
   );

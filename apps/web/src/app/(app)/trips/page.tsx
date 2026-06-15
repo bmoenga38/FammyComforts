@@ -14,7 +14,7 @@ import { Luggage } from "lucide-react";
  */
 export default function TripsPage() {
   const trips = useQuery(api.customerPortal.trips);
-  const slug = process.env.NEXT_PUBLIC_DEMO_ORG_SLUG ?? "demo";
+  const slug = process.env.NEXT_PUBLIC_DEMO_ORG_SLUG ?? "fammycomforts";
 
   if (trips === undefined) {
     return <p className="p-6 text-sm text-text-muted">Loading…</p>;

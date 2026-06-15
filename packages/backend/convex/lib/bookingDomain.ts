@@ -1,6 +1,7 @@
 import type { QueryCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { userError } from "./errors";
+import { isPublicAlias, PRIMARY_ORG_SLUG } from "./org";
 
 /**
  * Shared guest-booking domain logic (Epic 4) — used by both the public catalog
@@ -71,10 +72,17 @@ export async function orgBySlug(
   ctx: QueryCtx,
   slug: string,
 ): Promise<Doc<"organizations">> {
-  const org = await ctx.db
+  let org = await ctx.db
     .query("organizations")
     .withIndex("by_slug", (q) => q.eq("slug", slug))
     .unique();
+  // Public alias (e.g. /book/fammycomforts) resolves to the stored org.
+  if (!org && isPublicAlias(slug)) {
+    org = await ctx.db
+      .query("organizations")
+      .withIndex("by_slug", (q) => q.eq("slug", PRIMARY_ORG_SLUG))
+      .unique();
+  }
   if (!org) userError("We couldn't find that property.");
   return org;
 }

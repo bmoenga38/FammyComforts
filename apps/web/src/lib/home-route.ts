@@ -38,3 +38,14 @@ export function homeForRole(role?: string | null): string {
 export function isCustomerRole(role?: string | null): boolean {
   return (role ?? "").toLowerCase() === "customer";
 }
+
+/**
+ * True for an admin/owner role. Admins are superusers — the UI shows them the
+ * FULL workspace nav regardless of granular RBAC rows (god mode), so the nav is
+ * never empty for an admin even if permission seeding is incomplete.
+ */
+export function isAdminRole(role?: string | null): boolean {
+  return ["admin", "org_admin", "super_admin", "property_admin"].includes(
+    (role ?? "").toLowerCase(),
+  );
+}

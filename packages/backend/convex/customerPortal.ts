@@ -5,6 +5,7 @@ import { requireOrgUser } from "./lib/auth";
 import { bookingBalanceCents } from "./lib/ledger";
 import { activeRatePlan } from "./lib/bookingDomain";
 import { normPhone } from "./lib/demoPhone";
+import { PUBLIC_ORG_SLUG } from "./lib/org";
 
 /**
  * The signed-in customer's own data (prototype customer views: Home, Trips,
@@ -54,7 +55,6 @@ export const summary = query({
   args: {},
   handler: async (ctx) => {
     const { user, orgId } = await requireOrgUser(ctx);
-    const org = await ctx.db.get(orgId);
     const today = new Date().toISOString().slice(0, 10);
 
     const bookings = await myBookings(ctx, user, orgId);
@@ -99,7 +99,7 @@ export const summary = query({
     }
 
     return {
-      orgSlug: org?.slug ?? "demo",
+      orgSlug: PUBLIC_ORG_SLUG, // guests browse under the public alias, never "demo"
       name: user.name,
       tier: user.tier ?? "Bronze",
       points: user.points ?? 0,

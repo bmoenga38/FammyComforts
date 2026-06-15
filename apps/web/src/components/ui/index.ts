@@ -4,6 +4,8 @@ export * from "./input";
 export * from "./card";
 export * from "./table";
 export * from "./status-chip";
+export * from "./modal";
+export * from "./confirm-dialog";
 
 // Composite domain components (Story 1.4)
 export * from "./metric-tile";

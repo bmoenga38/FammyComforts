@@ -5,5 +5,5 @@ import { redirect } from "next/navigation";
  * tenants each have their own /book/<org-slug> link.
  */
 export default function BookIndexPage() {
-  redirect(`/book/${process.env.NEXT_PUBLIC_DEMO_ORG_SLUG ?? "demo"}`);
+  redirect(`/book/${process.env.NEXT_PUBLIC_DEMO_ORG_SLUG ?? "fammycomforts"}`);
 }

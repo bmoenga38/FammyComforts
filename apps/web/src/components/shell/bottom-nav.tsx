@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { WORKSPACES, CUSTOMER_NAV, isWorkspaceActive } from "@/lib/workspaces";
 import { usePermissions } from "@/lib/use-permissions";
-import { isCustomerRole } from "@/lib/home-route";
+import { isCustomerRole, isAdminRole } from "@/lib/home-route";
 import { cn } from "@/lib/cn";
 
 /**
@@ -21,9 +21,11 @@ export function BottomNav() {
   const { can, isLoading } = usePermissions();
   const items = isCustomerRole(me?.role)
     ? CUSTOMER_NAV
-    : WORKSPACES.filter(
-        (w) => w.inBottomNav && (!w.area || isLoading || can(w.area, "read")),
-      );
+    : isAdminRole(me?.role)
+      ? WORKSPACES.filter((w) => w.inBottomNav)
+      : WORKSPACES.filter(
+          (w) => w.inBottomNav && (!w.area || isLoading || can(w.area, "read")),
+        );
 
   return (
     <nav

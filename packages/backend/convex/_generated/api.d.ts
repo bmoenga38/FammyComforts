@@ -40,6 +40,7 @@ import type * as lib_errors from "../lib/errors.js";
 import type * as lib_escalate from "../lib/escalate.js";
 import type * as lib_ledger from "../lib/ledger.js";
 import type * as lib_mpesa from "../lib/mpesa.js";
+import type * as lib_org from "../lib/org.js";
 import type * as lib_password from "../lib/password.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_stock from "../lib/stock.js";
@@ -101,6 +102,7 @@ declare const fullApi: ApiFromModules<{
   "lib/escalate": typeof lib_escalate;
   "lib/ledger": typeof lib_ledger;
   "lib/mpesa": typeof lib_mpesa;
+  "lib/org": typeof lib_org;
   "lib/password": typeof lib_password;
   "lib/permissions": typeof lib_permissions;
   "lib/stock": typeof lib_stock;
