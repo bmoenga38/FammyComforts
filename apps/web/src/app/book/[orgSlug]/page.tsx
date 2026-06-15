@@ -8,7 +8,7 @@ import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { formatKes } from "@/lib/money";
 import { roomImage, roomGradient } from "@/lib/room-images";
 import { Button, Input, StatusChip, EmptyState } from "@/components/ui";
-import { Users } from "lucide-react";
+import { Users, Search, LogIn } from "lucide-react";
 
 /**
  * Public guest catalog (Stories 4.1 + 4.3) — the prototype's customer
@@ -76,15 +76,19 @@ function Catalog() {
           <p className="eyebrow mb-2">{data?.propertyName ?? "Find a lounge"}</p>
           <h2 className="hero-title font-display text-headline-lg">Book your stay</h2>
           <p className="mt-1 text-body-lg text-text-muted">
-            No account needed — reserve in minutes.{" "}
-            <Link href={`/book/${orgSlug}/lookup`} className="text-primary underline">
-              Find my booking
-            </Link>
-            <span aria-hidden="true"> &middot; </span>
-            <Link href="/login" className="text-primary underline">
-              Sign in
-            </Link>
+            No account needed — reserve in minutes.
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link
+              href={`/book/${orgSlug}/lookup`}
+              className="btn btn-ghost px-3.5 py-2 text-sm"
+            >
+              <Search className="size-4" aria-hidden="true" /> Find my booking
+            </Link>
+            <Link href="/login" className="btn btn-ghost px-3.5 py-2 text-sm">
+              <LogIn className="size-4" aria-hidden="true" /> Sign in
+            </Link>
+          </div>
         </header>
 
         {/* Date search card (V.search) */}

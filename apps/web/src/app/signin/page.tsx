@@ -298,7 +298,7 @@ export default function SignInPage() {
               {busy ? "Signing in…" : "Sign in to dashboard"}
             </Button>
             <p className="text-center text-body-md text-text-muted">
-              Demo · use your admin email + the demo password
+              Sign in with your admin email &amp; password.
             </p>
           </div>
         )}

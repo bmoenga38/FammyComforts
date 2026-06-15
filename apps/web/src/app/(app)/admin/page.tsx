@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { usePermissions } from "@/lib/use-permissions";
+import { roleLabel } from "@/lib/roles";
 import { formatKes } from "@/lib/money";
 import { EmptyState } from "@/components/ui";
 import {
@@ -95,6 +96,7 @@ function ActionQueue({ items }: { items: [number, string, string][] }) {
 
 export default function AdminOverviewPage() {
   const { can, isLoading } = usePermissions();
+  const me = useQuery(api.identity.me);
   const summary = useQuery(api.opsDashboard.summary);
   const audit = useQuery(api.audit.list, { limit: 6 });
 
@@ -107,13 +109,24 @@ export default function AdminOverviewPage() {
     );
   }
 
+  const greeting = (() => {
+    const h = new Date().getHours();
+    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  })();
+  const firstName = me?.name?.split(/\s+/)[0] ?? "there";
+
   return (
     <section className="fade-in space-y-5 p-4 md:p-6">
       <header>
-        <p className="eyebrow mb-1">Administration</p>
-        <h1 className="hero-title font-display text-headline-lg">Overview</h1>
+        <p className="eyebrow mb-1">
+          {roleLabel(me?.role)}
+          {me?.org ? ` · ${me.org.name}` : ""}
+        </p>
+        <h1 className="hero-title font-display text-headline-lg">
+          {greeting}, {firstName}.
+        </h1>
         <p className="mt-1 text-body-lg text-text-muted">
-          Everything at a glance — tap a card to manage
+          Everything at a glance — tap a card to manage.
         </p>
       </header>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { Moon, Sun } from "lucide-react";
 
 type Theme = "dark" | "light";
 
@@ -39,7 +40,12 @@ function getServerSnapshot(): Theme {
   return "dark";
 }
 
-export function ThemeToggle() {
+/**
+ * Theme switch. `variant="full"` (default) is the labelled pill used in the
+ * sidebar; `variant="icon"` is a compact sun/moon button for the top bar
+ * (prototype parity). Both flip `<html data-theme>` + localStorage instantly.
+ */
+export function ThemeToggle({ variant = "full" }: { variant?: "full" | "icon" }) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   function toggle() {
@@ -53,6 +59,18 @@ export function ThemeToggle() {
     window.dispatchEvent(new Event(CHANGE_EVENT));
   }
 
+  // Show the icon for the mode you'd switch TO (sun while dark, moon while light).
+  const Icon = theme === "dark" ? Sun : Moon;
+
+  if (variant === "icon") {
+    const label = `Switch to ${theme === "dark" ? "light" : "dark"} mode`;
+    return (
+      <button type="button" onClick={toggle} aria-label={label} title={label} className="icon-btn">
+        <Icon className="size-5" aria-hidden="true" />
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -61,7 +79,7 @@ export function ThemeToggle() {
       aria-pressed={theme === "dark"}
       className="inline-flex items-center gap-2 rounded-lg border border-border bg-bg-card px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-bg-input focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
     >
-      <span aria-hidden="true">{theme === "dark" ? "🌙" : "☀️"}</span>
+      <Icon className="size-4" aria-hidden="true" />
       {theme === "dark" ? "Dark" : "Light"}
     </button>
   );
