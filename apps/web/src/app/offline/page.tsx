@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PoweredBy } from "@/components/ui/powered-by";
 
 export const metadata: Metadata = {
   title: "Offline — Fammy Comforts",
@@ -11,6 +12,7 @@ export default function OfflinePage() {
       <p className="text-text-muted">
         Reconnect to continue. Screens you&rsquo;ve already opened may still be available from the cache.
       </p>
+      <PoweredBy className="mt-6" />
     </main>
   );
 }

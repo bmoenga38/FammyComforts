@@ -9,7 +9,6 @@ import { WORKSPACES, CUSTOMER_NAV, isWorkspaceActive } from "@/lib/workspaces";
 import { usePermissions } from "@/lib/use-permissions";
 import { roleLabel, initialsOf } from "@/lib/roles";
 import { isCustomerRole, isAdminRole } from "@/lib/home-route";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { cn } from "@/lib/cn";
 import { LogOut } from "lucide-react";
@@ -122,8 +121,6 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             </button>
           </div>
         )}
-
-        <ThemeToggle />
       </div>
     </div>
   );

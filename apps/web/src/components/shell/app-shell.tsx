@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 import { BottomNav } from "./bottom-nav";
+import { PoweredBy } from "@/components/ui/powered-by";
 import { cn } from "@/lib/cn";
 
 /**
@@ -77,6 +78,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className="flex-1 px-4 py-6 pb-24 focus:outline-none lg:px-6 lg:pb-6"
         >
           {children}
+          <footer className="mt-10 border-t border-border pt-4 text-center">
+            <PoweredBy />
+          </footer>
         </main>
       </div>
 

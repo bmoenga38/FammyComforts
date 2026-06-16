@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useConvex } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, PoweredBy } from "@/components/ui";
 import { Smartphone, ShieldUser, Lock, LockOpen, KeyRound, UserPlus, Eye, EyeOff } from "lucide-react";
 
 /**
@@ -304,17 +304,7 @@ export default function SignInPage() {
         )}
 
         <div className="mt-6 space-y-2 text-center">
-          <p className="text-xs text-text-muted">
-            Powered by{" "}
-            <a
-              href="https://bytebazaar-plane.vercel.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-primary no-underline"
-            >
-              ByteBazaar Tech Labs
-            </a>
-          </p>
+          <PoweredBy />
         </div>
       </div>
     </main>

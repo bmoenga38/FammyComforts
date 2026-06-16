@@ -4,6 +4,7 @@ export * from "./input";
 export * from "./card";
 export * from "./table";
 export * from "./status-chip";
+export * from "./powered-by";
 export * from "./modal";
 export * from "./confirm-dialog";
 
