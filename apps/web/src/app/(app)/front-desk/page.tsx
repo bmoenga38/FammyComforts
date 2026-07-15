@@ -708,13 +708,18 @@ function RoomsBoard({
 
       {/* Right-docked status panel (prototype rpanel) */}
       {selected && (
-        <div className="fixed inset-0 z-50" role="dialog" aria-label={`Room ${selected.number} status`}>
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Room ${selected.number} status`}
+        >
           <button
             aria-label="Close panel"
             className="absolute inset-0 bg-black/55 backdrop-blur-sm"
             onClick={() => setOpenRoom(null)}
           />
-          <aside className="glass-panel absolute bottom-0 right-0 top-0 flex w-full max-w-[420px] flex-col rounded-l-[20px]">
+          <aside className="fade-in relative flex max-h-[88vh] w-full max-w-[440px] flex-col overflow-hidden rounded-[18px] border border-[var(--hairline)] bg-bg-card shadow-[0_24px_60px_rgba(0,0,0,0.4)]">
             <div className="flex items-center gap-3 border-b border-[var(--hairline)] px-5 py-4">
               <div className="min-w-0 flex-1">
                 <h3 className="font-display text-headline-sm text-text">

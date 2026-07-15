@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useConvex } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
-import { Button, Input, PoweredBy } from "@/components/ui";
+import { Button, Input, PoweredBy, useToast } from "@/components/ui";
 import { Smartphone, ShieldUser, Lock, LockOpen, KeyRound, UserPlus, Eye, EyeOff } from "lucide-react";
 
 /**
@@ -42,6 +42,14 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Surface a login problem both inline (persistent, by the form) and as a
+  // toast (prominent, prototype-style). Clearing still uses setError(null).
+  const showError = (msg: string) => {
+    setError(msg);
+    toast(msg, { durationMs: 6000 });
+  };
 
   const switchMode = (m: Mode) => {
     setMode(m);
@@ -61,19 +69,19 @@ export default function SignInPage() {
   const continuePhone = async () => {
     setError(null);
     if (phone.replace(/\D/g, "").length < 9) {
-      return setError("Enter a valid phone number.");
+      return showError("Enter a valid phone number.");
     }
     setBusy(true);
     try {
       const res = await convex.query(api.accounts.phoneStatus, { phone });
       resetPhoneFields();
       if (res.status === "blocked") {
-        return setError("This number can't sign in here. Admins use the Admin tab.");
+        return showError("This number can't sign in here. Admins use the Admin tab.");
       }
       if (res.status === "login") setKnownName(res.name ?? null);
       setPhoneStep(res.status);
     } catch {
-      setError("Something went wrong. Please try again.");
+      showError("Something went wrong. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -83,13 +91,13 @@ export default function SignInPage() {
   const submitPhone = async () => {
     setError(null);
     if (phoneStep === "register" && name.trim().replace(/\s+/g, " ").length < 3) {
-      return setError("Enter your full name.");
+      return showError("Enter your full name.");
     }
     if (phonePassword.length < 8) {
-      return setError("Password must be at least 8 characters.");
+      return showError("Password must be at least 8 characters.");
     }
     if (phoneStep !== "login" && phonePassword !== confirmPassword) {
-      return setError("Passwords do not match.");
+      return showError("Passwords do not match.");
     }
     setBusy(true);
     try {
@@ -101,7 +109,7 @@ export default function SignInPage() {
       });
       router.replace("/");
     } catch {
-      setError(
+      showError(
         phoneStep === "login"
           ? "Incorrect password. Please try again."
           : "Could not complete sign-in. Please try again.",
@@ -118,7 +126,7 @@ export default function SignInPage() {
       await signIn("demo-admin", { email, password });
       router.replace("/");
     } catch {
-      setError("Invalid admin credentials.");
+      showError("Invalid admin credentials.");
     } finally {
       setBusy(false);
     }

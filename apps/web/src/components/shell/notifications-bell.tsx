@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "convex/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { Bell, CalendarPlus, MessageSquare, Brush, Send } from "lucide-react";
@@ -63,18 +64,18 @@ export function NotificationsBell() {
         )}
       </button>
 
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <>
           <button
             type="button"
             aria-label="Close notifications"
-            className="fixed inset-0 z-40 cursor-default"
+            className="fixed inset-0 z-[90] cursor-default"
             onClick={() => setOpen(false)}
           />
           <div
             role="region"
             aria-label="Notification list"
-            className="glass-panel absolute right-0 top-12 z-50 max-h-[70vh] w-[340px] overflow-y-auto rounded-card p-2 sm:w-[380px]"
+            className="fade-in fixed right-3 top-16 z-[91] max-h-[75vh] w-[calc(100vw-1.5rem)] overflow-y-auto rounded-card border border-[var(--hairline)] bg-bg-card p-2 shadow-[0_24px_60px_rgba(0,0,0,0.45)] sm:right-4 sm:w-[380px]"
           >
             <p className="text-label-caps px-3 pb-1 pt-2 uppercase text-text-muted">
               Notifications
@@ -105,7 +106,8 @@ export function NotificationsBell() {
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   );

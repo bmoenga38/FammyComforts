@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
+import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { usePermissions } from "@/lib/use-permissions";
 import { kesToCents, formatKes } from "@/lib/money";
 import {
@@ -569,15 +570,50 @@ function EditRoomModal({
 }) {
   const update = useMutation(api.rooms.update);
   const remove = useMutation(api.rooms.remove);
+  const genUploadUrl = useMutation(api.rooms.generateUploadUrl);
   const [number, setNumber] = useState(room.number);
   const [floor, setFloor] = useState(room.floor ?? "");
   const [roomTypeId, setRoomTypeId] = useState<string>(room.roomTypeId);
   const [status, setStatus] = useState<RoomStatus>(room.status as RoomStatus);
   const [imageUrl, setImageUrl] = useState(room.imageUrl ?? "");
   const [description, setDescription] = useState(room.description ?? "");
+  // Gallery: {storageId, url}. First = cover shown to guests. Seeded from the
+  // room's saved gallery (ids + resolved urls, zipped by position).
+  const [gallery, setGallery] = useState<{ storageId: string; url: string }[]>(
+    (room.imageStorageIds ?? []).map((sid, i) => ({
+      storageId: sid as string,
+      url: room.images?.[i] ?? "",
+    })),
+  );
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const onFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const added: { storageId: string; url: string }[] = [];
+      for (const file of Array.from(files)) {
+        const uploadUrl = await genUploadUrl({});
+        const res = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+        if (!res.ok) throw new Error("Upload failed — please retry.");
+        const { storageId } = (await res.json()) as { storageId: string };
+        added.push({ storageId, url: URL.createObjectURL(file) });
+      }
+      setGallery((g) => [...g, ...added]);
+    } catch (e) {
+      setError(String((e as Error).message ?? e));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const save = async () => {
     setError(null);
@@ -591,6 +627,7 @@ function EditRoomModal({
         status,
         imageUrl: imageUrl.trim() || undefined,
         description: description.trim() || undefined,
+        imageStorageIds: gallery.map((g) => g.storageId) as Id<"_storage">[],
       });
       onClose();
     } catch (e) {
@@ -626,17 +663,63 @@ function EditRoomModal({
       }
     >
       <div className="space-y-3 text-sm">
-        {imageUrl.trim() && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt="Room preview"
-            className="h-36 w-full rounded-card object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        )}
+        {/* Photo gallery — upload multiple; the first is the cover guests see. */}
+        <div className="space-y-2">
+          <span className="text-text-muted">
+            Photos <span className="opacity-70">(first is the cover shown to guests)</span>
+          </span>
+          {gallery.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {gallery.map((img, i) => (
+                <div
+                  key={img.storageId}
+                  className="group relative aspect-video overflow-hidden rounded-lg border border-border"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img.url} alt="" className="h-full w-full object-cover" />
+                  {i === 0 && (
+                    <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold text-on-primary">
+                      Cover
+                    </span>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-black/55 px-1.5 py-1 opacity-0 transition group-hover:opacity-100">
+                    {i !== 0 && (
+                      <button
+                        type="button"
+                        className="text-[10px] font-medium text-white hover:underline"
+                        onClick={() =>
+                          setGallery((g) => [img, ...g.filter((x) => x.storageId !== img.storageId)])
+                        }
+                      >
+                        Make cover
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="ml-auto text-[10px] font-medium text-white hover:underline"
+                      onClick={() =>
+                        setGallery((g) => g.filter((x) => x.storageId !== img.storageId))
+                      }
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-text-muted transition-colors hover:border-primary hover:text-primary">
+            {uploading ? "Uploading…" : "＋ Upload photos"}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => onFiles(e.target.files)}
+            />
+          </label>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="space-y-1">
             <span className="text-text-muted">Room number</span>

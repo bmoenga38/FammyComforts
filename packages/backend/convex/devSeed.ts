@@ -9,6 +9,48 @@ import { ensureOrgRoles } from "./rbac";
  *   npx convex run devSeed:seedDemo            (dev)
  *   npx convex run devSeed:seedDemo --prod     (prod showcase)
  */
+/**
+ * Seed a small active menu for the demo org so the customer "Order food" flow
+ * (R3) and the kitchen board have data. Idempotent by (org, menu item name).
+ */
+export const seedMenu = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const org = await ctx.db
+      .query("organizations")
+      .withIndex("by_slug", (q) => q.eq("slug", "demo"))
+      .unique();
+    if (!org) throw new Error("Demo org missing — run devSeed:seedDemo first.");
+    const menu: { name: string; category: string; cents: bigint }[] = [
+      { name: "Beef Burger & Fries", category: "Mains", cents: 85000n },
+      { name: "Grilled Chicken", category: "Mains", cents: 95000n },
+      { name: "Margherita Pizza", category: "Mains", cents: 90000n },
+      { name: "Caesar Salad", category: "Starters", cents: 55000n },
+      { name: "Fresh Juice", category: "Drinks", cents: 30000n },
+      { name: "Kenyan Coffee", category: "Drinks", cents: 25000n },
+      { name: "Chocolate Cake", category: "Desserts", cents: 40000n },
+    ];
+    const existing = await ctx.db
+      .query("menuItems")
+      .withIndex("by_org", (q) => q.eq("orgId", org._id))
+      .collect();
+    const have = new Set(existing.map((m) => m.name));
+    let created = 0;
+    for (const m of menu) {
+      if (have.has(m.name)) continue;
+      await ctx.db.insert("menuItems", {
+        orgId: org._id,
+        name: m.name,
+        category: m.category,
+        priceCents: m.cents,
+        active: true,
+      });
+      created++;
+    }
+    return { created, skipped: menu.length - created };
+  },
+});
+
 export const seedDemo = internalMutation({
   args: {},
   handler: async (ctx) => {

@@ -63,11 +63,15 @@ export const rooms = query({
         if (plan) totals = priceStay(plan.nightlyCents, nights, taxBps);
       }
 
+      const cover = room.imageStorageIds?.[0]
+        ? await ctx.storage.getUrl(room.imageStorageIds[0])
+        : null;
       cards.push({
         roomId: room._id,
         number: room.number,
         floor: room.floor ?? null,
         status: room.status,
+        coverImage: cover ?? room.imageUrl ?? null,
         branchName: branch.name,
         location: branch.location ?? null,
         typeName: type.name,
@@ -119,6 +123,13 @@ export const roomDetail = query({
     )[0];
     const plan = await activeRatePlan(ctx, org._id, type._id);
 
+    // Uploaded gallery (primary first) → servable URLs for the detail view.
+    const images: string[] = [];
+    for (const sid of room.imageStorageIds ?? []) {
+      const url = await ctx.storage.getUrl(sid);
+      if (url) images.push(url);
+    }
+
     const withDates = checkIn !== undefined && checkOut !== undefined;
     let available =
       room.status !== "maintenance" && room.status !== "blocked" && plan !== null;
@@ -142,6 +153,8 @@ export const roomDetail = query({
       number: room.number,
       floor: room.floor ?? null,
       status: room.status,
+      images,
+      coverImage: images[0] ?? room.imageUrl ?? null,
       branchName: branch.name,
       location: branch.location ?? null,
       typeName: type.name,

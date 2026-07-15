@@ -19,6 +19,7 @@ import type * as branches from "../branches.js";
 import type * as calendar from "../calendar.js";
 import type * as catalog from "../catalog.js";
 import type * as crons from "../crons.js";
+import type * as customerKitchen from "../customerKitchen.js";
 import type * as customerPortal from "../customerPortal.js";
 import type * as demoAuth from "../demoAuth.js";
 import type * as deskBookings from "../deskBookings.js";
@@ -81,6 +82,7 @@ declare const fullApi: ApiFromModules<{
   calendar: typeof calendar;
   catalog: typeof catalog;
   crons: typeof crons;
+  customerKitchen: typeof customerKitchen;
   customerPortal: typeof customerPortal;
   demoAuth: typeof demoAuth;
   deskBookings: typeof deskBookings;

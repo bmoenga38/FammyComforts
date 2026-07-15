@@ -224,6 +224,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 ::selection { background: rgba(20, 184, 166, 0.25); }
 
+/* Native <select> theming — the OS-rendered dropdown popup ignores utility
+   classes, so on dark theme the options render white/unreadable. Force the
+   popup + control onto the app surface, app-wide (fixes housekeeping et al.). */
+select {
+  color: var(--text);
+  background-color: var(--bg-input);
+}
+select option,
+select optgroup {
+  background-color: var(--bg-card);
+  color: var(--text);
+}
+
 /* Ambient gradient-mesh backdrop (prototype signature). */
 body::before {
   content: "";

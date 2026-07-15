@@ -1,16 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { formatKes, kesToCents } from "@/lib/money";
 import { errorMessage } from "@/lib/error-message";
 import { roomImage, roomGradient } from "@/lib/room-images";
 import { Button, Input, StatusChip } from "@/components/ui";
-import { Check, Users, BadgeCheck, Upload } from "lucide-react";
+import {
+  Check,
+  Users,
+  BadgeCheck,
+  Upload,
+  ShieldCheck,
+  LogIn,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 /**
  * Room detail + 3-step booking (Stories 4.2, 4.4–4.7), per the prototype's
@@ -101,6 +111,103 @@ type RoomBookingProps = {
   asModal?: boolean;
 };
 
+/**
+ * Swipeable room photo gallery for the detail view. Slides through the
+ * uploaded images (scroll-snap + touch); falls back to the deterministic
+ * placeholder when a room has no photos yet. Overlays (status chip, title)
+ * are passed as children and sit above the slider (pointer-events-none).
+ */
+function RoomGallery({
+  images,
+  fallback,
+  gradient,
+  alt,
+  children,
+}: {
+  images: string[];
+  fallback: string;
+  gradient: string;
+  alt: string;
+  children?: ReactNode;
+}) {
+  const slides = images && images.length > 0 ? images : [fallback];
+  const [active, setActive] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const goTo = (i: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const clamped = Math.max(0, Math.min(i, slides.length - 1));
+    track.scrollTo({ left: clamped * track.clientWidth, behavior: "smooth" });
+  };
+  const onScroll = () => {
+    const track = trackRef.current;
+    if (track) setActive(Math.round(track.scrollLeft / track.clientWidth));
+  };
+
+  return (
+    <figure
+      className="relative m-0 aspect-[16/9] overflow-hidden"
+      style={{ background: gradient }}
+    >
+      <div
+        ref={trackRef}
+        onScroll={onScroll}
+        className="hide-scroll flex size-full snap-x snap-mandatory overflow-x-auto"
+      >
+        {slides.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={i}
+            src={src}
+            alt={`${alt} — photo ${i + 1}`}
+            className="size-full shrink-0 snap-center object-cover"
+            onError={(e) => {
+              e.currentTarget.style.visibility = "hidden";
+            }}
+          />
+        ))}
+      </div>
+
+      {children}
+
+      {slides.length > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Previous photo"
+            onClick={() => goTo(active - 1)}
+            className="absolute left-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65"
+          >
+            <ChevronLeft className="size-5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next photo"
+            onClick={() => goTo(active + 1)}
+            className="absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65"
+          >
+            <ChevronRight className="size-5" aria-hidden="true" />
+          </button>
+          <div className="absolute right-3 top-3 flex gap-1.5">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Photo ${i + 1}`}
+                onClick={() => goTo(i)}
+                className={`h-2 rounded-full transition-all ${
+                  i === active ? "w-5 bg-white" : "w-2 bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </figure>
+  );
+}
+
 export function RoomBooking({
   orgSlug: pOrgSlug,
   roomId: pRoomId,
@@ -126,7 +233,12 @@ export function RoomBooking({
   const createBooking = useMutation(api.guestBookings.create);
   const generateUploadUrl = useMutation(api.guestBookings.generateUploadUrl);
 
-  const [step, setStep] = useState<0 | 1 | 2>(0);
+  // Auth gate: bookings must be confirmed by a signed-in customer (browse is
+  // public; the account unlocks Trips / Rewards / Order food).
+  const { isAuthenticated } = useConvexAuth();
+  const { signIn } = useAuthActions();
+
+  const [step, setStep] = useState<0 | "auth" | 1 | 2>(0);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -139,6 +251,16 @@ export function RoomBooking({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
+
+  // Inline auth (phone-first, prefilled from the guest details already entered).
+  const [authPassword, setAuthPassword] = useState("");
+  const [authConfirm, setAuthConfirm] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const phoneStatus = useQuery(
+    api.accounts.phoneStatus,
+    step === "auth" && phone.replace(/\D/g, "").length >= 9 ? { phone } : "skip",
+  );
 
   if (detail === undefined) {
     return <p className="p-8 text-sm text-text-muted">Loading room…</p>;
@@ -175,8 +297,45 @@ export function RoomBooking({
     if (!idNumber.trim()) return setError("Enter your ID or passport number.");
     if (!idFront) return setError("Upload a photo of the front of your ID.");
     if (!idBack) return setError("Upload a photo of the back of your ID.");
-    setStep(1);
+    // Gate: signed-in customers go straight to payment; guests must first
+    // log in or create an account (prefilled from the details above).
+    setStep(isAuthenticated ? 1 : "auth");
   };
+
+  // Complete the inline auth, then advance to payment. Uses the phone the guest
+  // already entered: known number → password login; new number → quick sign-up.
+  async function doAuth() {
+    setAuthError(null);
+    const status = phoneStatus?.status;
+    if (status === "blocked") {
+      return setAuthError("This number can't book here. Staff use the staff sign-in.");
+    }
+    if (authPassword.length < 8) {
+      return setAuthError("Password must be at least 8 characters.");
+    }
+    if (status !== "login" && authPassword !== authConfirm) {
+      return setAuthError("Passwords do not match.");
+    }
+    setAuthBusy(true);
+    try {
+      const mode = status === "login" ? "login" : status === "set-password" ? "set-password" : "register";
+      await signIn("phone-password", {
+        mode,
+        phone,
+        password: authPassword,
+        ...(mode === "register" ? { name: fullName, email: email || undefined } : {}),
+      });
+      setStep(1); // authenticated → proceed to payment
+    } catch {
+      setAuthError(
+        status === "login"
+          ? "Incorrect password. Please try again."
+          : "Could not complete sign-in. Please try again.",
+      );
+    } finally {
+      setAuthBusy(false);
+    }
+  }
 
   async function submit() {
     setError(null);
@@ -236,21 +395,14 @@ export function RoomBooking({
 
       <div className={`card fade-in overflow-hidden p-0 ${asModal ? "" : "mt-4"}`}>
         {/* Media header (prototype detail-hero) */}
-        <figure
-          className="relative m-0 aspect-[16/9]"
-          style={{ background: roomGradient(detail.typeName + detail.number) }}
+        <RoomGallery
+          images={detail.images}
+          fallback={roomImage(detail.typeName + detail.number)}
+          gradient={roomGradient(detail.typeName + detail.number)}
+          alt={`${detail.typeName} room`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={roomImage(detail.typeName + detail.number)}
-            alt={`${detail.typeName} room`}
-            className="absolute inset-0 size-full object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,19,38,0.9),transparent_60%)]" />
-          <div className="absolute bottom-4 left-5 right-5">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(11,19,38,0.9),transparent_60%)]" />
+          <div className="pointer-events-none absolute bottom-4 left-5 right-5">
             <div className="mb-1.5 flex gap-1.5">
               <StatusChip status={detail.available ? "success" : "warning"}>
                 {detail.available ? "Available" : "Booked"}
@@ -264,10 +416,10 @@ export function RoomBooking({
               {detail.location ? ` · ${detail.location}` : ""}
             </p>
           </div>
-        </figure>
+        </RoomGallery>
 
         <div className="p-5 md:p-6">
-          <Stepper step={step} />
+          <Stepper step={step === "auth" ? 1 : step} />
 
           {step === 0 && (
             <div className="space-y-4">
@@ -391,6 +543,68 @@ export function RoomBooking({
               <Button fullWidth onClick={toPay}>
                 Continue to payment →
               </Button>
+            </div>
+          )}
+
+          {step === "auth" && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="size-5 text-primary" aria-hidden="true" />
+                <p className="text-label-caps uppercase text-text-muted">
+                  {phoneStatus?.status === "login" ? "Welcome back — sign in to confirm" : "Create your account to confirm"}
+                </p>
+              </div>
+              <p className="text-body-md text-text-muted">
+                Your booking is tied to your account so you can track it, pay, order food, and
+                earn rewards. Using <b className="font-mono text-text">{phone}</b>.
+              </p>
+
+              {phoneStatus === undefined ? (
+                <p className="text-body-md text-text-muted">Checking your number…</p>
+              ) : (
+                <>
+                  <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                    {phoneStatus.status === "login" ? "Password" : "Create a password"}
+                    <Input
+                      type="password"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && phoneStatus.status === "login" && doAuth()}
+                      placeholder={phoneStatus.status === "login" ? "Your password" : "At least 8 characters"}
+                    />
+                  </label>
+                  {phoneStatus.status !== "login" && (
+                    <label className="flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+                      Confirm password
+                      <Input
+                        type="password"
+                        value={authConfirm}
+                        onChange={(e) => setAuthConfirm(e.target.value)}
+                        placeholder="Re-enter your password"
+                      />
+                    </label>
+                  )}
+                </>
+              )}
+
+              {authError && <p className="text-sm text-danger">{authError}</p>}
+              <div className="flex gap-2.5">
+                <Button variant="ghost" onClick={() => setStep(0)}>
+                  ← Back
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={authBusy || phoneStatus === undefined || phoneStatus.status === "blocked"}
+                  onClick={doAuth}
+                >
+                  <LogIn className="size-4" aria-hidden="true" />{" "}
+                  {authBusy
+                    ? "Verifying…"
+                    : phoneStatus?.status === "login"
+                      ? "Sign in & continue"
+                      : "Create account & continue"}
+                </Button>
+              </div>
             </div>
           )}
 

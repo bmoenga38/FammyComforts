@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { ToastProvider } from "@/components/ui/toast";
 
 /**
  * Sign-in gate: Phone tab (default, phone + password — two steps via
@@ -37,14 +38,14 @@ async function continueWithPhone(value: string) {
 
 describe("sign-in screen", () => {
   it("defaults to the Phone tab with a phone field + Continue", () => {
-    render(<SignInPage />);
+    render(<ToastProvider><SignInPage /></ToastProvider>);
     expect(screen.getByRole("tab", { name: /^phone$/i })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
   });
 
   it("switching to Admin shows email + password", () => {
-    render(<SignInPage />);
+    render(<ToastProvider><SignInPage /></ToastProvider>);
     fireEvent.click(screen.getByRole("tab", { name: /admin/i }));
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
@@ -54,7 +55,7 @@ describe("sign-in screen", () => {
   it("a returning phone advances to the password step and signs in", async () => {
     query.mockResolvedValue({ status: "login", name: "Grace Achieng" });
     signIn.mockResolvedValue({ signingIn: true });
-    render(<SignInPage />);
+    render(<ToastProvider><SignInPage /></ToastProvider>);
     await continueWithPhone("0711203040");
 
     expect(query).toHaveBeenCalledWith("accounts.phoneStatus", { phone: "0711203040" });
@@ -71,7 +72,7 @@ describe("sign-in screen", () => {
   it("first login (no password yet) asks the user to set one", async () => {
     query.mockResolvedValue({ status: "set-password", name: "Dennis" });
     signIn.mockResolvedValue({ signingIn: true });
-    render(<SignInPage />);
+    render(<ToastProvider><SignInPage /></ToastProvider>);
     await continueWithPhone("0733407080");
 
     const pwd = await screen.findByLabelText(/create a password/i);
@@ -89,7 +90,7 @@ describe("sign-in screen", () => {
 
   it("an unknown phone collects name + password to register", async () => {
     query.mockResolvedValue({ status: "register" });
-    render(<SignInPage />);
+    render(<ToastProvider><SignInPage /></ToastProvider>);
     await continueWithPhone("0700000000");
 
     expect(await screen.findByLabelText(/full name/i)).toBeInTheDocument();
@@ -100,10 +101,13 @@ describe("sign-in screen", () => {
 
   it("a blocked phone (admin/deactivated) shows a guidance message", async () => {
     query.mockResolvedValue({ status: "blocked" });
-    render(<SignInPage />);
+    render(<ToastProvider><SignInPage /></ToastProvider>);
     await continueWithPhone("0786975525");
 
-    expect(await screen.findByText(/admins use the admin tab/i)).toBeInTheDocument();
+    // The guidance now surfaces both inline and as a toast, so match either/both.
+    expect(
+      (await screen.findAllByText(/admins use the admin tab/i)).length,
+    ).toBeGreaterThan(0);
     expect(signIn).not.toHaveBeenCalled();
   });
 });

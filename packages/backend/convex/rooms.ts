@@ -35,13 +35,31 @@ export const list = query({
       rooms.map(async (r) => {
         const type = await ctx.db.get(r.roomTypeId);
         const branch = await ctx.db.get(r.branchId);
+        // Resolve the uploaded gallery to servable URLs (primary first).
+        const images: string[] = [];
+        for (const sid of r.imageStorageIds ?? []) {
+          const url = await ctx.storage.getUrl(sid);
+          if (url) images.push(url);
+        }
         return {
           ...r,
           roomTypeName: type?.name ?? null,
           branchName: branch?.name ?? null,
+          images,
+          // Primary cover: first uploaded image, else the legacy URL.
+          coverImage: images[0] ?? r.imageUrl ?? null,
         };
       }),
     );
+  },
+});
+
+/** Signed one-time upload URL for a room photo (admin Rooms:manage). */
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requirePermission(ctx, "Rooms", "manage");
+    return await ctx.storage.generateUploadUrl();
   },
 });
 
@@ -101,6 +119,7 @@ export const update = mutation({
     status: v.optional(STATUS),
     imageUrl: v.optional(v.string()),
     description: v.optional(v.string()),
+    imageStorageIds: v.optional(v.array(v.id("_storage"))),
   },
   handler: async (ctx, { roomId, ...patch }) => {
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");

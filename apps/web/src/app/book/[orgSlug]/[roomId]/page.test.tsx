@@ -15,17 +15,26 @@ vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
   api: {
     catalog: { roomDetail: "catalog.roomDetail" },
     paymentMethods: { enabledMethods: "paymentMethods.enabledMethods" },
+    accounts: { phoneStatus: "accounts.phoneStatus" },
     guestBookings: {
       create: "guestBookings.create",
       generateUploadUrl: "guestBookings.generateUploadUrl",
     },
   },
 }));
+// Signed-in customer: the booking auth gate is satisfied, so these tests cover
+// the authed Details → Pay → Confirm path.
+vi.mock("@convex-dev/auth/react", () => ({
+  useAuthActions: () => ({ signIn: vi.fn() }),
+}));
 vi.mock("convex/react", () => ({
+  useConvexAuth: () => ({ isAuthenticated: true, isLoading: false }),
   useQuery: (ref: string) =>
     ref === "paymentMethods.enabledMethods"
       ? ["mpesa_stk", "cash", "card"]
-      : {
+      : ref === "accounts.phoneStatus"
+        ? { status: "login", name: "Ada" }
+        : {
           propertyName: "Org acme",
           number: "101",
           floor: null,

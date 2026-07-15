@@ -24,6 +24,7 @@ type RoomCardData = {
   roomId: string;
   number: string;
   status: string;
+  coverImage: string | null;
   branchName: string;
   location: string | null;
   typeName: string;
@@ -168,7 +169,7 @@ function Catalog() {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={roomImage(r.typeName + r.number)}
+                      src={r.coverImage ?? roomImage(r.typeName + r.number)}
                       alt={`${r.typeName} room`}
                       loading="lazy"
                       className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"

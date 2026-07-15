@@ -190,6 +190,9 @@ export default defineSchema({
     // Presentation (Story 3.3 edit): optional cover image URL + room description.
     imageUrl: v.optional(v.string()),
     description: v.optional(v.string()),
+    // Uploaded photo gallery (Convex storage). The FIRST id is the primary/cover
+    // image shown to clients on the catalog; the rest form the detail gallery.
+    imageStorageIds: v.optional(v.array(v.id("_storage"))),
   })
     .index("by_org", ["orgId"])
     .index("by_branch", ["branchId"])
@@ -615,9 +618,13 @@ export default defineSchema({
       v.literal("cancelled"),
     ),
     paymentId: v.optional(v.id("payments")),
+    // Set when a guest self-orders from the customer app (R3) — lets them track
+    // their own orders and shows staff who placed it. Staff-taken orders omit it.
+    placedByUserId: v.optional(v.id("users")),
   })
     .index("by_org", ["orgId"])
-    .index("by_org_status", ["orgId", "status"]),
+    .index("by_org_status", ["orgId", "status"])
+    .index("by_placed_by", ["placedByUserId"]),
 
   // 5.7 — guest requests from the portal; surfaced to staff (full ops = R2).
   guestRequests: defineTable({

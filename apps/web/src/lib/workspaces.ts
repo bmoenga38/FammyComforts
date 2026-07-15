@@ -10,6 +10,7 @@ import {
   Luggage,
   Award,
   UserRound,
+  UtensilsCrossed,
 } from "lucide-react";
 
 /**
@@ -119,6 +120,7 @@ export const CUSTOMER_NAV: readonly NavItem[] = [
   { slug: "home", href: "/guest", navLabel: "Home", bottomLabel: "Home", icon: Home },
   { slug: "book", href: "/book", navLabel: "Book", bottomLabel: "Book", icon: Search },
   { slug: "trips", href: "/trips", navLabel: "Trips", bottomLabel: "Trips", icon: Luggage },
+  { slug: "order", href: "/order", navLabel: "Order food", bottomLabel: "Order", icon: UtensilsCrossed },
   { slug: "rewards", href: "/rewards", navLabel: "Rewards", bottomLabel: "Rewards", icon: Award },
   { slug: "profile", href: "/profile", navLabel: "Profile", bottomLabel: "Profile", icon: UserRound },
 ] as const;
