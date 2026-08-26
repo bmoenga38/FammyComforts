@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useConvex } from "convex/react";
+import { useConvex, useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
+import { homeForRole } from "@/lib/home-route";
 import { Button, Input, PoweredBy, useToast } from "@/components/ui";
 import { Smartphone, ShieldUser, Lock, LockOpen, KeyRound, UserPlus, Eye, EyeOff } from "lucide-react";
 
@@ -43,6 +44,20 @@ export default function SignInPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Post-login redirect. We DON'T route to "/" and let the root resolver decide:
+  // right after signIn the auth state can read as unauthenticated for a tick,
+  // bouncing fresh logins to /book. Instead we wait here (this page stays
+  // mounted) for the session to be established + the profile to load, then go
+  // straight to the role's home. Avoids the race entirely.
+  const { isAuthenticated } = useConvexAuth();
+  const me = useQuery(api.identity.me);
+  const [redirecting, setRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!redirecting || !isAuthenticated || me === undefined) return;
+    router.replace(me ? homeForRole(me.role) : "/");
+  }, [redirecting, isAuthenticated, me, router]);
 
   // Surface a login problem both inline (persistent, by the form) and as a
   // toast (prominent, prototype-style). Clearing still uses setError(null).
@@ -107,14 +122,13 @@ export default function SignInPage() {
         password: phonePassword,
         ...(phoneStep === "register" ? { name, email: regEmail || undefined } : {}),
       });
-      router.replace("/");
+      setRedirecting(true); // effect routes to the role home once auth settles
     } catch {
       showError(
         phoneStep === "login"
           ? "Incorrect password. Please try again."
           : "Could not complete sign-in. Please try again.",
       );
-    } finally {
       setBusy(false);
     }
   };
@@ -124,10 +138,9 @@ export default function SignInPage() {
     setBusy(true);
     try {
       await signIn("demo-admin", { email, password });
-      router.replace("/");
+      setRedirecting(true); // effect routes to the role home once auth settles
     } catch {
       showError("Invalid admin credentials.");
-    } finally {
       setBusy(false);
     }
   };

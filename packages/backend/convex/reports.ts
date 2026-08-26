@@ -3,6 +3,7 @@ import { query } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { nightsBetween, addDaysIso, activeTaxBps } from "./lib/bookingDomain";
 import { bookingBalanceCents } from "./lib/ledger";
+import { userError } from "./lib/errors";
 
 /**
  * Reporting (Epic 10, Stories 10.2–10.4). Every figure is computed live from
@@ -19,9 +20,9 @@ function rangeMs(fromIso: string, toIso: string): { from: number; to: number } {
   const from = Date.parse(`${fromIso}T00:00:00Z`);
   const to = Date.parse(`${toIso}T00:00:00Z`) + dayMs;
   if (Number.isNaN(from) || Number.isNaN(to) || from >= to) {
-    throw new Error("Invalid date range.");
+    userError("Invalid date range.");
   }
-  if ((to - from) / dayMs > 366) throw new Error("Range is capped at 366 days.");
+  if ((to - from) / dayMs > 366) userError("Range is capped at 366 days.");
   return { from, to };
 }
 

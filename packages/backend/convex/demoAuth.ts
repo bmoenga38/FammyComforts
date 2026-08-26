@@ -4,6 +4,7 @@ import type { MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { normPhone } from "./lib/demoPhone";
 import { ensureOrgRoles } from "./rbac";
+import { userError } from "./lib/errors";
 
 /**
  * DEV/DEMO authentication backing. `lookupAdmin` powers the `demo-admin` (email
@@ -22,7 +23,7 @@ async function demoOrg(ctx: MutationCtx): Promise<Doc<"organizations">> {
     .query("organizations")
     .withIndex("by_slug", (q) => q.eq("slug", "demo"))
     .unique();
-  if (!org) throw new Error("Demo org missing — run devSeed:seedDemo first.");
+  if (!org) userError("Demo org missing — run devSeed:seedDemo first.");
   return org;
 }
 
@@ -62,13 +63,13 @@ export const registerCustomer = internalMutation({
   },
   handler: async (ctx, { name, phone, email }) => {
     const org = await demoOrg(ctx);
-    if (!name.trim() || name.trim().length < 3) throw new Error("Enter your full name.");
-    if (!normPhone(phone)) throw new Error("Enter a valid phone number.");
+    if (!name.trim() || name.trim().length < 3) userError("Enter your full name.");
+    if (!normPhone(phone)) userError("Enter a valid phone number.");
 
     const existing = await userByPhone(ctx, org._id, phone);
     if (existing) {
       if (existing.role === "admin" || !existing.isActive) {
-        throw new Error("This number cannot be used here.");
+        userError("This number cannot be used here.");
       }
       return { userId: existing._id, created: false }; // fall back to sign-in
     }
@@ -93,6 +94,18 @@ export const registerCustomer = internalMutation({
       after: { role: "customer", tier: "Bronze" },
     });
     return { userId, created: true };
+  },
+});
+
+/** Patch a demo user's email by phone (admin login username updates). Internal. */
+export const setUserEmailByPhone = internalMutation({
+  args: { phone: v.string(), email: v.string() },
+  handler: async (ctx, { phone, email }) => {
+    const org = await demoOrg(ctx);
+    const user = await userByPhone(ctx, org._id, phone);
+    if (!user) userError("No user found for that phone.");
+    await ctx.db.patch(user._id, { email: email.trim() });
+    return { updated: true, userId: user._id, email: email.trim() };
   },
 });
 
@@ -127,7 +140,7 @@ type SeedUser = {
 };
 
 const SEED_USERS: SeedUser[] = [
-  { name: "Stella Ireri", phone: "+254786975525", email: "stella.ireri@fammycomforts.co.ke", role: "admin" },
+  { name: "Stella Ireri", phone: "+254786975525", email: "ireri@fammycomforts.co.ke", role: "admin" },
   { name: "Brian Moenga", phone: "+254792697197", email: "brian.moenga@fammycomforts.co.ke", role: "admin" },
   { name: "Grace Achieng", phone: "+254711203040", role: "reception", shift: "Morning" },
   { name: "Kevin Omondi", phone: "+254722305060", role: "reception", shift: "Evening" },

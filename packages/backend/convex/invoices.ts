@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Invoices & receipts (Story 5.6). Line items are SNAPSHOTTED from the ledger
@@ -17,7 +18,7 @@ export const generate = mutation({
     const { user, orgId } = await requirePermission(ctx, "Payments", "write");
     const booking = await ctx.db.get(bookingId);
     if (!booking || booking.orgId !== orgId) {
-      throw new Error("Booking not found in this organization.");
+      userError("Booking not found in this organization.");
     }
     const entries = await ctx.db
       .query("ledgerEntries")
@@ -37,7 +38,7 @@ export const generate = mutation({
         amountCents: e.amountCents < 0n ? -e.amountCents : e.amountCents,
       }));
     if (lines.length === 0) {
-      throw new Error(
+      userError(
         isReceipt ? "No payments to receipt yet." : "No charges to invoice yet.",
       );
     }

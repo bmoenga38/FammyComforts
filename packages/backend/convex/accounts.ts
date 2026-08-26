@@ -17,6 +17,7 @@ import {
 } from "./lib/password";
 import { requireOrgUser } from "./lib/auth";
 import { ensureOrgRoles } from "./rbac";
+import { userError } from "./lib/errors";
 
 /**
  * Phone + password account flow (replaces the demo OTP). Users sign in with
@@ -38,7 +39,7 @@ async function demoOrg(ctx: {
     .query("organizations")
     .withIndex("by_slug", (q) => q.eq("slug", "demo"))
     .unique();
-  if (!org) throw new Error("Demo org missing — run devSeed:seedDemo first.");
+  if (!org) userError("Demo org missing — run devSeed:seedDemo first.");
   return org;
 }
 
@@ -113,8 +114,8 @@ export const createCustomer = internalMutation({
   handler: async (ctx, { name, phone, email }) => {
     const org = await demoOrg(ctx);
     await ensureOrgRoles(ctx, org._id);
-    if (name.trim().length < 3) throw new Error("Enter your full name.");
-    if (!normPhone(phone)) throw new Error("Enter a valid phone number.");
+    if (name.trim().length < 3) userError("Enter your full name.");
+    if (!normPhone(phone)) userError("Enter a valid phone number.");
 
     const existing = await userByPhone(ctx, org._id, phone);
     if (existing) return { userId: existing._id, created: false };
@@ -170,15 +171,15 @@ export const changePassword = action({
   args: { currentPassword: v.optional(v.string()), newPassword: v.string() },
   handler: async (ctx, { currentPassword, newPassword }): Promise<{ ok: true }> => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not signed in.");
+    if (!identity) userError("Not signed in.");
     const userId = identity.subject.split("|")[0] as Id<"users">;
 
     assertPasswordStrength(newPassword);
     const record = await ctx.runQuery(internal.accounts.myPasswordHash, { userId });
-    if (!record) throw new Error("Account not found.");
+    if (!record) userError("Account not found.");
     if (record.passwordHash) {
       const ok = await verifyPassword(currentPassword ?? "", record.passwordHash);
-      if (!ok) throw new Error("Current password is incorrect.");
+      if (!ok) userError("Current password is incorrect.");
     }
     const passwordHash = await hashPassword(newPassword);
     await ctx.runMutation(internal.accounts.storePasswordHash, { userId, passwordHash });
@@ -198,15 +199,15 @@ export const updateProfile = mutation({
     const patch: Partial<Doc<"users">> = {};
 
     if (name !== undefined) {
-      if (name.trim().length < 3) throw new Error("Enter your full name.");
+      if (name.trim().length < 3) userError("Enter your full name.");
       patch.name = name.trim();
     }
     if (email !== undefined) patch.email = email.trim() || undefined;
     if (phone !== undefined) {
-      if (!normPhone(phone)) throw new Error("Enter a valid phone number.");
+      if (!normPhone(phone)) userError("Enter a valid phone number.");
       const clash = await userByPhone(ctx, orgId, phone);
       if (clash && clash._id !== user._id) {
-        throw new Error("That phone number is already in use.");
+        userError("That phone number is already in use.");
       }
       patch.phone = phone;
     }

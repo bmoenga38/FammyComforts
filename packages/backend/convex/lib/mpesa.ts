@@ -3,6 +3,8 @@
  * No IO here: everything is unit-testable without HTTP. The action layer
  * (`convex/mpesa.ts`) does the fetches.
  */
+import { userError } from "./errors";
+
 
 export const DARAJA_BASE = {
   sandbox: "https://sandbox.safaricom.co.ke",
@@ -18,7 +20,7 @@ export function normalizeMsisdn(input: string): string {
   if (/^07\d{8}$/.test(raw)) return `254${raw.slice(1)}`;
   if (/^\+2547\d{8}$/.test(raw)) return raw.slice(1);
   if (/^2547\d{8}$/.test(raw)) return raw;
-  throw new Error("Enter a valid Safaricom number (07XX XXX XXX).");
+  userError("Enter a valid Safaricom number (07XX XXX XXX).");
 }
 
 /**
@@ -26,9 +28,9 @@ export function normalizeMsisdn(input: string): string {
  * to the integer-KES `Amount` Daraja expects, rejecting fractional shillings.
  */
 export function centsToWholeShillings(amountCents: bigint): number {
-  if (amountCents <= 0n) throw new Error("Amount must be positive.");
+  if (amountCents <= 0n) userError("Amount must be positive.");
   if (amountCents % 100n !== 0n) {
-    throw new Error("M-Pesa amounts must be whole shillings (no cents).");
+    userError("M-Pesa amounts must be whole shillings (no cents).");
   }
   return Number(amountCents / 100n);
 }
@@ -76,7 +78,7 @@ export function parseStkCallback(body: unknown): StkCallbackResult {
     typeof cb.CheckoutRequestID !== "string" ||
     typeof cb.ResultCode !== "number"
   ) {
-    throw new Error("Not a Daraja STK callback.");
+    userError("Not a Daraja STK callback.");
   }
   const result: StkCallbackResult = {
     merchantRequestId: String(cb.MerchantRequestID ?? ""),

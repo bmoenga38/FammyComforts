@@ -639,8 +639,12 @@ export default defineSchema({
 
   // Queued outbound notifications (Story 4.7 queue → Story 10.6 engine). The
   // cron-driven engine (notificationsEngine.ts) consumes "queued" rows: sends
-  // via the org's own SMS gateway when SMS_GATEWAY_URL/SMS_API_KEY are set,
+  // via HostPinnacle when HOSTPINNACLE_USER_ID/HOSTPINNACLE_PASSWORD are set,
   // honors notificationSettings, retries up to 3 attempts, then fails.
+  //
+  // `body` is rendered at QUEUE time by lib/messageTemplates.ts and sent
+  // verbatim, so the row is a permanent record of what the recipient actually
+  // received even if the template is edited afterwards.
   outboundNotifications: defineTable({
     orgId: v.id("organizations"),
     type: v.string(), // e.g. "booking_confirmation", "task_assignment"
@@ -654,6 +658,7 @@ export default defineSchema({
     status: v.union(v.literal("queued"), v.literal("sent"), v.literal("failed")),
     recipient: v.optional(v.string()), // phone/email; in-app rows omit it
     body: v.optional(v.string()),
+    subject: v.optional(v.string()), // email only, rendered alongside `body`
     attempts: v.optional(v.number()),
     sentAt: v.optional(v.number()),
     error: v.optional(v.string()),
@@ -677,6 +682,26 @@ export default defineSchema({
     .index("by_org", ["orgId"])
     .index("by_org_type_channel", ["orgId", "type", "channel"]),
 
+  // Editable message bodies per (type, channel) — the admin template editor.
+  // Rendering falls back to the built-in default in lib/messageTemplates.ts when
+  // no row exists. Bodies may reference {{placeholders}} (guestName, reference,
+  // amount, …) which are filled when the notification is QUEUED; saveTemplate
+  // rejects a body naming a placeholder the renderer cannot fill.
+  notificationTemplates: defineTable({
+    orgId: v.id("organizations"),
+    type: v.string(),
+    channel: v.union(
+      v.literal("email"),
+      v.literal("sms"),
+      v.literal("whatsapp"),
+      v.literal("push"),
+    ),
+    body: v.string(),
+    subject: v.optional(v.string()), // email only
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_type_channel", ["orgId", "type", "channel"]),
+
   auditLogs: defineTable({
     // Tenant scope (Story 2.3). Optional: Story-1 infra rows (backups) have no org.
     orgId: v.optional(v.id("organizations")),
@@ -689,6 +714,16 @@ export default defineSchema({
     before: v.optional(v.any()),
     after: v.optional(v.any()),
     ip: v.optional(v.string()),
+    // OPTIONAL write-time name snapshots, read by `convex/audit.ts`.
+    //
+    // The audit view resolves ids → names at read time, which makes every row
+    // (including all historical ones) readable with no backfill. The cost is that
+    // history follows renames. Where a write site needs the name FROZEN — most
+    // importantly a deletion or a staff offboarding, after which the document is
+    // gone and cannot be resolved at all — it snapshots one of these, and the
+    // snapshot wins over resolution. Left unset, nothing changes.
+    entityLabel: v.optional(v.string()),
+    actorLabel: v.optional(v.string()),
   })
     .index("by_entity", ["entityType", "entityId"])
     .index("by_actor", ["actorId"])

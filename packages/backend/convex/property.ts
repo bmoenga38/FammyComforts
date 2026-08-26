@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireOrgUser, requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Property settings (Story 3.1) — org-scoped, gated by the "Settings" area.
@@ -12,7 +13,7 @@ const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/; // "HH:MM" 24h
 
 function assertTime(label: string, value: string): string {
   if (!TIME_RE.test(value)) {
-    throw new Error(`${label} must be "HH:MM" (24h), got "${value}".`);
+    userError(`${label} must be "HH:MM" (24h), got "${value}".`);
   }
   return value;
 }
@@ -68,7 +69,7 @@ export const update = mutation({
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
     const property = await ctx.db.get(propertyId);
     if (!property || property.orgId !== orgId) {
-      throw new Error("Property not found in this organization.");
+      userError("Property not found in this organization.");
     }
     if (patch.checkInTime !== undefined) assertTime("checkInTime", patch.checkInTime);
     if (patch.checkOutTime !== undefined)

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Guest requests from the portal (Story 5.7). PUBLIC submit is verified the
@@ -12,8 +13,8 @@ export const submit = mutation({
   args: { reference: v.string(), contact: v.string(), message: v.string() },
   handler: async (ctx, { reference, contact, message }) => {
     const trimmed = message.trim();
-    if (!trimmed) throw new Error("Request message is required.");
-    if (trimmed.length > 1000) throw new Error("Request is too long (max 1000 chars).");
+    if (!trimmed) userError("Request message is required.");
+    if (trimmed.length > 1000) userError("Request is too long (max 1000 chars).");
 
     const booking = await ctx.db
       .query("bookings")
@@ -21,7 +22,7 @@ export const submit = mutation({
         q.eq("reference", reference.trim().toUpperCase()),
       )
       .unique();
-    if (!booking) throw new Error("Booking not found.");
+    if (!booking) userError("Booking not found.");
     const guest = await ctx.db.get(booking.guestId);
     const needle = contact.trim().toLowerCase();
     if (
@@ -29,7 +30,7 @@ export const submit = mutation({
       (guest.phone.toLowerCase() !== needle &&
         (guest.email ?? "").toLowerCase() !== needle)
     ) {
-      throw new Error("Booking not found."); // no enumeration
+      userError("Booking not found."); // no enumeration
     }
 
     const requestId = await ctx.db.insert("guestRequests", {
@@ -82,7 +83,7 @@ export const resolve = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const request = await ctx.db.get(requestId);
     if (!request || request.orgId !== orgId) {
-      throw new Error("Request not found in this organization.");
+      userError("Request not found in this organization.");
     }
     if (request.status === "resolved") return { changed: false };
     await ctx.db.patch(requestId, { status: "resolved" });

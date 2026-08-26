@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import { workspaceForPathname } from "@/lib/workspaces";
 import { NotificationsBell } from "./notifications-bell";
+import { GlobalSearch } from "./global-search";
 
 /**
  * The app-shell top bar, styled per the UI prototype (62px glass bar over the
@@ -42,15 +43,7 @@ export function TopBar({
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        <label className="hidden items-center gap-2 rounded-ctrl border border-border bg-bg-input px-3 py-2 text-sm text-text-muted sm:flex">
-          <Search className="size-4 shrink-0" aria-hidden="true" />
-          <span className="sr-only">Search bookings, guests, rooms</span>
-          <input
-            type="search"
-            placeholder="Search bookings, guests, rooms"
-            className="w-48 bg-transparent text-text placeholder:text-text-muted focus:outline-none"
-          />
-        </label>
+        <GlobalSearch />
         <NotificationsBell />
       </div>
     </header>

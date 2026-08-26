@@ -10,6 +10,8 @@
  * ACTIONS (it is non-deterministic). Never call it from a query/mutation — hash
  * there only via `verifyPassword` / `hashPassword`, which are deterministic.
  */
+import { userError } from "./errors";
+
 
 const ITERATIONS = 100_000;
 const KEY_BITS = 256;
@@ -92,6 +94,6 @@ export async function verifyPassword(
 /** Minimum password rule shared by set/change paths. */
 export function assertPasswordStrength(password: string): void {
   if (typeof password !== "string" || password.length < 8) {
-    throw new Error("Password must be at least 8 characters.");
+    userError("Password must be at least 8 characters.");
   }
 }

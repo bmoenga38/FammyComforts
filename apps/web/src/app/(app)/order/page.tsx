@@ -7,6 +7,7 @@ import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
 import { formatKes } from "@/lib/money";
 import { Button, EmptyState } from "@/components/ui";
 import { UtensilsCrossed, Minus, Plus, CheckCircle2 } from "lucide-react";
+import { reportError } from "@/lib/report-error";
 
 /**
  * Customer food ordering (R3). An authenticated guest browses the active menu,
@@ -66,7 +67,7 @@ export default function OrderPage() {
       setPlaced(res.number);
       setCart({});
     } catch (e) {
-      setError(String((e as Error).message ?? e));
+      setError(reportError(e));
     } finally {
       setBusy(false);
     }

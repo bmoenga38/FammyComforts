@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireOrgUser } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Customer-facing food ordering (R3). Guests have no RBAC Restaurant grant, so
@@ -47,16 +48,16 @@ export const placeOrder = mutation({
   },
   handler: async (ctx, { tableOrRoom, channel, items }) => {
     const { user, orgId } = await requireOrgUser(ctx);
-    if (items.length === 0) throw new Error("Add at least one item to your order.");
+    if (items.length === 0) userError("Add at least one item to your order.");
 
     const lines = [];
     let totalCents = 0n;
     for (const item of items) {
       const m = await ctx.db.get(item.menuItemId);
-      if (!m || m.orgId !== orgId) throw new Error("Menu item not found.");
-      if (!m.active) throw new Error(`${m.name} is not available right now.`);
+      if (!m || m.orgId !== orgId) userError("Menu item not found.");
+      if (!m.active) userError(`${m.name} is not available right now.`);
       if (item.qty <= 0 || !Number.isInteger(item.qty)) {
-        throw new Error("Quantities must be positive whole numbers.");
+        userError("Quantities must be positive whole numbers.");
       }
       lines.push({ menuItemId: m._id, name: m.name, qty: item.qty, priceCents: m.priceCents });
       totalCents += m.priceCents * BigInt(item.qty);

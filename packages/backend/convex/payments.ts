@@ -3,6 +3,7 @@ import { query, mutation } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { postLedgerEntry, bookingBalanceCents } from "./lib/ledger";
 import { enabledMethodsFor } from "./paymentMethods";
+import { userError } from "./lib/errors";
 
 /**
  * Manual payment recording + reconciliation (Stories 5.5 + 5.8). Manual
@@ -27,21 +28,21 @@ export const recordManual = mutation({
     const { user, orgId } = await requirePermission(ctx, "Payments", "write");
     const booking = await ctx.db.get(bookingId);
     if (!booking || booking.orgId !== orgId) {
-      throw new Error("Booking not found in this organization.");
+      userError("Booking not found in this organization.");
     }
-    if (amountCents <= 0n) throw new Error("Amount must be positive.");
+    if (amountCents <= 0n) userError("Amount must be positive.");
     if (!(await enabledMethodsFor(ctx, orgId)).includes(provider)) {
-      throw new Error(`${provider} is disabled for this property.`);
+      userError(`${provider} is disabled for this property.`);
     }
     if (provider === "mpesa_manual") {
       const code = receiptNumber?.trim().toUpperCase();
-      if (!code) throw new Error("An M-Pesa receipt code is required.");
+      if (!code) userError("An M-Pesa receipt code is required.");
       // Dedupe confirmed receipts (no unique constraint — index read in-tx).
       const dupe = await ctx.db
         .query("payments")
         .withIndex("by_receipt", (q) => q.eq("providerReceiptNumber", code))
         .first();
-      if (dupe) throw new Error(`Receipt ${code} is already recorded.`);
+      if (dupe) userError(`Receipt ${code} is already recorded.`);
       receiptNumber = code;
     }
 
@@ -141,7 +142,7 @@ export const resolveReconciliation = mutation({
     const { user, orgId } = await requirePermission(ctx, "Payments", "manage");
     const payment = await ctx.db.get(paymentId);
     if (!payment || payment.orgId !== orgId) {
-      throw new Error("Payment not found in this organization.");
+      userError("Payment not found in this organization.");
     }
     if (payment.reconciled) return { changed: false };
     await ctx.db.patch(paymentId, { reconciled: true });

@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, Syne, JetBrains_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ui/toast";
 import { QueryProvider } from "@/components/query-provider";
 import { OfflineBanner } from "@/components/offline-banner";
+import { PwaUpdater } from "@/components/pwa-updater";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
 import "./globals.css";
 
@@ -68,6 +69,7 @@ export default function RootLayout({
             <ToastProvider>
               <OfflineBanner />
               {children}
+              <PwaUpdater />
             </ToastProvider>
           </QueryProvider>
         </ConvexClientProvider>

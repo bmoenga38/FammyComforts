@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, mutation, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Housekeeping workspace (Epic 7, Stories 7.3–7.5). Tasks are created at
@@ -64,12 +65,12 @@ export const create = mutation({
     const { user, orgId } = await requirePermission(ctx, "Housekeeping", "write");
     const room = await ctx.db.get(roomId);
     if (!room || room.orgId !== orgId) {
-      throw new Error("Room not found in this organization.");
+      userError("Room not found in this organization.");
     }
     if (assigneeId) {
       const assignee = await ctx.db.get(assigneeId);
       if (!assignee || assignee.orgId !== orgId) {
-        throw new Error("Assignee not found in this organization.");
+        userError("Assignee not found in this organization.");
       }
     }
     const taskId = await ctx.db.insert("housekeepingTasks", {
@@ -111,12 +112,12 @@ export const assign = mutation({
     const { user, orgId } = await requirePermission(ctx, "Housekeeping", "manage");
     const task = await ctx.db.get(taskId);
     if (!task || task.orgId !== orgId) {
-      throw new Error("Task not found in this organization.");
+      userError("Task not found in this organization.");
     }
     if (assigneeId) {
       const assignee = await ctx.db.get(assigneeId);
       if (!assignee || assignee.orgId !== orgId) {
-        throw new Error("Assignee not found in this organization.");
+        userError("Assignee not found in this organization.");
       }
     }
     await ctx.db.patch(taskId, {
@@ -156,7 +157,7 @@ export const setStatus = mutation({
     const { user, orgId } = await requirePermission(ctx, "Housekeeping", "write");
     const task = await ctx.db.get(taskId);
     if (!task || task.orgId !== orgId) {
-      throw new Error("Task not found in this organization.");
+      userError("Task not found in this organization.");
     }
     if (task.status === status) return { changed: false };
     await ctx.db.patch(taskId, { status });
@@ -204,11 +205,11 @@ export const toggleChecklistItem = mutation({
     const { orgId } = await requirePermission(ctx, "Housekeeping", "write");
     const task = await ctx.db.get(taskId);
     if (!task || task.orgId !== orgId) {
-      throw new Error("Task not found in this organization.");
+      userError("Task not found in this organization.");
     }
     const checklist = task.checklist ?? [];
     if (index < 0 || index >= checklist.length) {
-      throw new Error("No such checklist item.");
+      userError("No such checklist item.");
     }
     checklist[index] = { ...checklist[index], done: !checklist[index].done };
     await ctx.db.patch(taskId, { checklist });
@@ -231,7 +232,7 @@ export const attachPhoto = mutation({
     const { user, orgId } = await requirePermission(ctx, "Housekeeping", "write");
     const task = await ctx.db.get(taskId);
     if (!task || task.orgId !== orgId) {
-      throw new Error("Task not found in this organization.");
+      userError("Task not found in this organization.");
     }
     await ctx.db.patch(taskId, { photoStorageId: storageId });
     await ctx.db.insert("auditLogs", {
@@ -279,7 +280,7 @@ export const setTemplate = mutation({
     const { user, orgId } = await requirePermission(ctx, "Housekeeping", "manage");
     if (roomTypeId) {
       const rt = await ctx.db.get(roomTypeId);
-      if (!rt || rt.orgId !== orgId) throw new Error("Room type not found.");
+      if (!rt || rt.orgId !== orgId) userError("Room type not found.");
     }
     const existing = (
       await ctx.db
@@ -316,7 +317,13 @@ export const assignees = query({
   },
 });
 
-/** Assignment notice into the queue → bell feed + SMS engine (FR56). */
+/**
+ * Assignment notice into the queue (FR56). In-app only: `channel: "push"` means
+ * the drain marks it delivered once the bell feed has shown it, so this never
+ * reaches the SMS gateway and is never billed. The body is hardcoded rather than
+ * templated — `lib/messageTemplates.ts` has a `task_assignment` default ready if
+ * this is ever promoted to a real SMS to staff.
+ */
 async function queueAssignmentNotice(
   ctx: MutationCtx,
   orgId: Id<"organizations">,

@@ -181,7 +181,23 @@ describe("booking create (4.4–4.7)", () => {
       type: "booking_confirmation",
       channel: "sms",
       status: "queued",
+      recipient: GUEST.phone,
     });
+    // The message is rendered at QUEUE time, so the row records exactly what the
+    // guest will receive. Regression guard: this used to be queued with no body,
+    // and the engine then sent the literal type string — guests were paid-for SMS
+    // reading "booking confirmation".
+    const body = queued[0].body ?? "";
+    expect(body).not.toBe("booking confirmation");
+    expect(body).toContain("Ada"); // greeting uses the first name only
+    expect(body).toContain(res.reference);
+    expect(body).toContain("Org acme"); // property name
+    expect(body).toContain("101"); // room number
+    expect(body).toContain(IN);
+    expect(body).toContain(OUT);
+    expect(body).toContain("3 nights");
+    expect(body).toContain("KES"); // total, formatted from int64 cents
+    expect(body).not.toContain("{{"); // every placeholder resolved
 
     // Audit row exists and never contains the ID number.
     const audits = await t.run((ctx) =>
@@ -192,6 +208,43 @@ describe("booking create (4.4–4.7)", () => {
     );
     expect(audits).toHaveLength(1);
     expect(asJson(audits[0].after)).not.toContain("12345678");
+  });
+
+  it("uses the org's saved SMS template, and refuses to save an unfillable one", async () => {
+    const t = convexTest(schema, import.meta.glob("./**/*.ts"));
+    const a = await seedOrg(t, "acme");
+
+    // A typo is rejected while the admin is still in the editor, rather than
+    // becoming an SMS that reads "Hi {{guestname}}".
+    await expect(
+      a.as.mutation(api.notifications.saveTemplate, {
+        type: "booking_confirmation",
+        channel: "sms",
+        body: "Hi {{guestname}}, ref {{reference}}",
+      }),
+    ).rejects.toThrow(/Unknown placeholder/);
+
+    await a.as.mutation(api.notifications.saveTemplate, {
+      type: "booking_confirmation",
+      channel: "sms",
+      body: "{{propertyName}}: {{reference}} for {{guestName}}, room {{roomNumber}}.",
+    });
+
+    const res = await t.mutation(api.guestBookings.create, {
+      orgSlug: "acme",
+      roomId: a.roomId,
+      checkInDate: IN,
+      checkOutDate: OUT,
+      guest: GUEST,
+      consent: true,
+      paymentMethod: "mpesa_stk",
+    });
+
+    const queued = await t.run((ctx) =>
+      ctx.db.query("outboundNotifications").collect(),
+    );
+    expect(queued).toHaveLength(1);
+    expect(queued[0].body).toBe(`Org acme: ${res.reference} for Ada, room 101.`);
   });
 
   it("rejects: no consent, missing phone, past check-in, bad range, oversized split", async () => {

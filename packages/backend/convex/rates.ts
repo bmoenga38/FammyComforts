@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireOrgUser, requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Rate plans + tax rules (Story 3.4) — per-org, "Settings" area. Money is
@@ -39,9 +40,9 @@ export const createRatePlan = mutation({
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
     const type = await ctx.db.get(roomTypeId);
     if (!type || type.orgId !== orgId) {
-      throw new Error("Room type not found in this organization.");
+      userError("Room type not found in this organization.");
     }
-    if (nightlyCents < 0n) throw new Error("nightlyCents must be ≥ 0.");
+    if (nightlyCents < 0n) userError("nightlyCents must be ≥ 0.");
 
     const ratePlanId = await ctx.db.insert("ratePlans", {
       orgId,
@@ -74,10 +75,10 @@ export const updateRatePlan = mutation({
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
     const plan = await ctx.db.get(ratePlanId);
     if (!plan || plan.orgId !== orgId) {
-      throw new Error("Rate plan not found in this organization.");
+      userError("Rate plan not found in this organization.");
     }
     if (patch.nightlyCents !== undefined && patch.nightlyCents < 0n) {
-      throw new Error("nightlyCents must be ≥ 0.");
+      userError("nightlyCents must be ≥ 0.");
     }
     await ctx.db.patch(ratePlanId, patch);
     await ctx.db.insert("auditLogs", {
@@ -108,7 +109,7 @@ export const createTaxRule = mutation({
   args: { name: v.string(), rate: v.number() },
   handler: async (ctx, { name, rate }) => {
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
-    if (rate < 0 || rate > 1) throw new Error("Tax rate must be a fraction in [0, 1].");
+    if (rate < 0 || rate > 1) userError("Tax rate must be a fraction in [0, 1].");
 
     const taxRuleId = await ctx.db.insert("taxRules", {
       orgId,
@@ -139,10 +140,10 @@ export const updateTaxRule = mutation({
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
     const rule = await ctx.db.get(taxRuleId);
     if (!rule || rule.orgId !== orgId) {
-      throw new Error("Tax rule not found in this organization.");
+      userError("Tax rule not found in this organization.");
     }
     if (patch.rate !== undefined && (patch.rate < 0 || patch.rate > 1)) {
-      throw new Error("Tax rate must be a fraction in [0, 1].");
+      userError("Tax rate must be a fraction in [0, 1].");
     }
     await ctx.db.patch(taxRuleId, patch);
     await ctx.db.insert("auditLogs", {

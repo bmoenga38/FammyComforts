@@ -3,6 +3,7 @@ import { query, mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireOrgUser, requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Room types (Story 3.2) — per-org, "Rooms" area. Capacity + size + a set of
@@ -24,7 +25,7 @@ async function setAmenitySet(
   for (const amenityId of amenityIds) {
     const amenity = await ctx.db.get(amenityId);
     if (!amenity || amenity.orgId !== orgId) {
-      throw new Error("Amenity not found in this organization.");
+      userError("Amenity not found in this organization.");
     }
     await ctx.db.insert("roomTypeAmenities", { orgId, roomTypeId, amenityId });
   }
@@ -64,7 +65,7 @@ export const create = mutation({
   },
   handler: async (ctx, { name, capacity, sizeSqm, amenityIds }) => {
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
-    if (capacity < 1) throw new Error("Capacity must be at least 1.");
+    if (capacity < 1) userError("Capacity must be at least 1.");
 
     const roomTypeId = await ctx.db.insert("roomTypes", {
       orgId,
@@ -97,10 +98,10 @@ export const update = mutation({
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
     const type = await ctx.db.get(roomTypeId);
     if (!type || type.orgId !== orgId) {
-      throw new Error("Room type not found in this organization.");
+      userError("Room type not found in this organization.");
     }
     if (patch.capacity !== undefined && patch.capacity < 1) {
-      throw new Error("Capacity must be at least 1.");
+      userError("Capacity must be at least 1.");
     }
     await ctx.db.patch(roomTypeId, patch);
     if (amenityIds) await setAmenitySet(ctx, orgId, roomTypeId, amenityIds);
@@ -122,14 +123,14 @@ export const remove = mutation({
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
     const type = await ctx.db.get(roomTypeId);
     if (!type || type.orgId !== orgId) {
-      throw new Error("Room type not found in this organization.");
+      userError("Room type not found in this organization.");
     }
     // Guard: don't orphan rooms that use this type.
     const inUse = await ctx.db
       .query("rooms")
       .withIndex("by_roomType", (q) => q.eq("roomTypeId", roomTypeId))
       .first();
-    if (inUse) throw new Error("Cannot delete a room type that rooms still use.");
+    if (inUse) userError("Cannot delete a room type that rooms still use.");
 
     const joins = await ctx.db
       .query("roomTypeAmenities")
@@ -143,6 +144,9 @@ export const remove = mutation({
       action: "roomType.remove",
       entityType: "roomType",
       entityId: roomTypeId,
+      // Frozen at delete time — the document is about to be unreachable, so
+      // read-time resolution in `audit.list` could only ever show the raw id.
+      entityLabel: type.name,
       before: { name: type.name },
     });
     return { changed: true };

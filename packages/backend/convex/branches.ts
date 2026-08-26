@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireOrgUser, requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Branches / locations (Story 3.1) — org-scoped, hang off a property. Reads need
@@ -37,7 +38,7 @@ export const create = mutation({
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
     const property = await ctx.db.get(args.propertyId);
     if (!property || property.orgId !== orgId) {
-      throw new Error("Property not found in this organization.");
+      userError("Property not found in this organization.");
     }
     const branchId = await ctx.db.insert("branches", { orgId, ...args });
     await ctx.db.insert("auditLogs", {
@@ -62,7 +63,7 @@ export const update = mutation({
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
     const branch = await ctx.db.get(branchId);
     if (!branch || branch.orgId !== orgId) {
-      throw new Error("Branch not found in this organization.");
+      userError("Branch not found in this organization.");
     }
     await ctx.db.patch(branchId, patch);
     await ctx.db.insert("auditLogs", {
@@ -84,7 +85,7 @@ export const remove = mutation({
     const { user, orgId } = await requirePermission(ctx, "Settings", "manage");
     const branch = await ctx.db.get(branchId);
     if (!branch || branch.orgId !== orgId) {
-      throw new Error("Branch not found in this organization.");
+      userError("Branch not found in this organization.");
     }
     await ctx.db.delete(branchId);
     await ctx.db.insert("auditLogs", {
@@ -93,6 +94,9 @@ export const remove = mutation({
       action: "branch.remove",
       entityType: "branch",
       entityId: branchId,
+      // Frozen at delete time — the document is about to be unreachable, so
+      // read-time resolution in `audit.list` could only ever show the raw id.
+      entityLabel: branch.name,
       before: { name: branch.name, location: branch.location },
     });
     return { changed: true };

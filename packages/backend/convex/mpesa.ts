@@ -19,6 +19,7 @@ import {
   darajaTimestamp,
   stkPassword,
 } from "./lib/mpesa";
+import { userError } from "./lib/errors";
 
 // Convex injects `process.env` at runtime; the backend tsconfig has no Node types.
 declare const process: { env: Record<string, string | undefined> };
@@ -225,10 +226,10 @@ export const initiateStk = action({
       reference,
       contact,
     });
-    if (!loaded) throw new Error("Booking not found.");
-    if (!loaded.stkEnabled) throw new Error("M-Pesa is disabled for this property.");
+    if (!loaded) userError("Booking not found.");
+    if (!loaded.stkEnabled) userError("M-Pesa is disabled for this property.");
     if (!loaded.config) {
-      throw new Error("M-Pesa is not configured for this property yet.");
+      userError("M-Pesa is not configured for this property yet.");
     }
     const cfg = loaded.config;
     const msisdn = normalizeMsisdn(phone);
@@ -243,7 +244,7 @@ export const initiateStk = action({
           Authorization: `Basic ${btoa(`${cfg.consumerKey}:${cfg.consumerSecret}`)}`,
         },
       });
-      if (!res.ok) throw new Error("M-Pesa authentication failed.");
+      if (!res.ok) userError("M-Pesa authentication failed.");
       const data = (await res.json()) as { access_token: string; expires_in: string | number };
       token = data.access_token;
       await ctx.runMutation(internal.mpesa.cacheToken, {
@@ -281,7 +282,7 @@ export const initiateStk = action({
       errorMessage?: string;
     };
     if (!res.ok || body.ResponseCode !== "0" || !body.CheckoutRequestID) {
-      throw new Error(
+      userError(
         body.ResponseDescription ?? body.errorMessage ?? "M-Pesa push was not accepted.",
       );
     }

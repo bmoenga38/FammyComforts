@@ -2,20 +2,33 @@ import { v } from "convex/values";
 import { internalQuery, internalMutation, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import {
+  readHostPinnacleConfig,
+  buildSendPayload,
+  interpretSendResponse,
+  type SendOutcome,
+} from "./lib/hostpinnacle";
 
 declare const process: { env: Record<string, string | undefined> };
 
 /**
  * Outbound notification engine (Story 10.6, FR56/NFR4). A 5-minute cron drains
- * the `outboundNotifications` queue (rows are inserted by booking/payment/
- * assignment flows, already honoring per-org notificationSettings at queue
- * time):
+ * the `outboundNotifications` queue. Rows are inserted by `guestBookings.create`
+ * (booking confirmations) and `housekeeping` (task assignments), each already
+ * honoring per-org notificationSettings and rendering the message body at queue
+ * time via `lib/messageTemplates.ts`.
+ *
+ * This module is a courier, not an author: it sends `body` verbatim and never
+ * renders or substitutes anything. That keeps the sent text identical to the text
+ * stored on the row, so the queue doubles as the delivery record.
  *
  *  - `push` rows are in-app: the bell feed has already shown them, so the
  *    drain marks them sent (delivered) and they age out of the feed.
- *  - `sms` rows POST to the property's own SMS gateway (two-layer model: own
- *    SenderID) when SMS_GATEWAY_URL + SMS_API_KEY are configured. Up to 3
- *    attempts, then failed with the last error recorded.
+ *  - `sms` rows POST to HostPinnacle under the approved `AMMY_HOPES` sender ID
+ *    when HOSTPINNACLE_USER_ID + HOSTPINNACLE_PASSWORD are set as Convex
+ *    environment variables (platform-wide, not per-org). Up to 3 attempts,
+ *    then failed with the last gateway error recorded. Payload construction
+ *    and response interpretation live in `lib/hostpinnacle.ts`.
  *  - `email`/`whatsapp` (and sms with NO gateway configured) stay queued —
  *    honest pending state, visible in the feed, picked up once a provider is
  *    configured. No fake "sent".
@@ -83,6 +96,72 @@ export const markResult = internalMutation({
   },
 });
 
+/**
+ * One-off gateway smoke test, for confirming HostPinnacle credentials and the
+ * approved sender ID actually work end-to-end:
+ *
+ *   npx convex run notificationsEngine:sendTest '{"to":"0792697197"}'
+ *
+ * Deliberately an `internalAction`, not an `action`: internal functions are not
+ * reachable from a browser, only from the CLI, the dashboard, or other Convex
+ * functions. A public version of this would be an open SMS relay — free credit
+ * burn for anyone who found it, and messages sent under your own sender ID.
+ *
+ * Returns the gateway's raw response so an unrecognised body shape can be read
+ * off directly. Never returns or logs the request payload: `password` travels in
+ * the body on this provider, and function return values are visible in the
+ * Convex dashboard logs.
+ */
+export const sendTest = internalAction({
+  args: { to: v.string(), message: v.optional(v.string()) },
+  handler: async (
+    _ctx,
+    { to, message },
+  ): Promise<{
+    ok: boolean;
+    sentTo: string;
+    senderId: string;
+    httpStatus: number | null;
+    rawResponse: string;
+    verdict: string;
+  }> => {
+    const sms = readHostPinnacleConfig(process.env);
+    if (!sms) {
+      throw new Error(
+        "HostPinnacle is not configured. Set HOSTPINNACLE_USER_ID and " +
+          "HOSTPINNACLE_PASSWORD with `npx convex env set`, then retry.",
+      );
+    }
+    // Normalize first so a bad number fails here, before any network call.
+    const body = buildSendPayload(sms, [
+      {
+        mobile: to,
+        msg:
+          message ??
+          "ByteStay test: your booking BK-TEST01 is confirmed. Reply STOP to opt out.",
+      },
+    ]);
+    const res = await fetch(sms.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const rawResponse = await res.text();
+    const outcome = interpretSendResponse(res.status, rawResponse);
+    return {
+      ok: outcome.ok,
+      sentTo: body.sms[0].mobile[0],
+      senderId: sms.senderId,
+      httpStatus: res.status,
+      // Capped: the point is to read the shape, not to dump an entire page.
+      rawResponse: rawResponse.slice(0, 2000),
+      verdict: outcome.ok
+        ? "Gateway accepted the message."
+        : (outcome.error ?? "Rejected."),
+    };
+  },
+});
+
 export const drain = internalAction({
   args: {},
   handler: async (ctx): Promise<{ processed: number; sent: number }> => {
@@ -90,8 +169,7 @@ export const drain = internalAction({
       internal.notificationsEngine.listQueued,
       {},
     );
-    const gatewayUrl = process.env.SMS_GATEWAY_URL;
-    const apiKey = process.env.SMS_API_KEY;
+    const sms = readHostPinnacleConfig(process.env);
     let sent = 0;
     for (const n of queued) {
       if (n.channel === "push") {
@@ -103,7 +181,7 @@ export const drain = internalAction({
         sent++;
         continue;
       }
-      if (n.channel === "sms" && gatewayUrl && apiKey) {
+      if (n.channel === "sms" && sms) {
         if (!n.recipient) {
           await ctx.runMutation(internal.notificationsEngine.markResult, {
             id: n.id,
@@ -112,34 +190,49 @@ export const drain = internalAction({
           });
           continue;
         }
-        try {
-          const res = await fetch(gatewayUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-              to: n.recipient,
-              from: process.env.SMS_SENDER_ID ?? "FammyComfort",
-              message: n.body ?? n.type.replaceAll("_", " "),
-            }),
-          });
-          await ctx.runMutation(internal.notificationsEngine.markResult, {
-            id: n.id,
-            ok: res.ok,
-            error: res.ok ? undefined : `Gateway HTTP ${res.status}`,
-          });
-          if (res.ok) sent++;
-        } catch (err) {
+        const message = (n.body ?? "").trim();
+        if (!message) {
+          // The body is rendered by lib/messageTemplates.ts when the row is
+          // queued, so an empty one means the queueing site forgot to render.
+          // Deliberately NOT patched over with the type string: sending a guest
+          // an SMS reading "booking confirmation" looks like a broken business,
+          // costs real credit, and hides the bug. Fail the row instead.
           await ctx.runMutation(internal.notificationsEngine.markResult, {
             id: n.id,
             ok: false,
-            error: err instanceof Error ? err.message : "Send failed",
+            error: `No rendered body for ${n.type} — queueing site did not render a message`,
           });
+          continue;
         }
+        let outcome: SendOutcome;
+        try {
+          // One request per row: the queue tracks delivery and retries per row.
+          // `buildSendPayload` throws on an unroutable number, which lands in
+          // the same catch and is recorded as the row's error.
+          const res = await fetch(sms.apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              buildSendPayload(sms, [{ mobile: n.recipient, msg: message }]),
+            ),
+          });
+          // HostPinnacle returns rejections as HTTP 200 with an error body, so
+          // the body — not `res.ok` — decides whether this actually went out.
+          outcome = interpretSendResponse(res.status, await res.text());
+        } catch (err) {
+          outcome = {
+            ok: false,
+            error: err instanceof Error ? err.message : "Send failed",
+          };
+        }
+        await ctx.runMutation(internal.notificationsEngine.markResult, {
+          id: n.id,
+          ok: outcome.ok,
+          error: outcome.error,
+        });
+        if (outcome.ok) sent++;
       }
-      // email/whatsapp (and sms without a gateway): stay queued.
+      // email/whatsapp (and sms with no HostPinnacle config): stay queued.
     }
     return { processed: queued.length, sent };
   },

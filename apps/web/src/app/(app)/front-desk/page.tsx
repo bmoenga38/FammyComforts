@@ -19,6 +19,7 @@ import {
   UserSearch,
   X,
 } from "lucide-react";
+import { reportError } from "@/lib/report-error";
 
 /**
  * Front Desk workspace (Epic 6), presented per the reception views of the UI
@@ -280,11 +281,12 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
   const [exceptionReason, setExceptionReason] = useState("");
   const [extendDate, setExtendDate] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
+  const [cancelReason, setCancelReason] = useState("Guest request");
   const [confirmAction, setConfirmAction] = useState<null | "cancel" | "noshow" | "refund">(null);
 
   const run = (p: Promise<unknown>, ok: string) => {
     setNote(null);
-    p.then(() => setNote(ok)).catch((e) => setNote(String(e.message ?? e)));
+    p.then(() => setNote(ok)).catch((e) => setNote(reportError(e)));
   };
   const initials = b.guestName
     .split(" ")
@@ -475,7 +477,7 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
             open={confirmAction === "cancel"}
             onClose={() => setConfirmAction(null)}
             onConfirm={() => {
-              run(cancel({ bookingId: b.bookingId, reason: "Desk cancellation" }), "Cancelled.");
+              run(cancel({ bookingId: b.bookingId, reason: cancelReason }), "Cancelled.");
               setConfirmAction(null);
             }}
             title="Cancel this booking?"
@@ -483,7 +485,22 @@ function BookingRow({ b, canWrite, canPay }: { b: BoardRow; canWrite: boolean; c
             confirmLabel="Cancel booking"
             cancelLabel="Keep it"
             danger
-          />
+          >
+            <label className="mt-1 flex flex-col gap-1.5 text-xs font-semibold text-text-muted">
+              Reason
+              <select
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="w-full rounded-ctrl border border-border bg-bg-input px-3 py-2 text-sm text-text"
+              >
+                {["Guest request", "No-show", "Overbooking", "Payment failed", "Other"].map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </ConfirmDialog>
           <ConfirmDialog
             open={confirmAction === "noshow"}
             onClose={() => setConfirmAction(null)}
@@ -745,7 +762,7 @@ function RoomsBoard({
                       setNote(null);
                       setStatus({ roomId: selected._id, status: s })
                         .then(() => setNote(`${selected.number} → ${s}`))
-                        .catch((e) => setNote(String(e.message ?? e)));
+                        .catch((e) => setNote(reportError(e)));
                     }}
                   >
                     {s}
@@ -823,7 +840,7 @@ function NewBooking({ prefill }: { prefill: { roomId: string; date: string } | n
             });
             setNote(`Booked ${res.reference} — ${formatKes(res.expectedTotalCents)} expected.`);
           } catch (err) {
-            setNote(String((err as Error).message ?? err));
+            setNote(reportError(err));
           }
         }}
       >
@@ -1010,7 +1027,7 @@ function AssetCheckBlock({
             : `Asset check: ${r.discrepancies} discrepancie(s), ${formatKes(r.chargedCents)} charged.`,
         );
       })
-      .catch((e) => onNote(String(e.message ?? e)));
+      .catch((e) => onNote(reportError(e)));
 
   return (
     <div className="space-y-2 rounded-ctrl border border-border p-2">

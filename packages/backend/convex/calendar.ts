@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { requireOrgUser } from "./lib/auth";
 import { assertDateRange, nightsBetween } from "./lib/bookingDomain";
+import { userError } from "./lib/errors";
 
 /**
  * Availability calendar (Story 6.3). Returns each room with its current status
@@ -15,7 +16,7 @@ export const grid = query({
     const { orgId } = await requireOrgUser(ctx);
     assertDateRange(from, to);
     if (nightsBetween(from, to) > 60) {
-      throw new Error("Calendar range is capped at 60 days.");
+      userError("Calendar range is capped at 60 days.");
     }
 
     const rooms = await ctx.db

@@ -17,7 +17,7 @@ vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
       setPermission: "roles.setPermission",
     },
     staff: { list: "staff.list", setActive: "staff.setActive" },
-    audit: { list: "audit.list" },
+    audit: { list: "audit.list", entityTypes: "audit.entityTypes" },
   },
 }));
 

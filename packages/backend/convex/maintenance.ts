@@ -3,6 +3,7 @@ import { query, mutation } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { postLedgerEntry } from "./lib/ledger";
 import { raiseEscalation } from "./lib/escalate";
+import { userError } from "./lib/errors";
 
 /**
  * Maintenance & damage reporting (Story 7.6, FR28). Caretakers report issues
@@ -24,21 +25,21 @@ export const report = mutation({
   },
   handler: async (ctx, args) => {
     const { user, orgId } = await requirePermission(ctx, "Maintenance", "write");
-    if (!args.description.trim()) throw new Error("A description is required.");
+    if (!args.description.trim()) userError("A description is required.");
 
     if (args.roomId) {
       const room = await ctx.db.get(args.roomId);
-      if (!room || room.orgId !== orgId) throw new Error("Room not found.");
+      if (!room || room.orgId !== orgId) userError("Room not found.");
     }
     let booking = null;
     if (args.bookingId) {
       booking = await ctx.db.get(args.bookingId);
-      if (!booking || booking.orgId !== orgId) throw new Error("Booking not found.");
+      if (!booking || booking.orgId !== orgId) userError("Booking not found.");
     }
     if (args.chargeCents !== undefined) {
-      if (args.kind !== "damage") throw new Error("Only damage carries a charge.");
-      if (!booking) throw new Error("A damage charge needs a booking to bill.");
-      if (args.chargeCents <= 0n) throw new Error("Damage charge must be positive.");
+      if (args.kind !== "damage") userError("Only damage carries a charge.");
+      if (!booking) userError("A damage charge needs a booking to bill.");
+      if (args.chargeCents <= 0n) userError("Damage charge must be positive.");
     }
 
     const issueId = await ctx.db.insert("maintenanceIssues", {
@@ -133,7 +134,7 @@ export const setStatus = mutation({
   handler: async (ctx, { issueId, status }) => {
     const { user, orgId } = await requirePermission(ctx, "Maintenance", "write");
     const issue = await ctx.db.get(issueId);
-    if (!issue || issue.orgId !== orgId) throw new Error("Issue not found.");
+    if (!issue || issue.orgId !== orgId) userError("Issue not found.");
     if (issue.status === status) return { changed: false };
     await ctx.db.patch(issueId, { status });
     if (status === "resolved" && issue.roomId) {

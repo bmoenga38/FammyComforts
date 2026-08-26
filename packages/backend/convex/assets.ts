@@ -3,6 +3,7 @@ import { query, mutation } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { postLedgerEntry } from "./lib/ledger";
 import { raiseEscalation } from "./lib/escalate";
+import { userError } from "./lib/errors";
 
 /**
  * Per-room asset registry + checkout verification (Story 7.7, FR29/FR54).
@@ -31,8 +32,8 @@ export const add = mutation({
   handler: async (ctx, { roomId, name }) => {
     const { user, orgId } = await requirePermission(ctx, "Assets", "manage");
     const room = await ctx.db.get(roomId);
-    if (!room || room.orgId !== orgId) throw new Error("Room not found.");
-    if (!name.trim()) throw new Error("Asset name is required.");
+    if (!room || room.orgId !== orgId) userError("Room not found.");
+    if (!name.trim()) userError("Asset name is required.");
     const assetId = await ctx.db.insert("roomAssets", {
       orgId,
       roomId,
@@ -55,7 +56,7 @@ export const remove = mutation({
   handler: async (ctx, { assetId }) => {
     const { user, orgId } = await requirePermission(ctx, "Assets", "manage");
     const asset = await ctx.db.get(assetId);
-    if (!asset || asset.orgId !== orgId) throw new Error("Asset not found.");
+    if (!asset || asset.orgId !== orgId) userError("Asset not found.");
     await ctx.db.delete(assetId);
     await ctx.db.insert("auditLogs", {
       orgId,
@@ -63,6 +64,9 @@ export const remove = mutation({
       action: "assets.remove",
       entityType: "roomAsset",
       entityId: assetId,
+      // Frozen at delete time — the document is about to be unreachable, so
+      // read-time resolution in `audit.list` could only ever show the raw id.
+      entityLabel: asset.name,
       before: { roomId: asset.roomId, name: asset.name },
     });
     return { ok: true };
@@ -94,14 +98,14 @@ export const verifyCheckout = mutation({
   handler: async (ctx, { bookingId, results }) => {
     const { user, orgId } = await requirePermission(ctx, "Assets", "write");
     const booking = await ctx.db.get(bookingId);
-    if (!booking || booking.orgId !== orgId) throw new Error("Booking not found.");
+    if (!booking || booking.orgId !== orgId) userError("Booking not found.");
 
     let discrepancies = 0;
     let chargedCents = 0n;
     for (const r of results) {
       const asset = await ctx.db.get(r.assetId);
       if (!asset || asset.orgId !== orgId || asset.roomId !== booking.roomId) {
-        throw new Error("Asset does not belong to this booking's room.");
+        userError("Asset does not belong to this booking's room.");
       }
       if (r.condition === "present") continue;
       discrepancies++;
@@ -126,7 +130,7 @@ export const verifyCheckout = mutation({
         entityId: issueId,
       });
       if (r.chargeCents) {
-        if (r.chargeCents <= 0n) throw new Error("Asset charge must be positive.");
+        if (r.chargeCents <= 0n) userError("Asset charge must be positive.");
         await postLedgerEntry(ctx, {
           orgId,
           bookingId,

@@ -234,14 +234,18 @@ export default function AdminOverviewPage() {
                     <History className="size-4" aria-hidden="true" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-body-md text-text">
-                      {a.action.replaceAll(".", " · ").replaceAll("_", " ")}
-                    </p>
-                    <p className="font-mono text-[11px] text-text-dim">
-                      {new Date(a._creationTime).toLocaleTimeString("en-KE", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    {/* Pre-resolved by `audit.list` — see convex/audit.ts. Rendering
+                        `a.action` here used to read "roomType · create". */}
+                    <p className="truncate text-body-md text-text">{a.actionLabel}</p>
+                    <p className="truncate text-body-md text-text-muted">{a.entity}</p>
+                    <p className="text-[11px] text-text-dim">
+                      {a.actor} ·{" "}
+                      <span className="font-mono">
+                        {new Date(a._creationTime).toLocaleTimeString("en-KE", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </p>
                   </div>
                 </div>

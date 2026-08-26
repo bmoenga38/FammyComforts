@@ -1,6 +1,7 @@
 import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { raiseEscalation } from "./escalate";
+import { userError } from "./errors";
 
 /**
  * The single stock-change gateway (Epic 8, FR38/FR40). EVERY change to a
@@ -22,11 +23,11 @@ export async function applyStockMovement(
   },
 ): Promise<{ newQty: number }> {
   if (!Number.isFinite(m.deltaQty) || m.deltaQty === 0) {
-    throw new Error("Stock movement quantity must be a non-zero number.");
+    userError("Stock movement quantity must be a non-zero number.");
   }
   const newQty = m.product.stockQty + m.deltaQty;
   if (newQty < 0) {
-    throw new Error(
+    userError(
       `Insufficient stock for ${m.product.name}: ${m.product.stockQty} on hand, ${-m.deltaQty} needed.`,
     );
   }

@@ -3,6 +3,7 @@ import { query, mutation } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { postLedgerEntry } from "./lib/ledger";
 import { applyStockMovement } from "./lib/stock";
+import { userError } from "./lib/errors";
 
 /**
  * Restaurant & Kitchen (Epic 9). Menu items optionally link inventory
@@ -68,12 +69,12 @@ export const createMenuItem = mutation({
   },
   handler: async (ctx, args) => {
     const { user, orgId } = await requirePermission(ctx, "Restaurant", "manage");
-    if (!args.name.trim()) throw new Error("Menu item name is required.");
-    if (args.priceCents <= 0n) throw new Error("Price must be positive.");
+    if (!args.name.trim()) userError("Menu item name is required.");
+    if (args.priceCents <= 0n) userError("Price must be positive.");
     for (const ing of args.ingredients ?? []) {
       const p = await ctx.db.get(ing.productId);
-      if (!p || p.orgId !== orgId) throw new Error("Linked product not found.");
-      if (ing.qty <= 0) throw new Error("Ingredient quantities must be positive.");
+      if (!p || p.orgId !== orgId) userError("Linked product not found.");
+      if (ing.qty <= 0) userError("Ingredient quantities must be positive.");
     }
     const menuItemId = await ctx.db.insert("menuItems", {
       orgId,
@@ -100,7 +101,7 @@ export const setMenuItemActive = mutation({
   handler: async (ctx, { menuItemId, active }) => {
     const { orgId } = await requirePermission(ctx, "Restaurant", "manage");
     const m = await ctx.db.get(menuItemId);
-    if (!m || m.orgId !== orgId) throw new Error("Menu item not found.");
+    if (!m || m.orgId !== orgId) userError("Menu item not found.");
     await ctx.db.patch(menuItemId, { active });
     return { ok: true };
   },
@@ -121,16 +122,16 @@ export const createOrder = mutation({
   },
   handler: async (ctx, { channel, tableOrRoom, items }) => {
     const { user, orgId } = await requirePermission(ctx, "Restaurant", "write");
-    if (items.length === 0) throw new Error("An order needs at least one item.");
+    if (items.length === 0) userError("An order needs at least one item.");
 
     const lines = [];
     let totalCents = 0n;
     for (const item of items) {
       const m = await ctx.db.get(item.menuItemId);
-      if (!m || m.orgId !== orgId) throw new Error("Menu item not found.");
-      if (!m.active) throw new Error(`${m.name} is not on the menu right now.`);
+      if (!m || m.orgId !== orgId) userError("Menu item not found.");
+      if (!m.active) userError(`${m.name} is not on the menu right now.`);
       if (item.qty <= 0 || !Number.isInteger(item.qty)) {
-        throw new Error("Item quantities must be positive whole numbers.");
+        userError("Item quantities must be positive whole numbers.");
       }
       lines.push({
         menuItemId: m._id,
@@ -201,9 +202,9 @@ export const setOrderStatus = mutation({
   handler: async (ctx, { orderId, status }) => {
     const { user, orgId } = await requirePermission(ctx, "Restaurant", "write");
     const order = await ctx.db.get(orderId);
-    if (!order || order.orgId !== orgId) throw new Error("Order not found.");
+    if (!order || order.orgId !== orgId) userError("Order not found.");
     if (!NEXT[order.status].includes(status)) {
-      throw new Error(`Cannot move a ${order.status} order to ${status}.`);
+      userError(`Cannot move a ${order.status} order to ${status}.`);
     }
     await ctx.db.patch(orderId, { status });
 
@@ -262,16 +263,16 @@ export const chargeToRoom = mutation({
   handler: async (ctx, { orderId, bookingReference }) => {
     const { user, orgId } = await requirePermission(ctx, "Restaurant", "write");
     const order = await ctx.db.get(orderId);
-    if (!order || order.orgId !== orgId) throw new Error("Order not found.");
-    if (order.status !== "served") throw new Error("Only served orders can be settled.");
+    if (!order || order.orgId !== orgId) userError("Order not found.");
+    if (order.status !== "served") userError("Only served orders can be settled.");
 
     const booking = await ctx.db
       .query("bookings")
       .withIndex("by_reference", (q) => q.eq("reference", bookingReference.trim().toUpperCase()))
       .unique();
-    if (!booking || booking.orgId !== orgId) throw new Error("Booking not found.");
+    if (!booking || booking.orgId !== orgId) userError("Booking not found.");
     if (booking.status !== "checked_in") {
-      throw new Error("Room charges need a checked-in booking.");
+      userError("Room charges need a checked-in booking.");
     }
     await postLedgerEntry(ctx, {
       orgId,
@@ -304,10 +305,10 @@ export const payOrder = mutation({
   handler: async (ctx, { orderId, provider, receiptNumber }) => {
     const { user, orgId } = await requirePermission(ctx, "Restaurant", "write");
     const order = await ctx.db.get(orderId);
-    if (!order || order.orgId !== orgId) throw new Error("Order not found.");
-    if (order.status !== "served") throw new Error("Only served orders can be settled.");
+    if (!order || order.orgId !== orgId) userError("Order not found.");
+    if (order.status !== "served") userError("Only served orders can be settled.");
     if (provider === "mpesa_manual" && !receiptNumber?.trim()) {
-      throw new Error("An M-Pesa receipt code is required.");
+      userError("An M-Pesa receipt code is required.");
     }
     const paymentId = await ctx.db.insert("payments", {
       orgId,
@@ -341,7 +342,7 @@ export const revenue = query({
     const from = Date.parse(`${fromIso}T00:00:00Z`);
     const to = Date.parse(`${toIso}T00:00:00Z`) + 86_400_000;
     if (Number.isNaN(from) || Number.isNaN(to) || from >= to) {
-      throw new Error("Invalid date range.");
+      userError("Invalid date range.");
     }
     const orders = await ctx.db
       .query("orders")

@@ -19,6 +19,7 @@ import {
   StatusChip,
   EmptyState,
 } from "@/components/ui";
+import { reportError } from "@/lib/report-error";
 
 /**
  * Payments administration (Epic 5 web): method toggles (5.1), per-org Daraja
@@ -119,7 +120,7 @@ function MpesaConfigSection({ canManage }: { canManage: boolean }) {
                 setNote("Saved. Register the callback URL with Daraja.");
                 setForm({ ...form, passkey: "", consumerKey: "", consumerSecret: "" });
               } catch (err) {
-                setNote(String((err as Error).message ?? err));
+                setNote(reportError(err));
               }
             }}
           >

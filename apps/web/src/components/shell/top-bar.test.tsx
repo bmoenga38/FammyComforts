@@ -3,12 +3,23 @@ import { render, screen } from "@testing-library/react";
 
 const nav = vi.hoisted(() => ({ pathname: "/front-desk" }));
 
-vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
-// The bell inside the top bar queries the notification feed.
-vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
-  api: { notificationsFeed: { feed: "notificationsFeed.feed" } },
+vi.mock("next/navigation", () => ({
+  usePathname: () => nav.pathname,
+  useRouter: () => ({ push: vi.fn() }),
 }));
-vi.mock("convex/react", () => ({ useQuery: () => ({ count: 0, items: [] }) }));
+// The bell + global search inside the top bar query Convex.
+vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
+  api: {
+    notificationsFeed: { feed: "notificationsFeed.feed" },
+    search: { global: "search.global" },
+  },
+}));
+vi.mock("convex/react", () => ({
+  useQuery: (ref: string) =>
+    ref === "search.global"
+      ? { rooms: [], guests: [], bookings: [] }
+      : { count: 0, items: [] },
+}));
 
 import { TopBar } from "./top-bar";
 

@@ -21,6 +21,7 @@ import {
   EmptyState,
   Modal,
 } from "@/components/ui";
+import { reportError } from "@/lib/report-error";
 
 /**
  * Access administration (Stories 2.3–2.5): Roles grid, Staff, and Audit log —
@@ -179,7 +180,7 @@ function EditStaffModal({ staff, onClose }: { staff: StaffRow; onClose: () => vo
       await update({ userId: staff._id, name, phone, email: email.trim() || undefined });
       onClose();
     } catch (e) {
-      setError(String((e as Error).message ?? e));
+      setError(reportError(e));
     } finally {
       setSaving(false);
     }
@@ -325,7 +326,7 @@ function AddStaffForm() {
       reset();
       setOpen(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not add staff member.");
+      setError(reportError(e));
     } finally {
       setBusy(false);
     }
@@ -381,36 +382,136 @@ function AddStaffForm() {
   );
 }
 
+const MAX_CHANGES = 3;
+
+/** `{ from: "203", to: "101" }` → `203 → 101`; a creation (no `from`) → just the value. */
+function changeText(change: { from: string | null; to: string | null }): string {
+  if (change.from === null) return change.to ?? "—";
+  return `${change.from} → ${change.to ?? "cleared"}`;
+}
+
+/**
+ * Audit log (Story 2.5), made readable.
+ *
+ * These columns used to print the stored row verbatim — `roomType.create`,
+ * `roomType · n572z146…`, `ks7c4ac8` — which nobody can audit from: a dotted
+ * action, a table name plus a truncated document id, and a truncated user id.
+ *
+ * `api.audit.list` now resolves those server-side to `actionLabel`
+ * ("Room type created"), `entity` (`Room type "Closed Balcony"`) and `actor`
+ * ("Grace Achieng"), and adds an already-formatted field diff. So this component
+ * only lays strings out — no id mangling here, and nothing to keep in sync if a
+ * new action or table is added. The machine `action` is still on every row, and
+ * is what the record-type filter narrows against.
+ *
+ * Diffs are capped at MAX_CHANGES lines per row because a creation carries every
+ * column of the new document; the remainder expands per row on request.
+ */
 function AuditSection() {
-  const rows = useQuery(api.audit.list, { limit: 100 });
+  const [entityType, setEntityType] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const types = useQuery(api.audit.entityTypes, {});
+  const rows = useQuery(api.audit.list, {
+    limit: 100,
+    ...(entityType ? { entityType } : {}),
+  });
+
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   if (rows === undefined) return <p className="text-sm text-fg-muted">Loading audit log…</p>;
-  if (rows.length === 0)
-    return <EmptyState title="No audit entries" description="No sensitive actions recorded yet." />;
 
   return (
     <Card>
-      <CardContent>
-        <Table>
-          <THead>
-            <TR>
-              <TH>Action</TH>
-              <TH>Entity</TH>
-              <TH>Actor</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {rows.map((r) => (
-              <TR key={r._id}>
-                <TD>{r.action}</TD>
-                <TD>
-                  {r.entityType}
-                  {r.entityId ? ` · ${r.entityId.slice(0, 8)}…` : ""}
-                </TD>
-                <TD className="text-xs text-fg-muted">{r.actorId?.slice(0, 8) ?? "system"}</TD>
-              </TR>
+      <CardContent className="space-y-3">
+        <label className="flex flex-col gap-1.5 text-xs font-semibold text-fg-muted sm:max-w-xs">
+          Filter by record type
+          <select
+            value={entityType}
+            onChange={(e) => setEntityType(e.target.value)}
+            className="h-10 rounded-ctrl border border-border bg-bg-input px-3 text-sm text-fg"
+          >
+            <option value="">All record types</option>
+            {(types ?? []).map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
             ))}
-          </TBody>
-        </Table>
+          </select>
+        </label>
+
+        {rows.length === 0 ? (
+          <EmptyState
+            title="No audit entries"
+            description={
+              entityType
+                ? "Nothing recorded for this record type yet."
+                : "No sensitive actions recorded yet."
+            }
+          />
+        ) : (
+          <Table>
+            <THead>
+              <TR>
+                <TH>When</TH>
+                <TH>Action</TH>
+                <TH>Record</TH>
+                <TH>Who</TH>
+                <TH>What changed</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {rows.map((r) => {
+                const open = expanded.has(r._id);
+                const shown = open ? r.changes : r.changes.slice(0, MAX_CHANGES);
+                const hidden = r.changes.length - shown.length;
+                return (
+                  <TR key={r._id}>
+                    <TD className="whitespace-nowrap text-xs text-fg-muted">
+                      {new Date(r._creationTime).toLocaleString("en-KE", {
+                        month: "short",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </TD>
+                    <TD className="font-medium">{r.actionLabel}</TD>
+                    <TD>{r.entity}</TD>
+                    <TD className="text-fg-muted">{r.actor}</TD>
+                    <TD className="text-xs">
+                      {r.changes.length === 0 ? (
+                        <span className="text-fg-muted">—</span>
+                      ) : (
+                        <>
+                          <ul className="space-y-0.5">
+                            {shown.map((c) => (
+                              <li key={c.field}>
+                                <span className="text-fg-muted">{c.field}:</span>{" "}
+                                {changeText(c)}
+                              </li>
+                            ))}
+                          </ul>
+                          {(hidden > 0 || open) && (
+                            <button
+                              type="button"
+                              onClick={() => toggle(r._id)}
+                              className="mt-1 font-semibold text-primary underline"
+                            >
+                              {open ? "Show less" : `+${hidden} more`}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </TD>
+                  </TR>
+                );
+              })}
+            </TBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );

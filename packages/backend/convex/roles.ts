@@ -7,6 +7,7 @@ import {
 } from "./lib/auth";
 import { PERMISSION_AREAS } from "./lib/permissions";
 import type { Area } from "./lib/permissions";
+import { userError } from "./lib/errors";
 
 /**
  * Roles admin (Story 2.3) — all org-scoped. Reads require an authenticated org
@@ -24,7 +25,7 @@ const actionValidator = v.union(
 /** Validate an area string against the catalog (areas are not free-form). */
 function assertArea(area: string): Area {
   if (!(PERMISSION_AREAS as readonly string[]).includes(area)) {
-    throw new Error(`Unknown permission area: ${area}`);
+    userError(`Unknown permission area: ${area}`);
   }
   return area as Area;
 }
@@ -80,7 +81,7 @@ export const create = mutation({
       .query("roles")
       .withIndex("by_org_name", (q) => q.eq("orgId", orgId).eq("name", name))
       .unique();
-    if (clash) throw new Error(`A role named "${name}" already exists.`);
+    if (clash) userError(`A role named "${name}" already exists.`);
 
     const roleId = await ctx.db.insert("roles", {
       orgId,
@@ -115,7 +116,7 @@ export const setPermission = mutation({
     const { user, orgId } = await requirePermission(ctx, "Roles", "manage");
     const role = await ctx.db.get(roleId);
     if (!role || role.orgId !== orgId) {
-      throw new Error("Role not found in this organization.");
+      userError("Role not found in this organization.");
     }
     const validArea = assertArea(area);
 
@@ -125,7 +126,7 @@ export const setPermission = mutation({
         q.eq("area", validArea).eq("action", action),
       )
       .unique();
-    if (!perm) throw new Error(`Unknown permission: ${area}:${action}`);
+    if (!perm) userError(`Unknown permission: ${area}:${action}`);
 
     const existing = await ctx.db
       .query("rolePermissions")

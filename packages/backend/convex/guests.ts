@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Guest profile management (Story 6.2) — "Guests" area. Profiles are created
@@ -71,8 +72,8 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const { user, orgId } = await requirePermission(ctx, "Guests", "write");
-    if (!args.fullName.trim()) throw new Error("Full name is required.");
-    if (!args.phone.trim()) throw new Error("Phone is required.");
+    if (!args.fullName.trim()) userError("Full name is required.");
+    if (!args.phone.trim()) userError("Phone is required.");
     const guestId = await ctx.db.insert("guests", {
       orgId,
       ...args,
@@ -105,7 +106,7 @@ export const update = mutation({
     const { user, orgId } = await requirePermission(ctx, "Guests", "write");
     const guest = await ctx.db.get(guestId);
     if (!guest || guest.orgId !== orgId) {
-      throw new Error("Guest not found in this organization.");
+      userError("Guest not found in this organization.");
     }
     await ctx.db.patch(guestId, patch);
     await ctx.db.insert("auditLogs", {

@@ -1,5 +1,6 @@
 import type { QueryCtx, MutationCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
+import { userError } from "./errors";
 
 /**
  * The shared money engine (Story 5.2, NFR14/AR5). All amounts are int64 cents;
@@ -38,16 +39,16 @@ export async function postLedgerEntry(
   //   refund  > 0   (money returned to the guest raises the open balance back)
   //   adjustment ≠ 0 (discounts negative, fees/damage positive)
   if (entry.type === "charge" && entry.amountCents <= 0n) {
-    throw new Error("Charges must be positive.");
+    userError("Charges must be positive.");
   }
   if (entry.type === "payment" && entry.amountCents >= 0n) {
-    throw new Error("Payments must be negative (they reduce the balance).");
+    userError("Payments must be negative (they reduce the balance).");
   }
   if (entry.type === "refund" && entry.amountCents <= 0n) {
-    throw new Error("Refunds must be positive (they raise the open balance).");
+    userError("Refunds must be positive (they raise the open balance).");
   }
   if (entry.type === "adjustment" && entry.amountCents === 0n) {
-    throw new Error("Adjustments cannot be zero.");
+    userError("Adjustments cannot be zero.");
   }
   return await ctx.db.insert("ledgerEntries", entry);
 }

@@ -8,6 +8,7 @@ import { api } from "@fammycomforts/backend/convex/_generated/api";
 import { initialsOf } from "@/lib/roles";
 import { Button, Input } from "@/components/ui";
 import { Phone, Mail, Award, CalendarClock, Luggage, LogOut, UserCog, KeyRound } from "lucide-react";
+import { reportError } from "@/lib/report-error";
 
 /**
  * Profile (prototype V.profile): the signed-in user's account — identity, tier,
@@ -119,7 +120,7 @@ function EditProfile({
       setOk(true);
       setOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save changes.");
+      setError(reportError(err));
     } finally {
       setBusy(false);
     }
@@ -187,7 +188,7 @@ function ChangePassword() {
       reset();
       setOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not change password.");
+      setError(reportError(err));
     } finally {
       setBusy(false);
     }

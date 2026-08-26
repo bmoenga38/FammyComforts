@@ -1,16 +1,26 @@
 "use client";
 
 import * as React from "react";
-import { X } from "lucide-react";
+import { X, CircleAlert, CircleCheck } from "lucide-react";
+
+/** Visual/semantic weight of a toast. `error` is announced assertively and sticks. */
+export type ToastVariant = "info" | "success" | "error";
 
 interface ToastItem {
   id: number;
   message: string;
+  variant: ToastVariant;
 }
 
 interface ToastOptions {
-  /** Auto-dismiss delay in ms (default 5000). Pass 0 to keep until dismissed (use for errors). */
+  /**
+   * Auto-dismiss delay in ms. Defaults to 5000 for `info`/`success` and to 0
+   * (stay until dismissed) for `error`, because an error the user never got to
+   * read is the same as no error message at all. Pass an explicit value to
+   * override either default.
+   */
   durationMs?: number;
+  variant?: ToastVariant;
 }
 
 interface ToastContextValue {
@@ -23,6 +33,39 @@ export function useToast(): ToastContextValue {
   const ctx = React.useContext(ToastContext);
   if (!ctx) throw new Error("useToast must be used within <ToastProvider>");
   return ctx;
+}
+
+/**
+ * Module-level bridge to the mounted provider.
+ *
+ * `useToast` is the right API inside components. But error reporting has to work
+ * from places that are not components — `.catch()` callbacks, helper modules,
+ * `lib/report-error.ts` — and threading a hook through all of them is how error
+ * handling ends up being skipped. Exactly one `<ToastProvider>` is mounted (in
+ * `app/layout.tsx`), so a single module slot is unambiguous. This is the same
+ * pattern react-hot-toast and sonner use.
+ *
+ * No-ops (rather than throwing) when nothing is mounted — during SSR, or in a
+ * unit test that renders a component without the provider. Losing a toast must
+ * never be what breaks a page.
+ */
+let emit: ((message: string, opts?: ToastOptions) => void) | null = null;
+
+export function notify(message: string, opts?: ToastOptions): void {
+  emit?.(message, opts);
+}
+
+const VARIANT_STYLES: Record<ToastVariant, { border: string; icon: string }> = {
+  info: { border: "border-border", icon: "text-text-dim" },
+  success: { border: "border-success", icon: "text-success" },
+  error: { border: "border-danger", icon: "text-danger" },
+};
+
+function VariantIcon({ variant }: { variant: ToastVariant }) {
+  const cls = `size-4 shrink-0 ${VARIANT_STYLES[variant].icon}`;
+  if (variant === "error") return <CircleAlert className={cls} aria-hidden="true" />;
+  if (variant === "success") return <CircleCheck className={cls} aria-hidden="true" />;
+  return null;
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -41,9 +84,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const toast = React.useCallback(
     (message: string, opts?: ToastOptions) => {
+      const variant = opts?.variant ?? "info";
       const id = (idRef.current += 1);
-      setToasts((prev) => [...prev, { id, message }]);
-      const duration = opts?.durationMs ?? 5000;
+      setToasts((prev) => {
+        // Repeating the same message (a double-clicked save that fails twice)
+        // should refresh the existing toast, not stack duplicates.
+        const deduped = prev.filter((t) => t.message !== message);
+        return [...deduped, { id, message, variant }];
+      });
+      const duration = opts?.durationMs ?? (variant === "error" ? 0 : 5000);
       if (duration > 0) {
         timers.current.set(
           id,
@@ -53,6 +102,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     },
     [dismiss],
   );
+
+  // Publish/retract the module-level bridge for the provider's lifetime.
+  React.useEffect(() => {
+    emit = toast;
+    return () => {
+      if (emit === toast) emit = null;
+    };
+  }, [toast]);
 
   // Clear any pending timers if the provider unmounts.
   React.useEffect(() => {
@@ -68,7 +125,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {/* Positioning container — NOT itself a live region; each toast is role=status. */}
+      {/* Positioning container — NOT itself a live region; each toast announces itself. */}
       <div
         role="region"
         aria-label="Notifications"
@@ -77,15 +134,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            role="status"
-            className="pointer-events-auto flex items-center gap-3 rounded-lg border border-border bg-bg-card px-4 py-2.5 text-sm text-text shadow-lg"
+            role={t.variant === "error" ? "alert" : "status"}
+            aria-live={t.variant === "error" ? "assertive" : "polite"}
+            className={`pointer-events-auto flex max-w-md items-start gap-3 rounded-lg border bg-bg-card px-4 py-2.5 text-sm text-text shadow-lg ${VARIANT_STYLES[t.variant].border}`}
           >
-            <span>{t.message}</span>
+            <VariantIcon variant={t.variant} />
+            <span className="min-w-0 flex-1">{t.message}</span>
             <button
               type="button"
               aria-label="Dismiss notification"
               onClick={() => dismiss(t.id)}
-              className="text-text-dim transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+              className="shrink-0 text-text-dim transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
             >
               <X className="size-4" aria-hidden="true" />
             </button>

@@ -4,6 +4,7 @@ import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requirePermission } from "./lib/auth";
 import { normPhone } from "./lib/demoPhone";
+import { userError } from "./lib/errors";
 
 /**
  * Staff management (Story 2.4) — org-scoped. Reads require `Employees:read`,
@@ -70,23 +71,23 @@ export const create = mutation({
       "Employees",
       "manage",
     );
-    if (name.trim().length < 3) throw new Error("Enter the staff member's full name.");
+    if (name.trim().length < 3) userError("Enter the staff member's full name.");
     const needle = normPhone(phone);
-    if (!needle) throw new Error("Enter a valid phone number.");
+    if (!needle) userError("Enter a valid phone number.");
 
     const existing = await ctx.db
       .query("users")
       .withIndex("by_org", (q) => q.eq("orgId", orgId))
       .collect();
     if (existing.some((u) => u.phone && normPhone(u.phone) === needle)) {
-      throw new Error("A user with that phone number already exists.");
+      userError("A user with that phone number already exists.");
     }
 
     let roleName: string | undefined;
     if (roleId) {
       const role = await ctx.db.get(roleId);
       if (!role || role.orgId !== orgId) {
-        throw new Error("Role not found in this organization.");
+        userError("Role not found in this organization.");
       }
       roleName = role.name;
     }
@@ -126,10 +127,10 @@ export const setActive = mutation({
     );
     const target = await ctx.db.get(userId);
     if (!target || target.orgId !== orgId) {
-      throw new Error("User not found in this organization.");
+      userError("User not found in this organization.");
     }
     if (target._id === actor._id) {
-      throw new Error("You cannot change your own active status.");
+      userError("You cannot change your own active status.");
     }
     if (target.isActive === isActive) return { changed: false };
 
@@ -159,16 +160,16 @@ export const update = mutation({
     const { user: actor, orgId } = await requirePermission(ctx, "Employees", "manage");
     const target = await ctx.db.get(userId);
     if (!target || target.orgId !== orgId) {
-      throw new Error("User not found in this organization.");
+      userError("User not found in this organization.");
     }
     const patch: { name?: string; phone?: string; email?: string | undefined } = {};
     if (name !== undefined) {
-      if (name.trim().length < 3) throw new Error("Enter the staff member's full name.");
+      if (name.trim().length < 3) userError("Enter the staff member's full name.");
       patch.name = name.trim();
     }
     if (phone !== undefined) {
       const needle = normPhone(phone);
-      if (!needle) throw new Error("Enter a valid phone number.");
+      if (!needle) userError("Enter a valid phone number.");
       const existing = await ctx.db
         .query("users")
         .withIndex("by_org", (q) => q.eq("orgId", orgId))
@@ -176,7 +177,7 @@ export const update = mutation({
       if (
         existing.some((u) => u._id !== userId && u.phone && normPhone(u.phone) === needle)
       ) {
-        throw new Error("A user with that phone number already exists.");
+        userError("A user with that phone number already exists.");
       }
       patch.phone = phone;
     }
@@ -207,11 +208,11 @@ export const assignRole = mutation({
     );
     const target = await ctx.db.get(userId);
     if (!target || target.orgId !== orgId) {
-      throw new Error("User not found in this organization.");
+      userError("User not found in this organization.");
     }
     const role = await ctx.db.get(roleId);
     if (!role || role.orgId !== orgId) {
-      throw new Error("Role not found in this organization.");
+      userError("Role not found in this organization.");
     }
     const existing = await ctx.db
       .query("userRoles")
@@ -243,7 +244,7 @@ export const removeRole = mutation({
     );
     const target = await ctx.db.get(userId);
     if (!target || target.orgId !== orgId) {
-      throw new Error("User not found in this organization.");
+      userError("User not found in this organization.");
     }
     const existing = await ctx.db
       .query("userRoles")

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { applyStockMovement } from "./lib/stock";
+import { userError } from "./lib/errors";
 
 /**
  * Inventory & Procurement (Epic 8). Products (8.1) carry a cached on-hand
@@ -52,10 +53,10 @@ export const createProduct = mutation({
   },
   handler: async (ctx, args) => {
     const { user, orgId } = await requirePermission(ctx, "Inventory", "manage");
-    if (!args.name.trim()) throw new Error("Product name is required.");
-    if (args.costCents < 0n) throw new Error("Cost cannot be negative.");
+    if (!args.name.trim()) userError("Product name is required.");
+    if (args.costCents < 0n) userError("Cost cannot be negative.");
     if ((args.openingQty ?? 0) < 0 || args.reorderLevel < 0) {
-      throw new Error("Quantities cannot be negative.");
+      userError("Quantities cannot be negative.");
     }
     const productId = await ctx.db.insert("products", {
       orgId,
@@ -97,7 +98,7 @@ export const setProductActive = mutation({
   handler: async (ctx, { productId, active }) => {
     const { user, orgId } = await requirePermission(ctx, "Inventory", "manage");
     const p = await ctx.db.get(productId);
-    if (!p || p.orgId !== orgId) throw new Error("Product not found.");
+    if (!p || p.orgId !== orgId) userError("Product not found.");
     await ctx.db.patch(productId, { active });
     await ctx.db.insert("auditLogs", {
       orgId,
@@ -159,8 +160,8 @@ export const recordUsage = mutation({
   handler: async (ctx, { productId, qty, note }) => {
     const { user, orgId } = await requirePermission(ctx, "Inventory", "write");
     const product = await ctx.db.get(productId);
-    if (!product || product.orgId !== orgId) throw new Error("Product not found.");
-    if (qty <= 0) throw new Error("Usage quantity must be positive.");
+    if (!product || product.orgId !== orgId) userError("Product not found.");
+    if (qty <= 0) userError("Usage quantity must be positive.");
     const { newQty } = await applyStockMovement(ctx, {
       orgId,
       product,
@@ -186,8 +187,8 @@ export const stocktake = mutation({
     let variances = 0;
     for (const { productId, countedQty } of counts) {
       const product = await ctx.db.get(productId);
-      if (!product || product.orgId !== orgId) throw new Error("Product not found.");
-      if (countedQty < 0) throw new Error("Counted quantity cannot be negative.");
+      if (!product || product.orgId !== orgId) userError("Product not found.");
+      if (countedQty < 0) userError("Counted quantity cannot be negative.");
       const delta = countedQty - product.stockQty;
       if (delta === 0) continue;
       variances++;
@@ -233,7 +234,7 @@ export const createSupplier = mutation({
   args: { name: v.string(), phone: v.optional(v.string()), email: v.optional(v.string()) },
   handler: async (ctx, { name, phone, email }) => {
     const { user, orgId } = await requirePermission(ctx, "Purchases", "manage");
-    if (!name.trim()) throw new Error("Supplier name is required.");
+    if (!name.trim()) userError("Supplier name is required.");
     const supplierId = await ctx.db.insert("suppliers", {
       orgId,
       name: name.trim(),
@@ -292,17 +293,17 @@ export const createPurchaseOrder = mutation({
   handler: async (ctx, { supplierId, items }) => {
     const { user, orgId } = await requirePermission(ctx, "Purchases", "write");
     const supplier = await ctx.db.get(supplierId);
-    if (!supplier || supplier.orgId !== orgId) throw new Error("Supplier not found.");
-    if (items.length === 0) throw new Error("A purchase order needs at least one line.");
+    if (!supplier || supplier.orgId !== orgId) userError("Supplier not found.");
+    if (items.length === 0) userError("A purchase order needs at least one line.");
 
     const lines = [];
     let totalCents = 0n;
     for (const item of items) {
       const product = await ctx.db.get(item.productId);
-      if (!product || product.orgId !== orgId) throw new Error("Product not found.");
-      if (item.qty <= 0) throw new Error("Line quantities must be positive.");
+      if (!product || product.orgId !== orgId) userError("Product not found.");
+      if (item.qty <= 0) userError("Line quantities must be positive.");
       const unitCostCents = item.unitCostCents ?? product.costCents;
-      if (unitCostCents < 0n) throw new Error("Cost cannot be negative.");
+      if (unitCostCents < 0n) userError("Cost cannot be negative.");
       lines.push({ productId: product._id, name: product.name, qty: item.qty, unitCostCents });
       totalCents += unitCostCents * BigInt(Math.round(item.qty));
     }
@@ -331,9 +332,9 @@ export const receivePurchaseOrder = mutation({
   handler: async (ctx, { poId }) => {
     const { user, orgId } = await requirePermission(ctx, "Purchases", "write");
     const po = await ctx.db.get(poId);
-    if (!po || po.orgId !== orgId) throw new Error("Purchase order not found.");
-    if (po.status === "received") throw new Error("Already received.");
-    if (po.status === "cancelled") throw new Error("This PO was cancelled.");
+    if (!po || po.orgId !== orgId) userError("Purchase order not found.");
+    if (po.status === "received") userError("Already received.");
+    if (po.status === "cancelled") userError("This PO was cancelled.");
 
     for (const line of po.items) {
       const product = await ctx.db.get(line.productId);
@@ -366,9 +367,9 @@ export const cancelPurchaseOrder = mutation({
   handler: async (ctx, { poId }) => {
     const { user, orgId } = await requirePermission(ctx, "Purchases", "write");
     const po = await ctx.db.get(poId);
-    if (!po || po.orgId !== orgId) throw new Error("Purchase order not found.");
+    if (!po || po.orgId !== orgId) userError("Purchase order not found.");
     if (po.status !== "ordered" && po.status !== "draft") {
-      throw new Error(`Cannot cancel a ${po.status} PO.`);
+      userError(`Cannot cancel a ${po.status} PO.`);
     }
     await ctx.db.patch(poId, { status: "cancelled" });
     await ctx.db.insert("auditLogs", {

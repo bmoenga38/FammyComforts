@@ -8,11 +8,13 @@ vi.mock("next/navigation", () => ({
   usePathname: () => nav.pathname,
   useRouter: () => ({ push: vi.fn() }),
 }));
-// The top bar's notification bell queries the feed; the sidebar queries identity.me.
+// The top bar's notification bell queries the feed + global search; the sidebar
+// queries identity.me.
 vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
   api: {
     notificationsFeed: { feed: "notificationsFeed.feed" },
     identity: { me: "identity.me" },
+    search: { global: "search.global" },
   },
 }));
 vi.mock("convex/react", () => ({ useQuery: () => ({ count: 0, items: [] }) }));

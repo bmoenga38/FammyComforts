@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireOrgUser, requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Rooms (Story 3.3) — real bookable units, per-org, "Rooms" area. Each room
@@ -75,11 +76,11 @@ export const create = mutation({
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
     const branch = await ctx.db.get(branchId);
     if (!branch || branch.orgId !== orgId) {
-      throw new Error("Branch not found in this organization.");
+      userError("Branch not found in this organization.");
     }
     const type = await ctx.db.get(roomTypeId);
     if (!type || type.orgId !== orgId) {
-      throw new Error("Room type not found in this organization.");
+      userError("Room type not found in this organization.");
     }
     // Unique number per branch (in-mutation index read).
     const clash = await ctx.db
@@ -88,7 +89,7 @@ export const create = mutation({
         q.eq("branchId", branchId).eq("number", number),
       )
       .unique();
-    if (clash) throw new Error(`Room ${number} already exists in this branch.`);
+    if (clash) userError(`Room ${number} already exists in this branch.`);
 
     const roomId = await ctx.db.insert("rooms", {
       orgId,
@@ -125,12 +126,12 @@ export const update = mutation({
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
     const room = await ctx.db.get(roomId);
     if (!room || room.orgId !== orgId) {
-      throw new Error("Room not found in this organization.");
+      userError("Room not found in this organization.");
     }
     if (patch.roomTypeId) {
       const type = await ctx.db.get(patch.roomTypeId);
       if (!type || type.orgId !== orgId) {
-        throw new Error("Room type not found in this organization.");
+        userError("Room type not found in this organization.");
       }
     }
     if (patch.number && patch.number !== room.number) {
@@ -140,7 +141,7 @@ export const update = mutation({
           q.eq("branchId", room.branchId).eq("number", patch.number!),
         )
         .unique();
-      if (clash) throw new Error(`Room ${patch.number} already exists in this branch.`);
+      if (clash) userError(`Room ${patch.number} already exists in this branch.`);
     }
     await ctx.db.patch(roomId, patch);
     await ctx.db.insert("auditLogs", {
@@ -162,7 +163,7 @@ export const setStatus = mutation({
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
     const room = await ctx.db.get(roomId);
     if (!room || room.orgId !== orgId) {
-      throw new Error("Room not found in this organization.");
+      userError("Room not found in this organization.");
     }
     if (room.status === status) return { changed: false };
     await ctx.db.patch(roomId, { status });
@@ -185,7 +186,7 @@ export const remove = mutation({
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
     const room = await ctx.db.get(roomId);
     if (!room || room.orgId !== orgId) {
-      throw new Error("Room not found in this organization.");
+      userError("Room not found in this organization.");
     }
     await ctx.db.delete(roomId);
     await ctx.db.insert("auditLogs", {
@@ -194,6 +195,9 @@ export const remove = mutation({
       action: "room.remove",
       entityType: "room",
       entityId: roomId,
+      // Frozen at delete time — the document is about to be unreachable, so
+      // read-time resolution in `audit.list` could only ever show the raw id.
+      entityLabel: room.number,
       before: { number: room.number },
     });
     return { changed: true };

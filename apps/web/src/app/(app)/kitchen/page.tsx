@@ -8,6 +8,7 @@ import { usePermissions } from "@/lib/use-permissions";
 import { kesToCents, formatKes } from "@/lib/money";
 import { Button, EmptyState, Input, StatusChip, Modal } from "@/components/ui";
 import { ChefHat, Plus, UtensilsCrossed, BanknoteIcon } from "lucide-react";
+import { reportError } from "@/lib/report-error";
 
 /**
  * Kitchen & restaurant workspace (Epic 9): live kitchen display with status
@@ -142,7 +143,7 @@ function OrderCard({ order: o, canWrite }: { order: Order; canWrite: boolean }) 
               onClick={() =>
                 chargeToRoom({ orderId: o.orderId, bookingReference: ref })
                   .then(() => setErr(null))
-                  .catch((e) => setErr(String(e.message ?? e)))
+                  .catch((e) => setErr(reportError(e)))
               }
             >
               Charge room
@@ -178,7 +179,7 @@ function OrderCard({ order: o, canWrite }: { order: Order; canWrite: boolean }) 
                   receiptNumber: receipt || undefined,
                 })
                   .then(() => setErr(null))
-                  .catch((e) => setErr(String(e.message ?? e)))
+                  .catch((e) => setErr(reportError(e)))
               }
             >
               Pay now

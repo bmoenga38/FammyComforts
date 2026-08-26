@@ -44,9 +44,12 @@ export async function getOptionalOrgUser(
 export async function requireOrgUser(ctx: QueryCtx): Promise<OrgIdentity> {
   const result = await getOptionalOrgUser(ctx);
   if (!result) {
+    // `message` is what the browser shows in a toast (see
+    // apps/web/src/lib/error-message.ts), so it is written for a human, not a
+    // log. `code` stays machine-readable for callers that branch on it.
     throw new ConvexError({
       code: "UNAUTHENTICATED",
-      message: "No active authenticated user for this request.",
+      message: "Your session has ended — please sign in again.",
     });
   }
   return result;
@@ -112,9 +115,14 @@ export async function requirePermission(
   const identity = await requireOrgUser(ctx);
   const granted = await resolvePermissions(ctx, identity.user, identity.orgId);
   if (!granted.has(`${area}:${action}`)) {
+    // `message` is user-facing (it lands in a toast via `errorMessage()`), so it
+    // is a sentence rather than the raw grant string. The grant is still carried
+    // verbatim in `permission` for logs, tests and any caller that branches on it
+    // — do not fold these two back together.
     throw new ConvexError({
       code: "FORBIDDEN",
-      message: `${area}:${action}`,
+      message: `You don't have permission to ${action} ${area.toLowerCase()}. Ask an administrator to grant it.`,
+      permission: `${area}:${action}`,
       area,
       action,
     });

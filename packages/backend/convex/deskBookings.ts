@@ -13,6 +13,7 @@ import {
 } from "./lib/bookingDomain";
 import { postLedgerEntry, bookingBalanceCents } from "./lib/ledger";
 import { enabledMethodsFor } from "./paymentMethods";
+import { userError } from "./lib/errors";
 
 /**
  * Front-desk booking operations (Epic 6) — "Bookings" area, all audited, all
@@ -29,7 +30,7 @@ async function getOrgBooking(
 ): Promise<Doc<"bookings">> {
   const booking = await ctx.db.get(bookingId);
   if (!booking || booking.orgId !== orgId) {
-    throw new Error("Booking not found in this organization.");
+    userError("Booking not found in this organization.");
   }
   return booking;
 }
@@ -74,25 +75,25 @@ export const create = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     assertDateRange(args.checkInDate, args.checkOutDate);
     if (!(await enabledMethodsFor(ctx, orgId)).includes(args.paymentMethod)) {
-      throw new Error("That payment method is disabled for this property.");
+      userError("That payment method is disabled for this property.");
     }
 
     const room = await ctx.db.get(args.roomId);
-    if (!room || room.orgId !== orgId) throw new Error("Room not found.");
+    if (!room || room.orgId !== orgId) userError("Room not found.");
     if (room.status === "maintenance" || room.status === "blocked") {
-      throw new Error("This room is not currently bookable.");
+      userError("This room is not currently bookable.");
     }
     const plan = await activeRatePlan(ctx, orgId, room.roomTypeId);
-    if (!plan) throw new Error("This room's type has no active rate plan.");
+    if (!plan) userError("This room's type has no active rate plan.");
     if (await hasConflict(ctx, args.roomId, args.checkInDate, args.checkOutDate)) {
-      throw new Error("This room is not available for those dates.");
+      userError("This room is not available for those dates.");
     }
 
     // Guest: existing profile or inline create (Story 6.2 link).
     let guestId = args.guestId;
     if (!guestId) {
       if (!args.newGuest?.fullName.trim() || !args.newGuest.phone.trim()) {
-        throw new Error("Select a guest or provide a name and phone.");
+        userError("Select a guest or provide a name and phone.");
       }
       guestId = await ctx.db.insert("guests", {
         orgId,
@@ -101,7 +102,7 @@ export const create = mutation({
       });
     } else {
       const guest = await ctx.db.get(guestId);
-      if (!guest || guest.orgId !== orgId) throw new Error("Guest not found.");
+      if (!guest || guest.orgId !== orgId) userError("Guest not found.");
     }
 
     const nights = nightsBetween(args.checkInDate, args.checkOutDate);
@@ -124,7 +125,7 @@ export const create = mutation({
         .unique();
       if (!clash) reference = candidate;
     }
-    if (!reference) throw new Error("Could not generate a reference — retry.");
+    if (!reference) userError("Could not generate a reference — retry.");
 
     const bookingId = await ctx.db.insert("bookings", {
       orgId,
@@ -187,7 +188,7 @@ export const confirm = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
     if (booking.status !== "pending") {
-      throw new Error(`Only pending bookings can be confirmed (is: ${booking.status}).`);
+      userError(`Only pending bookings can be confirmed (is: ${booking.status}).`);
     }
     await ctx.db.patch(bookingId, { status: "confirmed" });
     await ctx.db.insert("auditLogs", {
@@ -220,7 +221,7 @@ export const checkIn = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
     if (booking.status !== "confirmed") {
-      throw new Error(`Only confirmed bookings can check in (is: ${booking.status}).`);
+      userError(`Only confirmed bookings can check in (is: ${booking.status}).`);
     }
     const property = (
       await ctx.db
@@ -229,7 +230,7 @@ export const checkIn = mutation({
         .collect()
     )[0];
     if ((property?.idRequired ?? true) && !idVerified) {
-      throw new Error("ID verification is required at this property.");
+      userError("ID verification is required at this property.");
     }
     for (const doc of documents ?? []) {
       await ctx.db.insert("guestDocuments", {
@@ -274,13 +275,13 @@ export const checkOut = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
     if (booking.status !== "checked_in") {
-      throw new Error(`Only checked-in bookings can check out (is: ${booking.status}).`);
+      userError(`Only checked-in bookings can check out (is: ${booking.status}).`);
     }
 
     // Damage first so it lands in the final balance check.
     if (assetCheck && !assetCheck.ok && assetCheck.damageChargeCents) {
       if (assetCheck.damageChargeCents <= 0n) {
-        throw new Error("Damage charge must be positive.");
+        userError("Damage charge must be positive.");
       }
       await postLedgerEntry(ctx, {
         orgId,
@@ -294,7 +295,7 @@ export const checkOut = mutation({
 
     const balance = await bookingBalanceCents(ctx, bookingId);
     if (balance > 0n && !balanceException) {
-      throw new Error(
+      userError(
         `Outstanding balance of ${balance} cents — record payment or grant an audited exception.`,
       );
     }
@@ -336,18 +337,18 @@ export const extend = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
     if (!ACTIVE.has(booking.status)) {
-      throw new Error(`Cannot extend a ${booking.status} booking.`);
+      userError(`Cannot extend a ${booking.status} booking.`);
     }
     if (newCheckOutDate <= booking.checkOutDate) {
-      throw new Error("New check-out must be after the current check-out.");
+      userError("New check-out must be after the current check-out.");
     }
     assertDateRange(booking.checkInDate, newCheckOutDate);
     // Only the extension window can conflict (the stay itself is ours).
     if (await hasConflict(ctx, booking.roomId, booking.checkOutDate, newCheckOutDate)) {
-      throw new Error("The room is already booked for the extension dates.");
+      userError("The room is already booked for the extension dates.");
     }
     const plan = booking.ratePlanId ? await ctx.db.get(booking.ratePlanId) : null;
-    if (!plan) throw new Error("The booking's rate plan no longer exists.");
+    if (!plan) userError("The booking's rate plan no longer exists.");
 
     const extraNights = nightsBetween(booking.checkOutDate, newCheckOutDate);
     const { totalCents: deltaCents } = priceStay(
@@ -386,20 +387,20 @@ export const changeRoom = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
     if (!ACTIVE.has(booking.status)) {
-      throw new Error(`Cannot move a ${booking.status} booking.`);
+      userError(`Cannot move a ${booking.status} booking.`);
     }
     const oldRoom = await ctx.db.get(booking.roomId);
     const newRoom = await ctx.db.get(newRoomId);
-    if (!newRoom || newRoom.orgId !== orgId) throw new Error("Room not found.");
+    if (!newRoom || newRoom.orgId !== orgId) userError("Room not found.");
     if (newRoom.status === "maintenance" || newRoom.status === "blocked") {
-      throw new Error("That room is not currently usable.");
+      userError("That room is not currently usable.");
     }
     // R1 keeps money exact: same room type only (different type = cancel+rebook).
     if (!oldRoom || newRoom.roomTypeId !== oldRoom.roomTypeId) {
-      throw new Error("Room changes must stay within the same room type in R1.");
+      userError("Room changes must stay within the same room type in R1.");
     }
     if (await hasConflict(ctx, newRoomId, booking.checkInDate, booking.checkOutDate)) {
-      throw new Error("The new room is not available for the stay dates.");
+      userError("The new room is not available for the stay dates.");
     }
     await ctx.db.patch(bookingId, { roomId: newRoomId });
     if (booking.status === "checked_in") {
@@ -431,7 +432,7 @@ export const cancel = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
     if (!ACTIVE.has(booking.status)) {
-      throw new Error(`Cannot cancel a ${booking.status} booking.`);
+      userError(`Cannot cancel a ${booking.status} booking.`);
     }
     const balance = await bookingBalanceCents(ctx, bookingId);
     if ((waiveBalance ?? true) && balance !== 0n) {
@@ -466,7 +467,7 @@ export const markNoShow = mutation({
     const { user, orgId } = await requirePermission(ctx, "Bookings", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
     if (booking.status !== "confirmed" && booking.status !== "pending") {
-      throw new Error(`Cannot mark a ${booking.status} booking as no-show.`);
+      userError(`Cannot mark a ${booking.status} booking as no-show.`);
     }
     // Charges stay on the ledger (no-show fee policy = keep or adjust manually).
     await ctx.db.patch(bookingId, { status: "no_show" });
@@ -495,7 +496,7 @@ export const refund = mutation({
   handler: async (ctx, { bookingId, amountCents, reason }) => {
     const { user, orgId } = await requirePermission(ctx, "Payments", "write");
     const booking = await getOrgBooking(ctx, orgId, bookingId);
-    if (amountCents <= 0n) throw new Error("Refund amount must be positive.");
+    if (amountCents <= 0n) userError("Refund amount must be positive.");
     await postLedgerEntry(ctx, {
       orgId,
       bookingId,

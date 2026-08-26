@@ -13,6 +13,12 @@ import {
 import { postLedgerEntry, bookingBalanceCents } from "./lib/ledger";
 import { enabledMethodsFor } from "./paymentMethods";
 import { userError } from "./lib/errors";
+import { formatKesCents } from "./lib/money";
+import {
+  renderNotification,
+  guestFirstName,
+  type TemplateVars,
+} from "./lib/messageTemplates";
 
 /**
  * PUBLIC no-account booking (Stories 4.4–4.8). The tenant comes from the org
@@ -31,11 +37,6 @@ const PAYMENT_METHOD = v.union(
 // Unambiguous reference alphabet (no 0/O/1/I).
 const REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-/** Format int64 cents as "KES 7,308" for user-facing messages. */
-function formatKesCents(cents: bigint): string {
-  return `KES ${(Number(cents) / 100).toLocaleString("en-KE")}`;
-}
-
 async function uniqueReference(ctx: MutationCtx): Promise<string> {
   for (let attempt = 0; attempt < 8; attempt++) {
     let code = "";
@@ -49,7 +50,7 @@ async function uniqueReference(ctx: MutationCtx): Promise<string> {
       .unique();
     if (!clash) return reference;
   }
-  throw new Error("Could not generate a booking reference — please retry.");
+  userError("Could not generate a booking reference — please retry.");
 }
 
 /** Signed upload URL for optional ID images (Story 4.5). */
@@ -195,18 +196,57 @@ export const create = mutation({
     }
 
     // Queue the confirmation on every channel the property enabled (Story 4.7).
+    //
+    // The message is rendered HERE, not at send time: the row keeps the exact
+    // words the guest was sent, so a later template edit can't rewrite history.
+    // `recipient` is resolved here too — the engine can fall back to the guest
+    // record, but storing it means the queue row is self-contained.
+    const templateVars: TemplateVars = {
+      guestName: guestFirstName(args.guest.fullName),
+      propertyName: org.name,
+      reference,
+      roomNumber: room.number,
+      checkIn: args.checkInDate,
+      checkOut: args.checkOutDate,
+      nights,
+      amount: formatKesCents(totalCents),
+    };
     const settings = await ctx.db
       .query("notificationSettings")
       .withIndex("by_org", (q) => q.eq("orgId", org._id))
       .collect();
     for (const s of settings) {
       if (s.type === "booking_confirmation" && s.enabled) {
+        const template = await ctx.db
+          .query("notificationTemplates")
+          .withIndex("by_org_type_channel", (q) =>
+            q
+              .eq("orgId", org._id)
+              .eq("type", "booking_confirmation")
+              .eq("channel", s.channel),
+          )
+          .unique();
+        const rendered = renderNotification({
+          type: "booking_confirmation",
+          channel: s.channel,
+          customBody: template?.body,
+          customSubject: template?.subject,
+          vars: templateVars,
+        });
         await ctx.db.insert("outboundNotifications", {
           orgId: org._id,
           type: "booking_confirmation",
           channel: s.channel,
           bookingId,
           status: "queued",
+          recipient:
+            s.channel === "email"
+              ? args.guest.email?.trim() || undefined
+              : s.channel === "push"
+                ? undefined // in-app: rendered in the bell feed, no address
+                : args.guest.phone.trim(),
+          body: rendered.body,
+          subject: rendered.subject,
         });
       }
     }

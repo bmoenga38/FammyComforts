@@ -3,6 +3,7 @@ import { query, mutation, internalMutation } from "./_generated/server";
 import { requirePermission } from "./lib/auth";
 import { raiseEscalation } from "./lib/escalate";
 import { bookingBalanceCents } from "./lib/ledger";
+import { userError } from "./lib/errors";
 
 /**
  * Operational escalations (Story 7.8, FR30). Event-driven triggers raise
@@ -37,7 +38,7 @@ export const resolve = mutation({
   handler: async (ctx, { escalationId }) => {
     const { user, orgId } = await requirePermission(ctx, "Maintenance", "write");
     const esc = await ctx.db.get(escalationId);
-    if (!esc || esc.orgId !== orgId) throw new Error("Escalation not found.");
+    if (!esc || esc.orgId !== orgId) userError("Escalation not found.");
     if (esc.status === "resolved") return { changed: false };
     await ctx.db.patch(escalationId, { status: "resolved" });
     await ctx.db.insert("auditLogs", {

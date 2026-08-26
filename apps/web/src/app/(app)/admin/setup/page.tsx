@@ -23,6 +23,7 @@ import {
   Modal,
   ConfirmDialog,
 } from "@/components/ui";
+import { reportError, reportSuccess } from "@/lib/report-error";
 
 /**
  * Property setup (Epic 3 web batch — Stories 3.1–3.5): Property & Branches,
@@ -285,7 +286,7 @@ function PropertySection({ canManage }: { canManage: boolean }) {
                         propertyId: property._id,
                         checkInTime,
                         checkOutTime,
-                      }).catch((e) => setError(String(e.message ?? e)))
+                      }).catch((e) => setError(reportError(e)))
                     }
                   >
                     Save times
@@ -300,7 +301,7 @@ function PropertySection({ canManage }: { canManage: boolean }) {
                 e.preventDefault();
                 setError(null);
                 createProperty({ name, checkInTime, checkOutTime, idRequired }).catch(
-                  (e) => setError(String(e.message ?? e)),
+                  (e) => setError(reportError(e)),
                 );
               }}
             >
@@ -436,7 +437,7 @@ function RoomTypesSection({ canManage }: { canManage: boolean }) {
                           variant="ghost"
                           onClick={() =>
                             removeType({ roomTypeId: t._id }).catch((e) =>
-                              setError(String(e.message ?? e)),
+                              setError(reportError(e)),
                             )
                           }
                         >
@@ -456,7 +457,7 @@ function RoomTypesSection({ canManage }: { canManage: boolean }) {
                 e.preventDefault();
                 setError(null);
                 createType({ name: typeName, capacity: Number(capacity) }).catch((e) =>
-                  setError(String(e.message ?? e)),
+                  setError(reportError(e)),
                 );
                 setTypeName("");
               }}
@@ -515,7 +516,7 @@ function RoomTypesSection({ canManage }: { canManage: boolean }) {
                 e.preventDefault();
                 if (!amenityName) return;
                 createAmenity({ name: amenityName }).catch((e) =>
-                  setError(String(e.message ?? e)),
+                  setError(reportError(e)),
                 );
                 setAmenityName("");
               }}
@@ -609,7 +610,7 @@ function EditRoomModal({
       }
       setGallery((g) => [...g, ...added]);
     } catch (e) {
-      setError(String((e as Error).message ?? e));
+      setError(reportError(e));
     } finally {
       setUploading(false);
     }
@@ -629,9 +630,10 @@ function EditRoomModal({
         description: description.trim() || undefined,
         imageStorageIds: gallery.map((g) => g.storageId) as Id<"_storage">[],
       });
+      reportSuccess(`Room ${number} saved.`);
       onClose();
     } catch (e) {
-      setError(String((e as Error).message ?? e));
+      setError(reportError(e));
     } finally {
       setSaving(false);
     }
@@ -784,7 +786,7 @@ function EditRoomModal({
         onConfirm={() => {
           remove({ roomId: room._id })
             .then(onClose)
-            .catch((e) => setError(String((e as Error).message ?? e)));
+            .catch((e) => setError(reportError(e)));
           setConfirmDelete(false);
         }}
         title={`Delete room ${room.number}?`}
@@ -867,7 +869,7 @@ function RoomsSection({ canManage }: { canManage: boolean }) {
                 branchId: branchId as never,
                 roomTypeId: roomTypeId as never,
                 number,
-              }).catch((err) => setError(String(err.message ?? err)));
+              }).catch((err) => setError(reportError(err)));
               setNumber("");
             }}
           >
@@ -994,11 +996,11 @@ function RatesSection({ canManage }: { canManage: boolean }) {
                     roomTypeId: planTypeId as never,
                     name: planName,
                     nightlyCents: kesToCents(nightly),
-                  }).catch((err) => setError(String(err.message ?? err)));
+                  }).catch((err) => setError(reportError(err)));
                   setPlanName("");
                   setNightly("");
                 } catch (err) {
-                  setError(String((err as Error).message ?? err));
+                  setError(reportError(err));
                 }
               }}
             >
@@ -1058,7 +1060,7 @@ function RatesSection({ canManage }: { canManage: boolean }) {
                 e.preventDefault();
                 setError(null);
                 createTax({ name: taxName, rate: Number(taxPct) / 100 }).catch((err) =>
-                  setError(String(err.message ?? err)),
+                  setError(reportError(err)),
                 );
               }}
             >
@@ -1109,38 +1111,218 @@ function NotificationsSection({ canManage }: { canManage: boolean }) {
     settings.find((s) => s.type === type && s.channel === channel)?.enabled ?? false;
 
   return (
-    <Card>
-      <CardContent>
-        <Table>
-          <THead>
-            <TR>
-              <TH>Notification</TH>
-              {CHANNELS.map((c) => (
-                <TH key={c}>{c}</TH>
-              ))}
-            </TR>
-          </THead>
-          <TBody>
-            {NOTIFICATION_TYPES.map((type) => (
-              <TR key={type}>
-                <TD>{type.replaceAll("_", " ")}</TD>
-                {CHANNELS.map((channel) => (
-                  <TD key={channel}>
-                    <input
-                      type="checkbox"
-                      aria-label={`${type} via ${channel}`}
-                      checked={isOn(type, channel)}
-                      disabled={!canManage}
-                      onChange={(e) =>
-                        setEnabled({ type, channel, enabled: e.target.checked })
-                      }
-                    />
-                  </TD>
+    <div className="space-y-4">
+      <Card>
+        <CardContent>
+          <Table>
+            <THead>
+              <TR>
+                <TH>Notification</TH>
+                {CHANNELS.map((c) => (
+                  <TH key={c}>{c}</TH>
                 ))}
               </TR>
-            ))}
-          </TBody>
-        </Table>
+            </THead>
+            <TBody>
+              {NOTIFICATION_TYPES.map((type) => (
+                <TR key={type}>
+                  <TD>{type.replaceAll("_", " ")}</TD>
+                  {CHANNELS.map((channel) => (
+                    <TD key={channel}>
+                      <input
+                        type="checkbox"
+                        aria-label={`${type} via ${channel}`}
+                        checked={isOn(type, channel)}
+                        disabled={!canManage}
+                        onChange={(e) =>
+                          setEnabled({ type, channel, enabled: e.target.checked })
+                        }
+                      />
+                    </TD>
+                  ))}
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </CardContent>
+      </Card>
+      <TemplateEditor canManage={canManage} />
+    </div>
+  );
+}
+
+// ---------- 3.5 Notifications — message templates with live preview ----------
+// These MUST mirror packages/backend/convex/lib/messageTemplates.ts, which is the
+// source of truth: it renders the real message when a notification is queued.
+// `api.notifications.previewTemplate` renders server-side with the same code and
+// also reports SMS segment cost — wire the preview to it to remove this copy.
+const DEFAULT_BODIES: Record<string, string> = {
+  booking_confirmation:
+    "Hi {{guestName}}, your booking {{reference}} at {{propertyName}} is confirmed. " +
+    "Room {{roomNumber}}, {{checkIn}} to {{checkOut}} ({{nights}} nights). " +
+    "Total {{amount}}. Karibu!",
+  check_in_reminder:
+    "Hi {{guestName}}, reminder: check-in for {{reference}} at {{propertyName}} is " +
+    "{{checkIn}}, room {{roomNumber}}. See you soon!",
+  check_out_reminder:
+    "Hi {{guestName}}, check-out for {{reference}} is on {{checkOut}}. " +
+    "We hope you enjoyed your stay at {{propertyName}}!",
+  payment_receipt:
+    "Hi {{guestName}}, we have received {{amount}} for {{reference}} at " +
+    "{{propertyName}}. Asante for your payment!",
+  staff_alert: "{{propertyName}} alert: {{message}}",
+};
+const SAMPLE: Record<string, string> = {
+  guestName: "Janet",
+  propertyName: "Fammy Comforts",
+  reference: "BK-U2FDA9",
+  roomNumber: "202",
+  checkIn: "2026-06-16",
+  checkOut: "2026-06-18",
+  nights: "2",
+  amount: "KES 33,640",
+  message: "Room 202 needs attention",
+};
+const fillPreview = (body: string) =>
+  body.replace(/\{\{(\w+)\}\}/g, (_, k: string) => SAMPLE[k] ?? `{{${k}}}`);
+
+function TemplateEditor({ canManage }: { canManage: boolean }) {
+  const templates = useQuery(api.notifications.listTemplates);
+  const save = useMutation(api.notifications.saveTemplate);
+  const [type, setType] = useState<string>(NOTIFICATION_TYPES[0]);
+  const [channel, setChannel] = useState<string>("sms");
+  // Per-(type,channel) edits overlay the saved template — derived during render,
+  // so no state-syncing effect. Falls back to the saved body, then the default.
+  const [drafts, setDrafts] = useState<Record<string, { body: string; subject: string }>>({});
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const key = `${type}:${channel}`;
+  const saved = templates?.find((t) => t.type === type && t.channel === channel);
+  const body = drafts[key]?.body ?? saved?.body ?? DEFAULT_BODIES[type] ?? "";
+  const subject = drafts[key]?.subject ?? saved?.subject ?? "";
+  const setBody = (val: string) => {
+    setSavedAt(null);
+    setDrafts((d) => ({ ...d, [key]: { body: val, subject } }));
+  };
+  const setSubject = (val: string) => {
+    setSavedAt(null);
+    setDrafts((d) => ({ ...d, [key]: { body, subject: val } }));
+  };
+
+  const onSave = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      await save({ type, channel: channel as "email" | "sms" | "whatsapp" | "push", body, subject: subject || undefined });
+      setSavedAt("Saved.");
+    } catch (e) {
+      setError(reportError(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const preview = fillPreview(body);
+
+  return (
+    <Card>
+      <CardContent className="space-y-3">
+        <div>
+          <h3 className="font-semibold text-text">Message templates</h3>
+          <p className="text-body-md text-text-muted">
+            Edit what guests receive. Use {"{{guestName}}"}, {"{{reference}}"},{" "}
+            {"{{propertyName}}"}, {"{{roomNumber}}"}, {"{{checkIn}}"}, {"{{checkOut}}"},{" "}
+            {"{{nights}}"}, {"{{amount}}"} — filled in automatically when sent. An
+            unrecognised {"{{name}}"} is rejected on save.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs font-semibold text-text-muted">
+            Notification
+            <select
+              className="w-full rounded-ctrl border border-border bg-bg-input px-2 py-2 text-sm text-text"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            >
+              {NOTIFICATION_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-1 text-xs font-semibold text-text-muted">
+            Channel
+            <select
+              className="w-full rounded-ctrl border border-border bg-bg-input px-2 py-2 text-sm text-text"
+              value={channel}
+              onChange={(e) => setChannel(e.target.value)}
+            >
+              {CHANNELS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {channel === "email" && (
+          <label className="block space-y-1 text-xs font-semibold text-text-muted">
+            Subject
+            <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Your booking is confirmed" />
+          </label>
+        )}
+
+        <label className="block space-y-1 text-xs font-semibold text-text-muted">
+          Message body
+          <textarea
+            className="w-full rounded-ctrl border border-border bg-bg-input px-3 py-2 text-sm text-text"
+            rows={4}
+            value={body}
+            disabled={!canManage}
+            onChange={(e) => setBody(e.target.value)}
+          />
+        </label>
+
+        {/* Live, channel-styled preview */}
+        <div>
+          <p className="text-label-caps mb-1.5 uppercase text-text-muted">Preview</p>
+          {channel === "sms" || channel === "whatsapp" ? (
+            <div className="max-w-sm rounded-2xl rounded-bl-sm bg-[color-mix(in_srgb,var(--primary)_14%,transparent)] px-4 py-2.5 text-sm text-text">
+              {preview}
+            </div>
+          ) : channel === "push" ? (
+            <div className="flex max-w-sm items-start gap-3 rounded-card border border-border bg-bg-card p-3">
+              <span className="brand-mark grid size-9 shrink-0 place-items-center rounded-lg text-sm">F</span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-text">Fammy Comforts</p>
+                <p className="text-body-md text-text-muted">{preview}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-md overflow-hidden rounded-card border border-border">
+              <div className="border-b border-border bg-bg-input px-4 py-2 text-xs text-text-muted">
+                <span className="font-semibold text-text">{subject || "(no subject)"}</span> · to guest
+              </div>
+              <div className="whitespace-pre-wrap p-4 text-sm text-text">{preview}</div>
+            </div>
+          )}
+        </div>
+
+        {error && <p className="text-sm text-danger">{error}</p>}
+        <div className="flex items-center gap-3">
+          <Button onClick={onSave} disabled={!canManage || saving}>
+            {saving ? "Saving…" : "Save template"}
+          </Button>
+          {savedAt && <span className="text-body-md text-primary">{savedAt}</span>}
+          {!canManage && (
+            <span className="text-body-md text-text-muted">Needs Notifications:manage.</span>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

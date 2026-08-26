@@ -11,7 +11,11 @@ const signIn = vi.fn();
 const replace = vi.fn();
 const query = vi.fn();
 
-vi.mock("convex/react", () => ({ useConvex: () => ({ query }) }));
+vi.mock("convex/react", () => ({
+  useConvex: () => ({ query }),
+  useConvexAuth: () => ({ isAuthenticated: false, isLoading: false }),
+  useQuery: () => null,
+}));
 vi.mock("@convex-dev/auth/react", () => ({
   useAuthActions: () => ({ signIn }),
 }));
@@ -19,7 +23,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
 }));
 vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
-  api: { accounts: { phoneStatus: "accounts.phoneStatus" } },
+  api: {
+    accounts: { phoneStatus: "accounts.phoneStatus" },
+    identity: { me: "identity.me" },
+  },
 }));
 
 import SignInPage from "./page";

@@ -5,22 +5,19 @@ import { internal } from "./_generated/api";
  * Scheduled jobs (Story 1.10). There is exactly ONE `crons.ts` per Convex
  * deployment. Cron registration only takes effect on `convex deploy`.
  *
- * ⚠️ TEMPORARILY DISABLED: the daily backup cron is commented out until
- * `runExport()` in `backups.ts` is wired to a real `convex export` — otherwise
- * it would fail every day on the deployment (the stub throws). Re-enable when
- * the live export lands.
- *
  * All Convex cron times are UTC. Kenya (EAT) is UTC+3, so 00:00 EAT = 21:00 UTC
  * the previous day → `hourUTC: 21`.
  */
 const crons = cronJobs();
 
-// crons.daily(
-//   "daily backup export",
-//   { hourUTC: 21, minuteUTC: 0 }, // 00:00 EAT
-//   internal.backups.dailyExport,
-//   {},
-// );
+// Story 1.10 — daily database export to Convex file storage, ledgered in
+// `backupRuns` and pruned to RETENTION_COPIES. See convex/BACKUP.md.
+crons.daily(
+  "daily backup export",
+  { hourUTC: 21, minuteUTC: 0 }, // 00:00 EAT
+  internal.backups.dailyExport,
+  {},
+);
 
 // Story 7.8 — time-based escalations (dirty-room SLA, unpaid balances).
 crons.hourly(
@@ -30,8 +27,8 @@ crons.hourly(
   {},
 );
 
-// Story 10.6 — drain the outbound notification queue (SMS via the org's own
-// gateway when SMS_GATEWAY_URL/SMS_API_KEY are configured).
+// Story 10.6 — drain the outbound notification queue (SMS via HostPinnacle
+// when HOSTPINNACLE_USER_ID/HOSTPINNACLE_PASSWORD are configured).
 crons.interval(
   "notification queue drain",
   { minutes: 5 },

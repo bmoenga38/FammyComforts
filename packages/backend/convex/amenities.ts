@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireOrgUser, requirePermission } from "./lib/auth";
+import { userError } from "./lib/errors";
 
 /**
  * Amenities catalog (Story 3.2) — per-org, "Rooms" area. Reusable tags assigned
@@ -25,7 +26,7 @@ export const create = mutation({
       .query("amenities")
       .withIndex("by_org_name", (q) => q.eq("orgId", orgId).eq("name", name))
       .unique();
-    if (clash) throw new Error(`Amenity "${name}" already exists.`);
+    if (clash) userError(`Amenity "${name}" already exists.`);
 
     const amenityId = await ctx.db.insert("amenities", { orgId, name });
     await ctx.db.insert("auditLogs", {
@@ -46,7 +47,7 @@ export const remove = mutation({
     const { user, orgId } = await requirePermission(ctx, "Rooms", "manage");
     const amenity = await ctx.db.get(amenityId);
     if (!amenity || amenity.orgId !== orgId) {
-      throw new Error("Amenity not found in this organization.");
+      userError("Amenity not found in this organization.");
     }
     // Detach from any room types first (keep joins consistent).
     const joins = await ctx.db
@@ -63,6 +64,9 @@ export const remove = mutation({
       action: "amenity.remove",
       entityType: "amenity",
       entityId: amenityId,
+      // Frozen at delete time — the document is about to be unreachable, so
+      // read-time resolution in `audit.list` could only ever show the raw id.
+      entityLabel: amenity.name,
       before: { name: amenity.name },
     });
     return { changed: true };
