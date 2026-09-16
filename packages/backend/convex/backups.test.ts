@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { jsonToConvex, type JSONValue } from "convex/values";
 import schema from "./schema";
 import { internal } from "./_generated/api";
-import { RETENTION_COPIES, BACKUP_FORMAT, backupTableNames } from "./backups";
+import { RETENTION_COPIES, RETENTION_FAILED, ABANDONED_STARTED_MS, BACKUP_FORMAT, backupTableNames } from "./backups";
 
 /**
  * Backup-run lifecycle, export and retention tests (Story 1.10, AC7).
@@ -74,6 +74,87 @@ describe("backups", () => {
     // Re-running prune is a no-op.
     const deletedAgain = await t.mutation(internal.backups.prune, {});
     expect(deletedAgain).toBe(0);
+  });
+
+  it("prune caps failures, and failures never crowd out retained copies", async () => {
+    const t = convexTest(schema, import.meta.glob("./**/*.ts"));
+
+    // `failed` used to be the one status nothing ever deleted: prune collected
+    // the whole table and only ever retired `completed` rows, so failures piled
+    // up forever until the read itself broke — and a broken prune stops
+    // deleting backup BLOBS too.
+    const extraFailures = 4;
+    await t.run(async (ctx) => {
+      for (let i = 0; i < RETENTION_FAILED + extraFailures; i++) {
+        await ctx.db.insert("backupRuns", {
+          status: "failed",
+          startedAt: i,
+          finishedAt: i,
+          error: `boom ${i}`,
+          trigger: "cron",
+        });
+      }
+      // A full set of copies alongside them. Each status is retained on its own
+      // index, so these must all survive: a failure backlog must never evict a
+      // good copy.
+      for (let i = 0; i < RETENTION_COPIES; i++) {
+        await ctx.db.insert("backupRuns", {
+          status: "completed",
+          startedAt: 1000 + i,
+          finishedAt: 1000 + i,
+          storageId: await ctx.storage.store(new Blob([`c${i}`])),
+          sizeBytes: 2n,
+          trigger: "cron",
+        });
+      }
+    });
+
+    expect(await t.mutation(internal.backups.prune, {})).toBe(extraFailures);
+
+    const remaining = await t.run((ctx) => ctx.db.query("backupRuns").collect());
+    expect(remaining.filter((r) => r.status === "completed")).toHaveLength(RETENTION_COPIES);
+    expect(remaining.filter((r) => r.status === "failed")).toHaveLength(RETENTION_FAILED);
+    // The newest failures are the ones kept — they are what explains a gap.
+    const keptErrors = remaining.filter((r) => r.status === "failed").map((r) => r.error);
+    expect(keptErrors).toContain(`boom ${RETENTION_FAILED + extraFailures - 1}`);
+    expect(keptErrors).not.toContain("boom 0");
+
+    expect(await t.mutation(internal.backups.prune, {})).toBe(0);
+  });
+
+  it("prune sweeps abandoned `started` rows but leaves an in-flight run alone", async () => {
+    const t = convexTest(schema, import.meta.glob("./**/*.ts"));
+
+    // Scheduled ACTIONS are at-most-once, so a run killed mid-export leaves a
+    // `started` row nothing will ever finish. Those were permanent.
+    const now = Date.now();
+    await t.run(async (ctx) => {
+      await ctx.db.insert("backupRuns", {
+        status: "started",
+        startedAt: now - ABANDONED_STARTED_MS - 60_000,
+        trigger: "cron",
+      });
+      await ctx.db.insert("backupRuns", {
+        status: "started",
+        startedAt: now - 2 * ABANDONED_STARTED_MS,
+        trigger: "manual",
+      });
+      // Genuinely in flight — the export takes minutes, so this must survive.
+      await ctx.db.insert("backupRuns", {
+        status: "started",
+        startedAt: now - 30_000,
+        trigger: "cron",
+      });
+    });
+
+    expect(await t.mutation(internal.backups.prune, {})).toBe(2);
+
+    const remaining = await t.run((ctx) => ctx.db.query("backupRuns").collect());
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].trigger).toBe("cron");
+    expect(remaining[0].startedAt).toBe(now - 30_000);
+
+    expect(await t.mutation(internal.backups.prune, {})).toBe(0);
   });
 
   it("backupTableNames is derived from the schema, so new tables are covered automatically", () => {

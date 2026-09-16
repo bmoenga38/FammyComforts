@@ -8,6 +8,7 @@ import { requireOrgUser, resolvePermissions } from "./lib/auth";
  *  - booking_pending  (Bookings:read)      — new website bookings awaiting desk
  *  - guest_request    (Bookings:read)      — open portal requests
  *  - housekeeping     (Housekeeping:read)  — pending cleaning tasks
+ *  - escalation       (Dashboard:read)     — open escalations
  *  - sms_queued       (Notifications:read) — outbound messages awaiting send
  * Stateless live counts (no read/unread state yet — gap-listed); newest-first,
  * capped at 30 items. `count` is the badge number.
@@ -25,6 +26,28 @@ export type FeedItem = {
   at: number;
 };
 
+/** Items returned to the bell dropdown. */
+const FEED_LIMIT = 30;
+
+/**
+ * Rows read per kind. Every read here is bounded, which matters because this
+ * query runs on every page for every signed-in user and is live-subscribed:
+ * it re-runs on any write to a table it touched. It used to `.collect()` the
+ * whole `bookings` and `outboundNotifications` tables and filter in JS, so its
+ * cost grew with the property's entire history — and past Convex's per-query
+ * read limit the bell would have stopped working altogether, exactly when the
+ * property was busiest.
+ *
+ * Set equal to `FEED_LIMIT`, which makes the cap invisible in the returned
+ * list: the rows dropped by a kind's `.take()` are all older than that kind's
+ * newest `FEED_LIMIT`, so they cannot rank inside the newest `FEED_LIMIT`
+ * overall. The returned items are therefore identical to an unbounded read.
+ *
+ * `count` does saturate (at `FEED_LIMIT` × kinds). Not user-visible: the bell
+ * badge renders "9+" for anything above 9 (see notifications-bell.tsx).
+ */
+const SCAN_LIMIT = FEED_LIMIT;
+
 export const feed = query({
   args: {},
   handler: async (ctx) => {
@@ -33,12 +56,16 @@ export const feed = query({
     const items: FeedItem[] = [];
 
     if (perms.has("Bookings:read")) {
+      // `by_org_status` + desc = the newest pending bookings, without reading
+      // the confirmed/checked-out/cancelled archive at all.
       const bookings = await ctx.db
         .query("bookings")
-        .withIndex("by_org", (q) => q.eq("orgId", orgId))
-        .collect();
+        .withIndex("by_org_status", (q) =>
+          q.eq("orgId", orgId).eq("status", "pending"),
+        )
+        .order("desc") // every Convex index ends with _creationTime → newest first
+        .take(SCAN_LIMIT);
       for (const b of bookings) {
-        if (b.status !== "pending") continue;
         const guest = await ctx.db.get(b.guestId);
         const room = await ctx.db.get(b.roomId);
         items.push({
@@ -53,7 +80,8 @@ export const feed = query({
       const requests = await ctx.db
         .query("guestRequests")
         .withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "open"))
-        .collect();
+        .order("desc")
+        .take(SCAN_LIMIT);
       for (const r of requests) {
         const booking = await ctx.db.get(r.bookingId);
         items.push({
@@ -70,7 +98,8 @@ export const feed = query({
       const tasks = await ctx.db
         .query("housekeepingTasks")
         .withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "pending"))
-        .collect();
+        .order("desc")
+        .take(SCAN_LIMIT);
       for (const t of tasks) {
         const room = await ctx.db.get(t.roomId);
         items.push({
@@ -87,7 +116,8 @@ export const feed = query({
       const escalations = await ctx.db
         .query("escalations")
         .withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "open"))
-        .collect();
+        .order("desc")
+        .take(SCAN_LIMIT);
       for (const e of escalations) {
         items.push({
           kind: "escalation",
@@ -102,10 +132,12 @@ export const feed = query({
     if (perms.has("Notifications:read")) {
       const queued = await ctx.db
         .query("outboundNotifications")
-        .withIndex("by_org", (q) => q.eq("orgId", orgId))
-        .collect();
+        .withIndex("by_org_status", (q) =>
+          q.eq("orgId", orgId).eq("status", "queued"),
+        )
+        .order("desc")
+        .take(SCAN_LIMIT);
       for (const n of queued) {
-        if (n.status !== "queued") continue;
         const booking = n.bookingId ? await ctx.db.get(n.bookingId) : null;
         items.push({
           kind: "sms_queued",
@@ -118,6 +150,6 @@ export const feed = query({
     }
 
     items.sort((a, b) => b.at - a.at);
-    return { count: items.length, items: items.slice(0, 30) };
+    return { count: items.length, items: items.slice(0, FEED_LIMIT) };
   },
 });

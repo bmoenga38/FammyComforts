@@ -301,7 +301,11 @@ export default defineSchema({
     .index("by_org", ["orgId"])
     .index("by_reference", ["reference"])
     .index("by_room", ["roomId"])
-    .index("by_guest", ["guestId"]),
+    .index("by_guest", ["guestId"])
+    // Status-scoped reads must not widen with the booking archive: the
+    // notification feed wants only `pending`, and without this it had to
+    // `.collect()` every booking the property has ever taken and filter in JS.
+    .index("by_org_status", ["orgId", "status"]),
 
   // ===== Payments, Ledger, Invoices (Epic 5) =====
   // Money invariant (NFR14/AR5): every amount is integer minor units (int64
@@ -664,7 +668,11 @@ export default defineSchema({
     error: v.optional(v.string()),
   })
     .index("by_org", ["orgId"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    // `by_status` serves the global send queue; the per-org bell needs both
+    // columns, or it reads every message the property has ever sent just to
+    // find the handful still queued.
+    .index("by_org_status", ["orgId", "status"]),
 
   // Notification settings (Story 3.5) — "Notifications" area. One row per
   // (type, channel); the notification engine respects `enabled`.

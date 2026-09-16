@@ -3,6 +3,7 @@ import {
   internalMutation,
   internalQuery,
   type ActionCtx,
+  type MutationCtx,
 } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id, TableNames } from "./_generated/dataModel";
@@ -292,19 +293,104 @@ export const failRun = internalMutation({
 });
 
 /**
+ * Failed runs kept for diagnosis. A failure is worth reading — it explains why
+ * there is no copy from last night — but ten is enough to see a pattern, and
+ * without a cap of its own `failed` was the one status nothing ever deleted, so
+ * it grew forever.
+ */
+export const RETENTION_FAILED = 10;
+
+/**
+ * A `started` row older than this belongs to an action that was killed
+ * mid-flight. Scheduled actions are at-most-once (no retry), so nothing
+ * finishes them and the row is permanent otherwise. Set far beyond any real run
+ * — the export takes minutes, never a day — so an in-flight backup can never be
+ * pruned out from under itself.
+ */
+export const ABANDONED_STARTED_MS = 24 * 60 * 60_000;
+
+/**
+ * Rows examined per status, beyond the retained ones, per run.
+ *
+ * This is what makes `prune` a bounded read. It used to `.collect()` the whole
+ * `backupRuns` table and filter to `completed` in JS — and because it deleted
+ * only `completed` rows, every `failed` and abandoned `started` row stayed
+ * forever. Past Convex's per-query read limit that unbounded read would start
+ * throwing, and since `prune` is the only thing that deletes backup BLOBS, a
+ * broken prune means file storage grows without limit too. The failure
+ * compounded quietly, which is the worst kind.
+ *
+ * Prune runs after every successful backup, so one run has at most one new row
+ * to retire; a batch this size catches up a long pruning gap within a few runs
+ * instead of needing a manual sweep.
+ */
+const PRUNE_BATCH = 50;
+
+/**
+ * Delete the rows of one status beyond the newest `keep`, bounded.
+ *
+ * Ordered newest-first on `by_status`, so `keep` retains exactly the copies
+ * worth retaining. Blobs go with the row: deleting a `backupRuns` document does
+ * NOT delete its stored artifact (AR7′ orphan rule).
+ */
+async function pruneByRetention(
+  ctx: MutationCtx,
+  status: "completed" | "failed",
+  keep: number,
+): Promise<number> {
+  const batch = await ctx.db
+    .query("backupRuns")
+    .withIndex("by_status", (q) => q.eq("status", status))
+    .order("desc") // every Convex index ends with _creationTime → newest first
+    .take(keep + PRUNE_BATCH);
+
+  let deleted = 0;
+  for (const run of batch.slice(keep)) {
+    if (run.storageId) await ctx.storage.delete(run.storageId);
+    await ctx.db.delete(run._id);
+    await ctx.db.insert("auditLogs", {
+      action: "backup.prune",
+      entityType: "backupRun",
+      entityId: run._id,
+      before: { status: run.status, startedAt: run.startedAt },
+    });
+    deleted++;
+  }
+  return deleted;
+}
+
+/**
  * Enforce the retention window: keep the newest `RETENTION_COPIES` completed
- * runs, delete older ones — and delete the underlying blob in the same mutation
- * (deleting the row does NOT delete the blob — AR7′ orphan rule). Idempotent.
+ * runs and the newest `RETENTION_FAILED` failures, delete older ones — and
+ * delete the underlying blob in the same mutation (deleting the row does NOT
+ * delete the blob — AR7′ orphan rule). Abandoned `started` rows are swept too.
+ * Every read is bounded; idempotent.
  */
 export const prune = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const completed = (
-      await ctx.db.query("backupRuns").withIndex("by_started").order("desc").collect()
-    ).filter((r) => r.status === "completed");
+    let deleted = await pruneByRetention(ctx, "completed", RETENTION_COPIES);
+    deleted += await pruneByRetention(ctx, "failed", RETENTION_FAILED);
 
-    const stale = completed.slice(RETENTION_COPIES);
-    for (const run of stale) {
+    // `started` is an age predicate, not a retention count, so this batch is
+    // taken OLDEST-first: the abandoned rows are the old ones, and a newest-first
+    // read would keep re-examining live runs and never reach them.
+    const cutoff = Date.now() - ABANDONED_STARTED_MS;
+    const oldest = await ctx.db
+      .query("backupRuns")
+      .withIndex("by_status", (q) => q.eq("status", "started"))
+      .order("asc")
+      .take(PRUNE_BATCH);
+    for (const run of oldest) {
+      // `continue`, not `break`: the index orders by `_creationTime` while the
+      // predicate is on `startedAt`. The two agree in production (`startedAt`
+      // is set at insert), but not necessarily in seeded data, and stopping
+      // early on a disagreement would strand an abandoned row forever. The
+      // read is already bounded by the `.take()` above, so scanning the whole
+      // batch costs nothing.
+      if (run.startedAt > cutoff) continue;
+      // A `started` row should never carry a blob (`storageId` is set only on
+      // completion), but check rather than trust and leak one.
       if (run.storageId) await ctx.storage.delete(run.storageId);
       await ctx.db.delete(run._id);
       await ctx.db.insert("auditLogs", {
@@ -313,8 +399,10 @@ export const prune = internalMutation({
         entityId: run._id,
         before: { status: run.status, startedAt: run.startedAt },
       });
+      deleted++;
     }
-    return stale.length;
+
+    return deleted;
   },
 });
 
