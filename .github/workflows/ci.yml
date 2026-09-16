@@ -10,6 +10,16 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# `next build` inlines NEXT_PUBLIC_* at build time, and the module-scope
+# `new ConvexReactClient(...)` in convex-client-provider.tsx throws on an
+# undefined address — so without a value here `pnpm build` dies while
+# prerendering the root layout, in BOTH jobs. CI has no Convex deployment of its
+# own, and this placeholder deliberately does not resolve: it keeps the e2e specs
+# honest (they assert boot/render/hydrate, never data — see e2e/smoke.spec.ts)
+# and guarantees CI can never read from or write to a real deployment.
+env:
+  NEXT_PUBLIC_CONVEX_URL: https://ci-placeholder.convex.cloud
+
 jobs:
   verify:
     name: Lint · Typecheck · Test · Build
