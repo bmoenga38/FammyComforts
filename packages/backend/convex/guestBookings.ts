@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import {
   orgBySlug,
   activeRatePlan,
@@ -14,6 +15,13 @@ import { postLedgerEntry, bookingBalanceCents } from "./lib/ledger";
 import { enabledMethodsFor } from "./paymentMethods";
 import { userError } from "./lib/errors";
 import { formatKesCents } from "./lib/money";
+import {
+  phoneKey,
+  checkBookingRate,
+  retryMinutes,
+  DEFAULT_BOOKING_LIMITS,
+  type BookingAttempt,
+} from "./lib/rateLimit";
 import {
   renderNotification,
   guestFirstName,
@@ -59,6 +67,54 @@ export const generateUploadUrl = mutation({
   handler: async (ctx) => await ctx.storage.generateUploadUrl(),
 });
 
+// Newest bookings scanned when rate-limiting. A bounded read: without a cap
+// this would grow into a full-table scan on a busy property, which is the same
+// mistake the limit is meant to prevent. Comfortably above `orgMax` so the
+// window is fully visible in normal operation; truncation only ever undercounts,
+// so it fails open rather than turning away a real guest.
+const RATE_SCAN_LIMIT = 60;
+
+/**
+ * Recent bookings for this org, reduced to what the rate limiter needs.
+ *
+ * Guests are resolved only for `website` rows (staff-entered bookings cannot
+ * have come from the public form) and memoised per guest id, so a repeat
+ * customer costs one read, not one per booking.
+ */
+async function recentAttempts(
+  ctx: MutationCtx,
+  orgId: Id<"organizations">,
+  key: string | null,
+): Promise<BookingAttempt[]> {
+  const recent = await ctx.db
+    .query("bookings")
+    .withIndex("by_org", (q) => q.eq("orgId", orgId))
+    .order("desc") // every Convex index ends with _creationTime → newest first
+    .take(RATE_SCAN_LIMIT);
+
+  const keyByGuest = new Map<string, string | null>();
+  const attempts: BookingAttempt[] = [];
+  for (const b of recent) {
+    let bookedWith: string | null = null;
+    if (b.source === "website" && key !== null) {
+      const cached = keyByGuest.get(b.guestId);
+      if (cached !== undefined) {
+        bookedWith = cached;
+      } else {
+        const guest = await ctx.db.get(b.guestId);
+        bookedWith = guest ? phoneKey(guest.phone) : null;
+        keyByGuest.set(b.guestId, bookedWith);
+      }
+    }
+    attempts.push({
+      creationTime: b._creationTime,
+      source: b.source,
+      phoneKey: bookedWith,
+    });
+  }
+  return attempts;
+}
+
 export const create = mutation({
   args: {
     orgSlug: v.string(),
@@ -101,6 +157,26 @@ export const create = mutation({
     }
     if (!args.guest.idNumber?.trim()) {
       userError("An ID or passport number is required.");
+    }
+
+    // Throttle the public form BEFORE doing any work or writing anything.
+    // Unauthenticated, and every success queues an SMS billed to the property,
+    // so an unthrottled loop here is a billing attack. Checked after the basic
+    // field validation so a guest with a typo hears about the typo, not this.
+    const key = phoneKey(args.guest.phone);
+    const verdict = checkBookingRate(
+      await recentAttempts(ctx, org._id, key),
+      Date.now(),
+      key,
+    );
+    if (!verdict.ok) {
+      const mins = retryMinutes(verdict.retryAfterMs);
+      const wait = `${mins} ${mins === 1 ? "minute" : "minutes"}`;
+      userError(
+        verdict.reason === "phone"
+          ? `This number has already made ${DEFAULT_BOOKING_LIMITS.phoneMax} bookings in the past hour. Please try again in ${wait}, or call the property to book the rest.`
+          : `We are receiving an unusual number of bookings right now. Please try again in ${wait}.`,
+      );
     }
 
     // Dates: valid range, and online bookings cannot start in the past.
