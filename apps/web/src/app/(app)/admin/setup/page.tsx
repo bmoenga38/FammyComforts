@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
 import type { Id } from "@fammycomforts/backend/convex/_generated/dataModel";
@@ -1144,8 +1144,21 @@ function NotificationsSection({ canManage }: { canManage: boolean }) {
               ))}
             </TBody>
           </Table>
+          {/* Honesty note. Four of these five types have templates and save
+              their toggle, but nothing in the backend ever queues them yet, so
+              ticking them has no effect. Saying so here is better than letting
+              an admin believe check-out reminders are going out. */}
+          <p className="mt-3 text-xs text-fg-muted">
+            Currently only <strong>booking confirmation</strong> is sent
+            automatically (by SMS, within about 5 minutes of a guest booking).
+            Check-in / check-out reminders, payment receipts and staff alerts are
+            not wired up yet — their toggles save but nothing sends them. Use{" "}
+            <strong>Send a message</strong> below to send any of them by hand in
+            the meantime.
+          </p>
         </CardContent>
       </Card>
+      <SendOneMessage canManage={canManage} />
       <TemplateEditor canManage={canManage} />
     </div>
   );
@@ -1185,6 +1198,214 @@ const SAMPLE: Record<string, string> = {
 };
 const fillPreview = (body: string) =>
   body.replace(/\{\{(\w+)\}\}/g, (_, k: string) => SAMPLE[k] ?? `{{${k}}}`);
+
+// ---------- 3.5 Notifications — send one message by hand ----------
+/**
+ * Ad-hoc SMS to a single number.
+ *
+ * Everything else sends because an event happened. This is the manual escape
+ * hatch: resend a confirmation that never arrived, chase a late check-in, or
+ * send one of the four notification types the backend does not queue yet.
+ *
+ * The number is typed rather than picked from a guest list, so the message
+ * variables cannot be filled from a booking — they become inputs instead, and
+ * the preview updates as they are typed. The server refuses to send while any
+ * placeholder is still unfilled, so a guest can never receive a literal
+ * "Hi {{guestName}}".
+ */
+// Mirrors TEMPLATE_VARIABLES in packages/backend/convex/lib/messageTemplates.ts,
+// which is the source of truth and rejects anything outside it.
+const KNOWN_VARS = Object.keys(SAMPLE);
+// Must stay as tolerant as PLACEHOLDER in lib/messageTemplates.ts, which allows
+// inner whitespace. A stricter regex here would be a dead end: typing
+// "{{ guestName }}" would show no input to fill, then the server would refuse to
+// send because that placeholder is unfilled.
+const PLACEHOLDERS = /\{\{\s*(\w+)\s*\}\}/g;
+
+function SendOneMessage({ canManage }: { canManage: boolean }) {
+  const templates = useQuery(api.notifications.listTemplates);
+  const sendNow = useAction(api.manualMessages.sendNow);
+
+  const [to, setTo] = useState("");
+  const [type, setType] = useState<string>(NOTIFICATION_TYPES[0]);
+  // `null` means "follow whatever the template says", so switching type picks up
+  // the new body instead of stranding the previous one in the box.
+  const [draft, setDraft] = useState<string | null>(null);
+  const [vars, setVars] = useState<Record<string, string>>({});
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState<{ to: string; senderId: string } | null>(null);
+
+  const saved = templates?.find((t) => t.type === type && t.channel === "sms");
+  const text = draft ?? saved?.body ?? DEFAULT_BODIES[type] ?? "";
+
+  // Variables actually present in the current text — the inputs follow the
+  // message, so editing the wording adds and removes fields as you go.
+  const used = [...new Set([...text.matchAll(PLACEHOLDERS)].map((m) => m[1]))];
+  const unknown = used.filter((v) => !KNOWN_VARS.includes(v));
+  const unfilled = used.filter((v) => KNOWN_VARS.includes(v) && !vars[v]?.trim());
+  const preview = text.replace(
+    PLACEHOLDERS,
+    (_, k: string) => vars[k]?.trim() || `{{${k}}}`,
+  );
+
+  const blocked =
+    !canManage ||
+    sending ||
+    !to.trim() ||
+    !text.trim() ||
+    unknown.length > 0 ||
+    unfilled.length > 0;
+
+  const onSend = async () => {
+    setSending(true);
+    setSent(null);
+    try {
+      const r = await sendNow({ to: to.trim(), type, body: text, vars });
+      if (r.ok) {
+        setSent({ to: r.sentTo, senderId: r.senderId });
+        reportSuccess(`Sent to ${r.sentTo}.`);
+        setTo("");
+      } else {
+        // A rejection below 3 attempts leaves the row queued, so the cron will
+        // retry it — say "not yet" rather than implying it is gone for good.
+        reportError(
+          r.error
+            ? `Gateway did not accept it: ${r.error} It stays queued and will be retried.`
+            : "Gateway did not accept it. It stays queued and will be retried.",
+        );
+      }
+    } catch (err) {
+      reportError(err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent>
+        <h3 className="text-sm font-semibold">Send a message</h3>
+        <p className="mt-1 mb-4 text-sm text-fg-muted">
+          Send one SMS to one number now. Pick a template as a starting point,
+          fill in the details, and edit the wording if you want.
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="text-xs text-fg-muted">Phone number</span>
+            <Input
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              placeholder="0712 345 678"
+              disabled={!canManage}
+              inputMode="tel"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs text-fg-muted">Start from</span>
+            <select
+              className="w-full rounded-ctrl border border-border bg-bg-input px-2 py-2 text-sm text-text"
+              value={type}
+              disabled={!canManage}
+              onChange={(e) => {
+                setType(e.target.value);
+                setDraft(null); // follow the new template
+              }}
+            >
+              {NOTIFICATION_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <label className="mt-4 block">
+          <span className="text-xs text-fg-muted">Message</span>
+          <textarea
+            className="min-h-[5rem] w-full rounded-ctrl border border-border bg-bg-input px-3 py-2 text-sm text-text"
+            value={text}
+            disabled={!canManage}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        </label>
+        <p className="mt-1 text-xs text-fg-muted">
+          {/* Counts the RENDERED text, not the template: "{{propertyName}}" is
+              16 characters in the box and 13 once filled, and it is the filled
+              version that gets billed. */}
+          {preview.length} characters once filled. One SMS segment is 160
+          characters, or 70 if the text contains emoji or curly quotes — up to 4
+          segments.
+        </p>
+
+        {used.length > 0 && (
+          <div className="mt-4">
+            <span className="text-xs text-fg-muted">Fill in</span>
+            <div className="mt-1 grid gap-3 sm:grid-cols-3">
+              {used.map((name) => (
+                <label key={name} className="block">
+                  <span className="text-xs font-mono text-fg-muted">
+                    {`{{${name}}}`}
+                  </span>
+                  <Input
+                    value={vars[name] ?? ""}
+                    disabled={!canManage || !KNOWN_VARS.includes(name)}
+                    placeholder={SAMPLE[name] ?? "not a known variable"}
+                    onChange={(e) =>
+                      setVars((v) => ({ ...v, [name]: e.target.value }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Same chat bubble the template editor uses, so "what the guest sees"
+            looks the same wherever you preview it. */}
+        <div className="mt-4">
+          <p className="text-label-caps mb-1.5 uppercase text-text-muted">
+            Preview
+          </p>
+          <div className="max-w-sm rounded-2xl rounded-bl-sm bg-[color-mix(in_srgb,var(--primary)_14%,transparent)] px-4 py-2.5 text-sm whitespace-pre-wrap text-text">
+            {preview || "—"}
+          </div>
+        </div>
+
+        {unknown.length > 0 && (
+          <p className="mt-3 text-sm text-danger">
+            {unknown.map((u) => `{{${u}}}`).join(", ")} is not a variable this
+            system knows. Remove it, or use one of:{" "}
+            {KNOWN_VARS.map((k) => `{{${k}}}`).join(", ")}.
+          </p>
+        )}
+        {unknown.length === 0 && unfilled.length > 0 && (
+          <p className="mt-3 text-sm text-fg-muted">
+            Fill in {unfilled.map((u) => `{{${u}}}`).join(", ")} before sending —
+            or delete them from the message.
+          </p>
+        )}
+        {sent && (
+          <p className="mt-3 text-sm text-success">
+            Sent to {sent.to}. It arrives from &ldquo;{sent.senderId}&rdquo;.
+          </p>
+        )}
+
+        <div className="mt-4 flex items-center gap-3">
+          <Button onClick={onSend} disabled={blocked}>
+            {sending ? "Sending…" : "Send SMS"}
+          </Button>
+          {!canManage && (
+            <span className="text-sm text-fg-muted">
+              You need Notifications: manage to send.
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 function TemplateEditor({ canManage }: { canManage: boolean }) {
   const templates = useQuery(api.notifications.listTemplates);

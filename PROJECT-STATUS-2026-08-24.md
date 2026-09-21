@@ -101,6 +101,100 @@ Unchanged: everything in the §1.1 "still open" table except audit-log readabili
 
 ---
 
+## 1.3 Done / not-done ledger — as at 2026-09-16
+
+The "go-live hardening" batch: the last correctness and robustness items before the app is exposed to real guests. Five commits, sitting on local `main` and **not yet pushed** — `origin/main` is still `b3ecb23`, the 2026-08-26 release. §13 is the handoff.
+
+### Closed on 2026-09-16
+
+| # | Item | What was wrong | What was done |
+|---|---|---|---|
+| §11.7 Q7 | **`guestBookings.create` was an unthrottled public trigger for billable SMS** | Anyone could POST the public booking form in a loop. Each accepted booking queues a confirmation SMS, so the cost of an attack was paid in real money by the property, not by the attacker | new `convex/lib/rateLimit.ts` — a pure decision helper (`phoneKey`, `checkBookingRate`, `retryMinutes`, `DEFAULT_BOOKING_LIMITS`). `create` now checks before doing any work. 3 per phone per hour, 20 per org per 10 minutes. 19 tests |
+| new | **`notificationsFeed.feed` read entire tables** | Five `.collect()` calls, two of them unbounded on growing tables — it read every booking the property had ever taken and filtered to `pending` in JS. This query runs on every page for every signed-in user and is live-subscribed, so its cost grew with the whole booking archive. Past Convex's per-query read limit (~16k documents) the bell would have **stopped working entirely, exactly when the property was busiest** | two additive schema indexes (`bookings.by_org_status`, `outboundNotifications.by_org_status`); every read is now `withIndex(...).order("desc").take(30)` |
+| new | **`backups.prune` had three compounding bugs** | It `.collect()`ed the whole `backupRuns` table, and it deleted only `completed` rows — so `failed` and abandoned `started` rows accumulated forever until that read broke. And because prune is the only thing that deletes backup **blobs**, a broken prune means file storage grows without limit too | bounded `.take()` per status; keeps the newest 30 completed (unchanged) and the newest 10 failed; sweeps `started` rows older than 24h. 2 new tests |
+| new | **`formatKes` printed negative money as `KES -3,500.-50`** | The minus sign was applied to the minor-unit remainder as well as the major part | sign extracted once, before splitting. `apps/web/src/lib/money.ts`, 6 tests |
+| §1.2 | **CI was red on `main`, and not only for the reason recorded** | The stale smoke spec was the known half. The other half: `convex-client-provider.tsx` builds `ConvexReactClient` at **module scope**, and its constructor throws on an undefined address — so `NEXT_PUBLIC_CONVEX_URL` being unset made `next build` die while prerendering the root layout. The `verify` job was failing at `pnpm build`, before e2e ever ran | `ci.yml` gained a top-level `env: NEXT_PUBLIC_CONVEX_URL`; the smoke spec was rewritten against `/signin`, `/login` and `/offline` and is deliberately backend-free; the `!` assertion became an explicit throw |
+| new | **Audit and money formatters had no tests** | `auditFormat.ts` is ~280 lines of pure formatting that the entire audit UI depends on, with zero coverage | `lib/auditFormat.test.ts` (39 tests) and `lib/money.test.ts` (5) |
+
+Backend test count is now **226 across 28 files** — 65 of them new in this batch (39 audit-format, 19 rate-limit, 5 money, 2 prune), on top of 6 in the web package.
+
+### Why the bell's 30-row cap changes nothing
+
+Worth recording, because "we capped the reads" normally means "the list is now wrong". It isn't here. The per-kind cap is set *equal to* the number of items the feed returns (30). Any row a kind drops is, by construction, older than that kind's own newest 30 — so it cannot rank inside the newest 30 overall either. The returned list is provably identical to the unbounded version.
+
+Only `count` saturates, at 30 × the number of kinds. That is not user-visible: `notifications-bell.tsx` renders `count > 9 ? "9+" : count`.
+
+### What is verified, and what is not
+
+**Not verified: anything that needs vitest.** The sandbox still cannot execute it (§8), and during the final session `tsc` could not be run either — the Linux workspace was unavailable throughout. The 65 new pure-helper assertions were run through a hand-written vitest shim under `node --experimental-strip-types`; the convexTest-based tests (`backups`, `guestBookings`, `notificationsFeed`) have only been read, not run.
+
+**Update 2026-09-17 — the backend IS compiler-verified now.** `pnpm exec convex deploy --dry-run` from `packages\backend` printed "Running TypeScript..." and then "Schema validation complete.", and `convex deploy` aborts if TypeScript fails. Reaching those lines is therefore proof the whole `convex/` tree compiles. **This is the cheapest backend typecheck available and it never touches production** — every line of its output begins "Would". Use it freely. It does not cover `apps/web`, which still needs `pnpm typecheck`.
+
+This is the reason §13 runs `pnpm lint && pnpm typecheck && pnpm test` locally *before* deploying anything. Do not skip it.
+
+**Known coverage gap:** rate limiting is tested at the decision-helper level (19 tests), but there is no integration test asserting that `guestBookings.create` actually refuses the fourth booking. That path is on the manual checklist in §13 instead.
+
+### Still open after this batch
+
+Everything in the §1.1 "still open" table except the audit-log and rate-limiting rows. §11.7 Q8 (`.gitattributes`) is now the natural next commit — the release it was being kept out of has itself been superseded, so the only thing still holding it back is that it wants a clean push behind it.
+
+---
+
+## 1.4 Done / not-done ledger — as at 2026-09-17
+
+This batch started as a question — *"when a client books a room, does an alert SMS actually go to their phone?"* — and the answer turned out to be "yes, but only for one of the five things the settings screen implies."
+
+### Does booking actually send an SMS? Yes.
+
+Traced end to end. `guestBookings.create` checks the org's `notificationSettings` for `booking_confirmation` + `sms`, renders the message body **at queue time** via `lib/messageTemplates.ts`, and inserts an `outboundNotifications` row with `status: "queued"`. A cron runs `notificationsEngine.drain` every five minutes, POSTs the row to HostPinnacle, and retries up to 3 attempts before marking it `failed`.
+
+Two consequences worth knowing. **Delivery is not instant** — worst case is just under five minutes plus carrier time. And **the sender ID is `AMMY_HOPES`**, because `HOSTPINNACLE_SENDER_ID` is not set on prod and the code falls back to that constant. Changing it is not just an env var: Kenyan alphanumeric sender IDs must be pre-registered with the aggregator first, and sends under an unregistered ID are rejected outright.
+
+### Two defects found while tracing it
+
+| # | Defect | Status |
+|---|---|---|
+| 1 | **Four of the five notification toggles are inert.** `check_in_reminder`, `check_out_reminder`, `payment_receipt` and `staff_alert` all have templates and all persist their toggle, but **no backend code ever queues those types**. Only `booking_confirmation` (and housekeeping's `task_assignment`) reach the queue. An admin ticking "Check-out reminder" gets a saved setting and silence. | ⚠️ Documented in the UI, not fixed |
+| 2 | **`email`/`whatsapp` rows can starve the SMS queue.** `listQueued` takes the oldest 50 `queued` rows *regardless of channel*, and the drain leaves email/whatsapp rows queued forever (no provider is configured). Enable either channel and, given enough volume, 50 permanently-stuck rows become the entire window — and SMS silently stops. | ⚠️ Reported, not fixed |
+
+Defect 1 is now stated plainly on `/admin/setup` itself, under the toggle table, rather than left for an admin to discover by a guest not receiving a reminder. That note should be deleted the day the four types are wired up.
+
+Defect 2 has not bitten yet only because no one has turned those toggles on. The fix is to make `listQueued` filter to channels the drain can actually terminate, or to give the unsupported channels a terminal `failed` state instead of leaving them queued. Do it before configuring an email provider, not after.
+
+### Closed on 2026-09-17
+
+**Send one SMS to one number, by hand** — `/admin/setup` → Notifications → "Send a message". Type any phone number, pick a notification type as a starting point, edit the wording, fill in the variables, watch the preview, send. It is the manual escape hatch for exactly the gap defect 1 leaves: a check-out reminder can at least be sent by a human today.
+
+This is the **only** send path in the system where a human types a number and presses a button — everything else is triggered by an event — so it is also the only one that needs guarding on purpose rather than by accident. `notificationsEngine.sendTest` is deliberately an `internalAction` precisely because a public send endpoint is an open SMS relay: free credit burn for anyone who finds it, and messages sent under the property's own registered sender ID. The new `manualMessages.sendNow` **is** public, because the admin UI has to call it from a browser, so it carries four guards instead:
+
+1. **`Notifications:manage`**, checked server-side inside a mutation. Actions cannot touch the database, so the permission check and the row that proves it happened live together in `manualMessages.prepare`; `ctx.runMutation` from an action propagates the caller's identity, which is what makes this possible at all.
+2. **A per-org cap of 20 manual sends per hour.** Permission alone is not enough — one borrowed laptop or one stolen session is all it takes to drain an SMS balance, and the bill is real money. Generous for the real use, far too small to be worth abusing.
+3. **Nothing is sent until it is fully valid.** The number is normalized, the message rendered, the variables filled and the segment cost measured *before* the network call, so a typo costs nothing.
+4. **Every attempt is recorded** in `outboundNotifications` and `auditLogs` — body included — sent or not. A manual send is exactly the kind that gets questioned later ("who told the guest that?"), and the audit row is the only place that answer survives.
+
+Four smaller decisions inside it that are easy to undo by accident:
+
+- **The row is inserted as `queued`, not `sent`,** and is the same shape the cron drains. If the action dies between the insert and the gateway (a deploy, a timeout), the message is not lost — the 5-minute drain finds it and sends it with the normal retry. The failure mode is a late message, not a silent one. This is also why a gateway rejection is reported to the admin as "not yet" rather than "no".
+- **An unfilled placeholder refuses the send.** The renderer deliberately leaves `{{guestName}}` literal when it has no value, which is right for a queued message — a visible placeholder beats a silent gap. Here a human is watching a preview and about to spend credit, so refusing is right instead. No guest should ever receive "Karibu {{guestName}}".
+- **`renderNotification` falling back to the built-in template is treated as an error.** For a booking message, degrading to the stock wording is correct. For a message an admin just typed and previewed, quietly sending different words is a lie — so `prepare` refuses unless the rendered source is `custom`.
+- **The row's `type` is `"manual"`,** never the template type it borrowed wording from. That is what makes the rate-limit count exact via the new `by_org_type` index; counting by a shared type would let a busy booking day push manual rows out of the bounded read and silently raise the limit.
+
+**Schema:** one additive index, `outboundNotifications.by_org_type`. Additive indexes are backfilled by Convex before any read is served — no downtime, no migration. This brings the undeployed batch to **three** new indexes, not the two §13 mentions.
+
+**Tests:** `manualMessages.test.ts`, 11 cases, all driving `prepare` rather than `sendNow` — `prepare` holds every guard and needs no network, and each rejection test also asserts the queue is still empty. That second assertion is the point: a guard that throws *after* inserting would still leave the cron a row to send, which is the failure this feature most needs not to have.
+
+### What is verified, and what is not
+
+The backend compiles — `convex deploy --dry-run` covers `convex/`, including `manualMessages.ts`. **Neither the web component nor the new tests have been run**, because the sandbox shell was unavailable for this session too. `pnpm lint && pnpm typecheck && pnpm test` before deploying is not optional here.
+
+One thing was hand-edited that normally must not be: **`convex/_generated/api.d.ts`**. It is a committed, explicit module list, so a new backend module is invisible to TypeScript until codegen regenerates it — and without a shell that meant both `pnpm typecheck` and `pnpm test` would fail on a module that is in fact correct. `manualMessages` was inserted at the exact position codegen produces (alphabetically, between `maintenance` and `mpesa`). **Run `npx convex codegen` anyway**; if the hand edit is right, it is a no-op, and if it is wrong, codegen fixes it.
+
+### Still open after this batch
+
+Both defects above. Plus everything in §1.3's "still open", unchanged — and Convex has **still not been deployed to production**, so rate limiting, the bounded reads and all three indexes remain local-only.
+
+---
+
 ## 2. Verified architecture (what the code actually is)
 
 | Layer | Reality | Verified |
@@ -450,7 +544,7 @@ After a successful sign-in, offer the user the option to install the PWA on thei
 4. **Still open** — "small scan" in §11.6: QR code so a desktop user can scan to install on their phone, or just a prompt/banner?
 5. **Still open** — which specific part of the room upload/edit flow feels unclean (§11.4)?
 6. **Still open** — PayBill vs Till (§7.1). Blocks the Daraja config and Safaricom will ask.
-7. **Still open** — should `guestBookings.create` be rate-limited by IP, by phone number, or gated behind a challenge? See the warning in §1.1: it is now a public trigger for billable SMS.
+7. ~~Should `guestBookings.create` be rate-limited by IP, by phone number, or gated behind a challenge?~~ — **answered 2026-09-16: by phone number, plus an org-wide burst ceiling.** IP was rejected: Kenyan mobile data is heavily CGNAT'd, so a single carrier IP can front a whole town and blocking it would refuse real guests. A challenge was rejected as the wrong first move — it taxes every honest guest to stop an attacker who has not appeared yet. Phone number is the right key because it is the thing the abuse actually costs money on: each booking sends a billable SMS *to that number*, so limiting per number caps the spend an attacker can force. Limits are 3 per phone per hour and 20 per org per 10 minutes; setting either `<= 0` disables that check. See §1.3.
 8. **New, still open** — adopt `.gitattributes` with `* text=auto eol=lf` plus a one-time `git add --renormalize .`? It would permanently end the CRLF/LF mismatch that makes `git status` unusable (§8), but it produces a repo-wide diff, so it was deliberately kept out of the 2026-08-26 release. Best done immediately *after* that release lands, as its own commit.
 9. **New, still open** — should the audit log be paginated? It currently takes the most recent 100 rows with a record-type filter. Fine at present volume; a date range and cursor will be wanted once there are months of history.
 
@@ -546,5 +640,57 @@ For the record, the only change this release makes to `lib/workspaces.ts` is one
 ### 12.4 If something is wrong
 
 Revert the commit and push — the frontend rolls back with Vercel. The Convex change is additive (two optional schema fields, one new query) and safe to leave deployed; the old frontend does not know about any of it.
+
+---
+
+## 13. Release 2026-09-16 — how to put the hardening batch live  *(new)*
+
+Unlike §12, **the commits already exist.** They were made during the working session and are sitting unpushed on local `main`:
+
+| Commit | |
+|---|---|
+| `0a8389f` | `test(convex): cover the audit-log and money formatters` |
+| `dadc917` | `fix(web): formatKes printed negative amounts as "KES -3,500.-50"` |
+| `a462b3a` | `fix(ci): let the pipeline build at all, and replace the stale smoke spec` |
+| `ca91c31` | `feat(booking): throttle the public booking form (§11.7 Q7)` |
+| `9f4e114` | `perf(convex): bound every unbounded read in the bell feed and backup prune` |
+
+`origin/main` is `b3ecb23`. So the release script has nothing to stage and nothing to commit — it only has to do the three things a sandbox with no network cannot: **verify, deploy Convex, push.**
+
+### 13.1 Run it
+
+```powershell
+cd C:\Users\brycode\Desktop\Nice_One\FammyComfort
+.\release\2026-09-16\push.ps1
+```
+
+It prompts before the Convex deploy and again before the push; `-DryRun` stops after the checks. `-SkipChecks`, `-SkipConvex` and `-Yes` exist but read the warnings first. If PowerShell refuses to run it: `powershell -ExecutionPolicy Bypass -File .\release\2026-09-16\push.ps1`.
+
+Step 3 runs `pnpm lint`, `pnpm typecheck` and `pnpm test`. **This is the first time any of this batch's tests have actually executed** (§1.3) — it is the load-bearing step, not a formality. Nothing has been pushed or deployed at that point, so Ctrl+C is free.
+
+### 13.2 Why Convex goes first, again
+
+Same reason as §12.2 — `apps/web/vercel.json` only builds the web app and `deploy.yml` is still gated off, so nothing deploys Convex but you. Two differences this time:
+
+- **The schema changes.** Two new indexes, `bookings.by_org_status` and `outboundNotifications.by_org_status`. Both additive; Convex backfills an index at deploy time and does not serve reads from it until it is ready, so there is no downtime and no migration. No field was added, removed or retyped.
+- **Deploying only the frontend is not dangerous here, just pointless.** The web app calls `api.notificationsFeed.feed` either way; if Convex is not deployed, production simply keeps the old unbounded backend with no rate limit. Nothing breaks — the fix just isn't live. Which is the quieter failure, so check the deployment name the CLI prints: it must be **`notable-cod-441`**, not the dev deployment pinned in `packages/backend/.env.local`.
+
+### 13.3 Then test on production
+
+CI is the headline. It has been red on `main` since July for both reasons in §1.3, and both are fixed here — **a green run is itself the thing to look for.**
+
+1. **The notification bell**, on any staff page. It opens, lists items, and the badge shows a number (or "9+"). Confirm a booking or resolve a request and the actioned item disappears. This is the highest-risk change — every read behind it was rewritten to use an index. If the bell is *empty* while you know there is pending work, stop: that means an index predicate is wrong.
+2. `https://fammycomforts.vercel.app/book/fammycomforts` → make a booking. It completes and the confirmation SMS still arrives.
+3. **Rate limiting, deliberately.** Book four times from the same phone number within an hour. The fourth is refused with a readable sentence naming a wait time, not a Convex error — and bookings one to three all succeed, because a family taking three rooms is normal and must not be blocked. This is on the **public** form only; front-desk bookings are never counted, so reception can still book the same guest repeatedly.
+4. A negative amount (a refund, a credit note) reads `-KES 3,500.50`.
+5. `npx convex run backups:listRecent --prod` — your recent completed copies are still listed. Retention for completed runs is unchanged at 30; what is new is that old *failed* and abandoned *started* rows now get retired too.
+
+### 13.4 If something is wrong
+
+Revert the offending commit and push; Vercel rolls the frontend back. The Convex side is additive and safe to leave deployed — but note that reverting `ca91c31` is what turns rate limiting off, and reverting `9f4e114` is what restores the unbounded reads. Prefer reverting one commit, not the range.
+
+### 13.5 Immediately after
+
+§11.7 Q8 — adopt `.gitattributes` with `* text=auto eol=lf` and run `git add --renormalize .` as its own commit. It produces a repo-wide diff, which is exactly why it wants a clean, freshly-pushed tree behind it. It permanently ends the CRLF/LF mismatch that makes `git status` unusable (§8).
 
 

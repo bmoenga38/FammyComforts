@@ -672,7 +672,12 @@ export default defineSchema({
     // `by_status` serves the global send queue; the per-org bell needs both
     // columns, or it reads every message the property has ever sent just to
     // find the handful still queued.
-    .index("by_org_status", ["orgId", "status"]),
+    .index("by_org_status", ["orgId", "status"])
+    // Counts manual sends inside the rate-limit window. Without it the count
+    // would have to read the org's recent notifications of every type and
+    // filter in JS, so one busy booking day could push manual rows out of the
+    // window and silently raise the limit.
+    .index("by_org_type", ["orgId", "type"]),
 
   // Notification settings (Story 3.5) — "Notifications" area. One row per
   // (type, channel); the notification engine respects `enabled`.
