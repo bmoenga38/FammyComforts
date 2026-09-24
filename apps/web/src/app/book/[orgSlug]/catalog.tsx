@@ -12,10 +12,15 @@ import { RoomBooking } from "./[roomId]/room-booking";
 import { Users, Search, LogIn } from "lucide-react";
 
 /**
- * Guest room catalog (Stories 4.1 + 4.3). Rendered two ways:
- *  - PUBLIC at `/book/[orgSlug]` (no app shell) — the default `<main>` wrapper.
- *  - IN-SHELL at `/browse` for signed-in customers (`embedded`, `<div>` wrapper,
- *    slug passed in) so the sidebar/top bar stay put when they tap "Book".
+ * Full room catalog (Stories 4.1 + 4.3) — EVERY available room, with date
+ * search and type filters. Rendered in-shell at `/browse` for signed-in
+ * customers (`embedded`, `<div>` wrapper, slug passed in) so the sidebar/top
+ * bar stay put when they tap "Book".
+ *
+ * The PUBLIC landing page at `/book/[orgSlug]` is `./home` instead: it shows
+ * only the first six rooms as a shop window and sends visitors here — via
+ * sign-in — for the rest. The `embedded={false}` branch below is kept so this
+ * component still stands alone if it is ever routed publicly again.
  */
 type RoomCardData = {
   roomId: string;

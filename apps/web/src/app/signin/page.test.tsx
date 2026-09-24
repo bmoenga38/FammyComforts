@@ -21,6 +21,9 @@ vi.mock("@convex-dev/auth/react", () => ({
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
+  // The page reads `?next=` to bounce a guest back to the page they came from
+  // (e.g. a room's booking); with no query string it falls back to role home.
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock("@fammycomforts/backend/convex/_generated/api", () => ({
   api: {

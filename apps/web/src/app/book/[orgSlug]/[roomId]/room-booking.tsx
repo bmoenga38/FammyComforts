@@ -30,6 +30,11 @@ import {
  * and a confirmation with the BK- reference and the FAMMY SMS preview bubble.
  * Same Convex contract as before — only the presentation changed.
  * (Real QR pass + room photos are on the gap list.)
+ *
+ * KYC rule, in one place: the ID/passport NUMBER is required (the backend
+ * refuses a booking without it); the two ID PHOTOS are optional at every
+ * layer — no `required`, no validation gate, and `documents` is omitted from
+ * the mutation when nothing was chosen.
  */
 type Confirmation = {
   reference: string;
@@ -63,6 +68,12 @@ function Stepper({ step }: { step: 0 | 1 | 2 }) {
  * A styled, tappable ID-photo upload tile. The native file input is visually
  * hidden (still focusable/clickable via the wrapping label); the tile shows an
  * upload prompt, then flips to a check + filename once a photo is chosen.
+ *
+ * OPTIONAL by design: the input carries no `required` and nothing downstream
+ * blocks on it. `guestBookings.create` takes `documents` as an optional array
+ * and only insists on a typed ID/passport NUMBER, so a booking with no photos
+ * submits and confirms exactly like one with them. Staff can still capture the
+ * ID at the desk during check-in.
  */
 function IdUploadTile({
   label,
@@ -84,10 +95,9 @@ function IdUploadTile({
       <input
         type="file"
         accept="image/*"
-        required
         onChange={(e) => onSelect(e.target.files?.[0] ?? null)}
         className="sr-only"
-        aria-label={`${label} (required)`}
+        aria-label={`${label} (optional)`}
       />
       {file ? (
         <Check className="size-5" aria-hidden="true" />
@@ -295,8 +305,10 @@ export function RoomBooking({
     if (!fullName.trim()) return setError("Enter the guest full name (as on ID).");
     if (phone.replace(/\D/g, "").length < 9) return setError("Enter a valid phone number.");
     if (!idNumber.trim()) return setError("Enter your ID or passport number.");
-    if (!idFront) return setError("Upload a photo of the front of your ID.");
-    if (!idBack) return setError("Upload a photo of the back of your ID.");
+    // ID PHOTOS ARE OPTIONAL — deliberately not validated here. Most guests
+    // book from a phone with no usable scan to hand, and the backend never
+    // required the images; blocking on them only cost bookings. The ID number
+    // above stays mandatory because `guestBookings.create` rejects without it.
     // Gate: signed-in customers go straight to payment; guests must first
     // log in or create an account (prefilled from the details above).
     setStep(isAuthenticated ? 1 : "auth");
@@ -513,8 +525,11 @@ export function RoomBooking({
                 </label>
                 <div className="space-y-2 text-xs font-semibold text-text-muted">
                   <span className="block">
-                    Photo ID <span className="text-danger">*</span>
-                    <span className="font-normal"> — front &amp; back required</span>
+                    Photo ID
+                    <span className="font-normal">
+                      {" "}
+                      — optional, speeds up check-in
+                    </span>
                   </span>
                   <div className="grid grid-cols-2 gap-3">
                     <IdUploadTile label="Front of ID" file={idFront} onSelect={setIdFront} />

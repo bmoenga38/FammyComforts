@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useConvex, useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@fammycomforts/backend/convex/_generated/api";
@@ -24,7 +24,20 @@ type Mode = "phone" | "admin";
 // set-password / new-customer registration.
 type PhoneStep = "phone" | "login" | "set-password" | "register";
 
-export default function SignInPage() {
+/**
+ * Sanitize the `?next=` return path. Only a same-origin ABSOLUTE PATH is
+ * accepted: a bare `/…` that is not `//…` (protocol-relative) and carries no
+ * scheme. Anything else is discarded, so a crafted link cannot turn this page
+ * into an open redirect that bounces a freshly-authenticated guest offsite.
+ */
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  if (raw.includes("\\") || /^\/\s*\w+:/.test(raw)) return null;
+  return raw;
+}
+
+function SignInInner() {
   const { signIn } = useAuthActions();
   const convex = useConvex();
   const router = useRouter();
@@ -50,14 +63,19 @@ export default function SignInPage() {
   // bouncing fresh logins to /book. Instead we wait here (this page stays
   // mounted) for the session to be established + the profile to load, then go
   // straight to the role's home. Avoids the race entirely.
+  //
+  // `?next=` wins when present: the public landing page sends guests here with
+  // the room they tapped, so "Book now" while signed out lands them back on
+  // that exact booking instead of a generic dashboard.
   const { isAuthenticated } = useConvexAuth();
   const me = useQuery(api.identity.me);
   const [redirecting, setRedirecting] = useState(false);
+  const next = safeNext(useSearchParams().get("next"));
 
   useEffect(() => {
     if (!redirecting || !isAuthenticated || me === undefined) return;
-    router.replace(me ? homeForRole(me.role) : "/");
-  }, [redirecting, isAuthenticated, me, router]);
+    router.replace(next ?? (me ? homeForRole(me.role) : "/"));
+  }, [redirecting, isAuthenticated, me, router, next]);
 
   // Surface a login problem both inline (persistent, by the form) and as a
   // toast (prominent, prototype-style). Clearing still uses setError(null).
@@ -329,5 +347,18 @@ export default function SignInPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * `useSearchParams` puts this page in the client-navigation bailout, so the
+ * form must sit inside a Suspense boundary or `next build` refuses to
+ * prerender `/signin`.
+ */
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInInner />
+    </Suspense>
   );
 }

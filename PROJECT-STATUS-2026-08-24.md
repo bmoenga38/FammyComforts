@@ -1,6 +1,6 @@
 # Fammy Comforts — Project Findings & Next Steps
 
-**Assessment date:** 2026-08-24 · **last revised 2026-08-26** (see §1.1 and §1.2)
+**Assessment date:** 2026-08-24 · **last revised 2026-09-23** (see §1.1–§1.5)
 **Assessed against:** working tree at commit `c61d12f` (2026-07-15, "feat(booking): swipeable room photo gallery + toast login errors"), branch `main`
 **Method:** direct code inspection. Every figure below was counted from source, not taken from existing docs. Figures were **re-counted on 2026-08-25**; two were wrong and are corrected below. From 2026-08-26 onward, claims about types are additionally **compiler-verified** — see §8, which was wrong about this and is now corrected.
 
@@ -195,7 +195,68 @@ Both defects above. Plus everything in §1.3's "still open", unchanged — and C
 
 ---
 
-## 2. Verified architecture (what the code actually is)
+## 1.5 Done / not-done ledger — as at 2026-09-23
+
+Frontend-only batch, requested directly by brycode: rebuild the public landing page at `/book/fammycomforts` against a supplied marketing mock-up, and stop the booking form demanding ID photographs. Both are done. **Nothing in this batch touches Convex** — no schema, no function, no index — so §13's undeployed backend is still undeployed and still the thing to do first.
+
+### The instruction, and the one part of it that needed interpreting
+
+The brief supplied `fammy-comforts-index-final.html` (1202 lines) and was explicit that it is a **layout skeleton only**: take its section order and grid, take none of its fonts, colours or copy, and dress the result in the existing Fammy Comforts identity. It named `DM Sans` and `Playfair Display` as the two typefaces specifically not to carry over.
+
+That is a clean instruction and was followed literally. Every class in the new page resolves to a token already declared in `apps/web/src/app/globals.css` — Syne for the hero and brand mark, Space Grotesk for headings, Inter for body, JetBrains Mono for money and room numbers, `#14b8a6` teal on `#0b1326` navy — and none of the skeleton's own CSS was carried across. The skeleton's hardcoded street address and two staff phone numbers were dropped for the same reason; the Location section is built from the `branchName` / `location` the database actually holds, plus a Google Maps embed derived from it. `properties` and `branches` carry **no address or phone column**, so there was nothing better to read.
+
+The one genuine design decision was where "six rooms on the homepage" and "all the other rooms in the user dashboard" meet. Adding a conditional cap to the existing `catalog.tsx` would have made one component answer to two audiences, and the cap would then have been one careless prop away from hiding inventory from signed-in customers. So the public page is a **new component** instead — and the "remaining rooms in the dashboard" half of the requirement needed **zero new code**, because `/browse` already renders the uncapped catalog in-shell for signed-in customers. The requirement was already satisfied; it just had nothing public sitting in front of it.
+
+### Closed on 2026-09-23
+
+| # | Item | What was wrong | What was done |
+|---|---|---|---|
+| new | **`/book/[orgSlug]` was the raw catalog, not a front door** | A visitor landing on the public slug got the full filterable room list — a tool, with no hero, no proposition, and no reason to stay | new `apps/web/src/app/book/[orgSlug]/home.tsx`: sticky nav, hero, booking strip, room grid, benefits, about, location + map, CTA, footer. `page.tsx` now renders it inside `<Suspense>`; `catalog.tsx` is untouched and keeps serving `/browse` |
+| new | **Six rooms, from the database, in a 2 × 3 grid** | The skeleton's rooms were static HTML | `useQuery(api.catalog.rooms, { orgSlug })` → `.slice(0, 6)`, rendered by a loop. Loading and empty states both handled; a "See all N rooms" link appears only when there are more than six |
+| new | **Prices are no longer printed on the card** | — | each card carries a **"View price"** button that reveals the nightly rate in place. State is a per-card `ReadonlySet<string>` of room ids, so revealing one card does not reveal the rest and no navigation happens |
+| new | **Every booking entry point is login-aware** | "Book now" would have dropped a signed-out visitor into a booking flow that then bounced them to a generic dashboard, losing the room they picked | one helper — signed in goes straight there, signed out goes to `/signin?next=<the exact destination>`. Applied to each card's "Book now", the strip's "Start booking", the CTA's "Book your stay" and both footer links |
+| new | **`?next=` did not exist anywhere in the app** | Sign-in always landed on `homeForRole(role)` | `/signin` reads and honours `next`; `/login` became an `async` server component that forwards `?next=` on to `/signin`. Next 15/16 makes `searchParams` a Promise, so it is awaited |
+| new | **ID photographs blocked the booking form** | Two `<input type="file">` fields were `required`, and `toPay()` refused to advance without both | `required` gone from both, both `aria-label`s now say "(optional)", and the two blocking guards are deleted. `submit()` already built `documents` conditionally, so nothing downstream changed |
+
+### The open-redirect guard, and why it is not optional
+
+`?next=` is a redirect the application performs **on a freshly authenticated session**, driven by a value an attacker fully controls. Accepting it naively turns the sign-in page into a credential-phishing relay: a link that reads `fammycomforts.vercel.app/signin?next=…` sends the user to a real, trusted login form, and then hands them to somewhere else entirely the instant they succeed.
+
+So `safeNext()` accepts only a same-origin **absolute path** — a bare `/…` — and rejects `//evil.com` (protocol-relative, which a browser resolves as an absolute URL), anything containing a backslash (Windows-style separators that some parsers fold to `/`), and anything matching `/^\/\s*\w+:/` (a scheme smuggled behind leading whitespace). Anything rejected falls back to the role home, so a bad link degrades to the old behaviour rather than failing visibly. **Do not relax this to a `startsWith("/")` check** — that alone admits `//evil.com`.
+
+### Why the ID photographs really were safe to make optional
+
+This was checked in the backend before a line was changed, because the frontend removing a guard is worthless if the server enforces the same thing — the guest would then fill the form, submit, and receive an error instead of a nag.
+
+`guestBookings.create` takes `documents` as `v.optional(v.array(...))` and has no branch that requires it. What it *does* require is `args.guest.idNumber?.trim()`, which throws `"An ID or passport number is required."` — a **typed number**, not a photograph. And `property.idRequired`, which sounds decisive, gates `deskBookings` at check-in only (`"ID verification is required at this property."`); it has no bearing on an online booking.
+
+So: the ID/passport **number** input keeps its `required` attribute and must keep it, because the server rejects a booking without one. The two **photo** inputs are now optional at every layer. A test asserts exactly that split, so a future refactor that re-adds `required` to the wrong one fails loudly.
+
+### What is verified, and what is not
+
+**Verified by reading, exhaustively** — the sandbox shell was unavailable for this session too (§8), so every claim below was checked against a file rather than a command:
+
+- Every Tailwind class in `home.tsx` resolves to a real `@theme inline` token or a real component class in `globals.css`.
+- All twelve `lucide-react` imports are real exports of the installed **1.17.0** (`Clock4`, `Sparkles`, `MapPin` and `LayoutGrid` appear nowhere else in the repo, so they were checked against the package's own `.d.ts` rather than against sibling usage).
+- Every `href` resolves to a `page.tsx` that exists: `/signin`, `/browse`, `/book/[orgSlug]`, `/book/[orgSlug]/lookup`, `/book/[orgSlug]/[roomId]`.
+- The `RoomCard` cast matches `catalog.tsx`'s own `RoomCardData` field-for-field on the ten fields used, and that file compiles today.
+- `formatKes(cents: bigint)` matches the `bigint | null` it is handed, and the null branch is explicit.
+
+**Not verified: `pnpm lint`, `pnpm typecheck`, `pnpm test`.** Run them (§14.1). Two of the four files touched have tests, and both test files were updated in the same batch.
+
+### Two breakages caught before they happened
+
+1. **`signin/page.test.tsx` mocked `next/navigation` with `useRouter` only.** Adding `useSearchParams()` to the component would have thrown `TypeError: useSearchParams is not a function` in all six existing sign-in tests — a green-to-red that would have looked like the feature broke sign-in. The mock now returns an empty `URLSearchParams`.
+2. **`useSearchParams` without a Suspense boundary fails `next build`.** It opts the page into the client-navigation bailout, and Next refuses to prerender `/signin` without a boundary above it. `/signin` was split into `SignInInner` plus a Suspense-wrapped default export — the same shape `browse/page.tsx` already uses.
+
+### Still open after this batch
+
+Everything in §1.4's "still open", unchanged and untouched: both notification defects, the three undeployed Convex indexes, rate limiting and the bounded reads still local-only, and the manual-SMS work still uncommitted.
+
+**One new note for §11.5.** The Location section embeds `https://www.google.com/maps?...&output=embed` in an `<iframe>`. That is fine today because no CSP exists — but the CSP that §11.5 calls for must allow `frame-src https://www.google.com` or the map will silently render blank. A `frame-ancestors 'none'` directive is unaffected; it constrains who may frame *this* app, not what this app may frame.
+
+---
+
 
 | Layer | Reality | Verified |
 |---|---|---|
@@ -692,5 +753,84 @@ Revert the offending commit and push; Vercel rolls the frontend back. The Convex
 ### 13.5 Immediately after
 
 §11.7 Q8 — adopt `.gitattributes` with `* text=auto eol=lf` and run `git add --renormalize .` as its own commit. It produces a repo-wide diff, which is exactly why it wants a clean, freshly-pushed tree behind it. It permanently ends the CRLF/LF mismatch that makes `git status` unusable (§8).
+
+---
+
+## 14. Release 2026-09-23 — the landing page + optional ID batch  *(new)*
+
+Eight files, all in `apps/web`. **Nothing here needs Convex** — no schema, no function, no index. But §13's batch is *still* undeployed, so the deploy step below is not optional: it is §13 finally happening, with this batch riding along behind it.
+
+| Path | |
+|---|---|
+| `apps/web/src/app/book/[orgSlug]/home.tsx` | **new** — the public landing page |
+| `apps/web/src/app/book/[orgSlug]/page.tsx` | rewritten — renders `Home` inside `<Suspense>` |
+| `apps/web/src/app/book/[orgSlug]/catalog.tsx` | docstring only — now says it serves `/browse`, not the public route |
+| `apps/web/src/app/book/[orgSlug]/[roomId]/room-booking.tsx` | ID photos made optional |
+| `apps/web/src/app/book/[orgSlug]/[roomId]/page.test.tsx` | +2 tests |
+| `apps/web/src/app/signin/page.tsx` | `?next=` support, `safeNext()`, Suspense split |
+| `apps/web/src/app/signin/page.test.tsx` | mock fix — without it the six existing tests throw |
+| `apps/web/src/app/login/page.tsx` | rewritten — async server component, forwards `?next=` |
+
+### 14.1 Check first. This is the load-bearing step.
+
+```powershell
+cd C:\Users\brycode\Desktop\Nice_One\FammyComfort
+pnpm lint
+pnpm typecheck
+pnpm test
+```
+
+Nothing has been staged or deployed at this point, so Ctrl+C is free. Two of the eight files are test files and both were edited in this batch — `pnpm test` is what proves the edits agree with the components.
+
+### 14.2 Deploy Convex, then push
+
+Convex still goes first, for the third release running, and for the same reason (§12.2, §13.2): `vercel.json` builds the web app and nothing else, and `deploy.yml` is gated off. **Check the deployment name the CLI prints — it must be `notable-cod-441`.** `packages/backend/.env.local` pins the *dev* deployment, so a command without `--prod` quietly hits the wrong one.
+
+Run `codegen` first: `manualMessages` was hand-inserted into `convex/_generated/api.d.ts` in the 2026-09-17 batch (§1.4) and has never been regenerated. If the hand edit was right this is a no-op.
+
+```powershell
+cd C:\Users\brycode\Desktop\Nice_One\FammyComfort\packages\backend
+pnpm exec convex codegen
+pnpm exec convex deploy
+```
+
+That deploy carries §13's and §1.4's backend work live — rate limiting, the bounded bell reads, the bounded prune, and all **three** additive indexes. All are additive; Convex backfills an index before serving reads from it, so there is no downtime and no migration.
+
+Then stage **explicit paths only** — `git add -A` would sweep in ~300 files that differ from HEAD by line endings alone (§8):
+
+```powershell
+cd C:\Users\brycode\Desktop\Nice_One\FammyComfort
+git add ":(literal)apps/web/src/app/book/[orgSlug]/home.tsx" `
+        ":(literal)apps/web/src/app/book/[orgSlug]/page.tsx" `
+        ":(literal)apps/web/src/app/book/[orgSlug]/catalog.tsx" `
+        ":(literal)apps/web/src/app/book/[orgSlug]/[roomId]/room-booking.tsx" `
+        ":(literal)apps/web/src/app/book/[orgSlug]/[roomId]/page.test.tsx" `
+        "apps/web/src/app/signin/page.tsx" `
+        "apps/web/src/app/signin/page.test.tsx" `
+        "apps/web/src/app/login/page.tsx" `
+        "PROJECT-STATUS-2026-08-24.md"
+git commit -m "feat(book): public landing page with six live rooms; ID photos now optional"
+git push origin main
+```
+
+The `:(literal)` prefix is required on the five `[orgSlug]` paths — without it git reads the brackets as a character class and matches nothing.
+
+### 14.3 Then test on production
+
+1. `https://fammycomforts.vercel.app/book/fammycomforts` **signed out.** Six rooms, two rows of three, showing real room numbers and types from the admin's own data. No prices on the cards.
+2. Tap **View price** on one card. That card's rate appears; the other five stay hidden.
+3. Tap **Book now** while signed out. You land on `/signin`, and the URL carries `?next=/book/fammycomforts/<roomId>`. Sign in — you should arrive at **that room's** booking page, not the dashboard. This is the whole point of the change; if it drops you on `/guest`, `safeNext()` rejected the path.
+4. Sign in first, then tap **Book now**. Straight to the room, no sign-in detour.
+5. Book a room and **upload no ID photographs at all.** It must reach Pay, confirm, and send the SMS. Then try with the ID/passport *number* blank — that one must still be refused, with a readable sentence.
+6. `/browse` while signed in lists **every** available room, not six.
+7. On a phone: the nav collapses to a hamburger, it opens and closes, and the map section renders.
+8. Watch [CI](https://github.com/bmoenga38/FammyComforts/actions). It was made green by §13's `a462b3a`, so anything red here is this batch.
+
+### 14.4 If something is wrong
+
+Revert the commit and push; Vercel rolls the frontend back and `/book/[orgSlug]` returns to the old catalog. **Do not revert the Convex deploy** — it is additive, it belongs to §13 rather than to this batch, and rolling it back is what switches rate limiting off again.
+
+The most likely failure is cosmetic: a class that reads correctly but renders flat, because a token was assumed rather than checked. Every one was checked against `globals.css`, but a visual pass on a real device is still worth five minutes — reading CSS is not the same as seeing it.
+
 
 

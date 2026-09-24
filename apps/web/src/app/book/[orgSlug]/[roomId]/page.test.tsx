@@ -89,7 +89,8 @@ describe("room booking stepper", () => {
     fireEvent.change(screen.getByLabelText(/passport number/i), {
       target: { value: "12345678" },
     });
-    // ID front + back are required before advancing (idRequired property).
+    // ID photos are OPTIONAL — attached here only to prove the happy path
+    // still works when a guest does upload them.
     const idFile = new File(["x"], "id.jpg", { type: "image/jpeg" });
     fireEvent.change(screen.getByLabelText(/front of id/i), {
       target: { files: [idFile] },
@@ -105,5 +106,39 @@ describe("room booking stepper", () => {
 
     fireEvent.click(screen.getByRole("checkbox", { name: /i consent/i }));
     expect(confirm).not.toBeDisabled();
+  });
+
+  it("advances to Pay with NO ID photos uploaded", () => {
+    render(<RoomBookingPage />);
+    fireEvent.change(screen.getByLabelText(/full name/i), {
+      target: { value: "Ada Guest" },
+    });
+    fireEvent.change(screen.getByLabelText(/^phone$/i), {
+      target: { value: "+254700000001" },
+    });
+    fireEvent.change(screen.getByLabelText(/passport number/i), {
+      target: { value: "12345678" },
+    });
+    // Deliberately skip both uploads.
+    fireEvent.click(screen.getByRole("button", { name: /continue to payment/i }));
+
+    // We reached step 2: no upload nag, and the confirm button exists.
+    expect(screen.queryByText(/upload a photo/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /confirm booking/i })).toBeInTheDocument();
+
+    // And it becomes submittable on consent alone — no ID image needed.
+    fireEvent.click(screen.getByRole("checkbox", { name: /i consent/i }));
+    expect(screen.getByRole("button", { name: /confirm booking/i })).not.toBeDisabled();
+  });
+
+  it("marks both ID photo inputs optional and leaves them unrequired", () => {
+    render(<RoomBookingPage />);
+    const front = screen.getByLabelText(/front of id/i);
+    const back = screen.getByLabelText(/back of id/i);
+    expect(front).not.toBeRequired();
+    expect(back).not.toBeRequired();
+    // ...while the ID/passport NUMBER stays mandatory (the backend rejects
+    // a booking without it, so the form must keep asking).
+    expect(screen.getByLabelText(/passport number/i)).toBeRequired();
   });
 });

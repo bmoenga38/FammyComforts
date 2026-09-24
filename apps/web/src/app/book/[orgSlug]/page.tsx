@@ -1,17 +1,17 @@
 "use client";
 
 import { Suspense } from "react";
-import { Catalog } from "./catalog";
+import { Home } from "./home";
 
 /**
- * Public guest catalog route (`/book/[orgSlug]`, no app shell). The catalog
- * component lives in `./catalog` so it can also render in-shell at `/browse`
- * for signed-in customers (Next.js page files can't export extra components).
+ * Public landing page for a property (`/book/[orgSlug]`, no app shell): hero,
+ * six database-driven rooms, benefits, about, location and CTA. The full room
+ * list lives behind sign-in at `/browse`, which renders `./catalog` in-shell.
  */
 export default function CatalogPage() {
   return (
     <Suspense fallback={null}>
-      <Catalog />
+      <Home />
     </Suspense>
   );
 }
